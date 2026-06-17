@@ -1,0 +1,8 @@
+pyproject.toml
+src/__init__.py
+src/financial_platform.egg-info/PKG-INFO
+src/financial_platform.egg-info/SOURCES.txt
+src/financial_platform.egg-info/dependency_links.txt
+src/financial_platform.egg-info/requires.txt
+src/financial_platform.egg-info/top_level.txt
+src/ingestion/__init__.py

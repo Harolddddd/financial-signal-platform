@@ -29,7 +29,7 @@ def fetch_ohlcv_fmp(ticker: str, start: datetime, end: datetime) -> pl.DataFrame
             "volume": int(item["volume"]),
             "adj_close": float(item.get("adjClose", item["close"])),
             "dividends": float(item.get("dividend", 0.0)),
-            "stock_splits": float(item.get("unadjustedVolume", 0.0)) / max(float(item.get("volume", 1)), 1),
+            "stock_splits": 0.0,
         }
         for item in series
     ]

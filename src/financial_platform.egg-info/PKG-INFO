@@ -1,0 +1,22 @@
+Metadata-Version: 2.4
+Name: financial-platform
+Version: 0.1.0
+Requires-Python: >=3.11
+Requires-Dist: yfinance>=0.2.40
+Requires-Dist: alpha-vantage>=2.3.1
+Requires-Dist: finnhub-python>=1.0.0
+Requires-Dist: newsapi-python>=0.2.7
+Requires-Dist: feedparser>=6.0.11
+Requires-Dist: polars>=0.20.0
+Requires-Dist: psycopg2-binary>=2.9.9
+Requires-Dist: pydantic-settings>=2.3.0
+Requires-Dist: transformers>=4.40.0
+Requires-Dist: torch>=2.3.0
+Requires-Dist: vaderSentiment>=3.3.2
+Requires-Dist: apache-airflow>=2.9.0
+Requires-Dist: requests>=2.32.0
+Requires-Dist: pyyaml>=6.0.1
+Provides-Extra: dev
+Requires-Dist: pytest>=8.2.0; extra == "dev"
+Requires-Dist: pytest-mock>=3.14.0; extra == "dev"
+Requires-Dist: responses>=0.25.0; extra == "dev"

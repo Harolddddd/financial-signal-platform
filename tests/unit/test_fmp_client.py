@@ -38,6 +38,7 @@ def test_fetch_ohlcv_fmp_returns_polars_dataframe():
     assert df["close"][0] == 154.0
     assert df["adj_close"][0] == 154.0
     assert df["volume"][0] == 1_100_000
+    assert df["stock_splits"][0] == 0.0
 
 
 @resp_mock.activate
