@@ -67,7 +67,7 @@ def collect_newsapi(
                 ticker=ticker,
                 headline=a["title"],
                 body=a.get("content"),
-                source=a["source"]["name"],
+                source=a.get("source", {}).get("name", "unknown"),
                 url=a["url"],
                 published_at=ts,
             ))
