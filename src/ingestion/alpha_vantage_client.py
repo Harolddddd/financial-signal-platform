@@ -11,14 +11,14 @@ def fetch_ohlcv_av(ticker: str, start: datetime, end: datetime) -> pl.DataFrame:
         "function": "TIME_SERIES_DAILY_ADJUSTED",
         "symbol": ticker,
         "outputsize": "full",
-        "apikey": settings.ALPHA_VANTAGE_API_KEY,
+        "apikey": settings.ALPHA_VANTAGE_KEY,
     }
     resp = requests.get(url, params=params, timeout=30)
     resp.raise_for_status()
     data = resp.json()
-    series = data.get("Time Series (Daily)", {})
+    series = data.get("Time Series (Daily)")
     if not series:
-        raise ValueError(f"Alpha Vantage returned no data for {ticker}")
+        raise ValueError(f"Alpha Vantage returned no time series for {ticker}")
     rows = []
     for date_str, vals in series.items():
         dt = datetime.fromisoformat(date_str).replace(tzinfo=None)
