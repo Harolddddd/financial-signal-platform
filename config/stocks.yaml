@@ -1,0 +1,12 @@
+universes:
+  sp500:
+    description: "S&P 500 constituents — populated at runtime from survivorship module"
+    tickers: []
+  watchlist:
+    description: "Small test watchlist"
+    tickers:
+      - AAPL
+      - MSFT
+      - GOOGL
+      - AMZN
+      - NVDA
