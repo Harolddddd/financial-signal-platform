@@ -57,3 +57,4 @@ CREATE TABLE IF NOT EXISTS index_compositions (
     removed_date DATE,
     PRIMARY KEY (index_name, ticker, added_date)
 );
+SELECT create_hypertable('index_compositions', 'added_date', if_not_exists => TRUE);
