@@ -10,7 +10,7 @@ def fetch_ohlcv_fmp(ticker: str, start: datetime, end: datetime) -> pl.DataFrame
     params = {
         "from": start.strftime("%Y-%m-%d"),
         "to": end.strftime("%Y-%m-%d"),
-        "apikey": settings.FMP_API_KEY,
+        "apikey": settings.FMP_KEY,
     }
     resp = requests.get(url, params=params, timeout=30)
     resp.raise_for_status()
