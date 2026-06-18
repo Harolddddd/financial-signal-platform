@@ -3,7 +3,7 @@ services:
     name: financial-signal-platform
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: python -m streamlit run dashboard/app.py --server.port $PORT --server.address 0.0.0.0 --server.headless true
+    startCommand: PYTHONPATH=. python -m streamlit run dashboard/app.py --server.port $PORT --server.address 0.0.0.0 --server.headless true
     plan: free
     envVars:
       - key: PYTHON_VERSION
