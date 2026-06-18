@@ -1,0 +1,10 @@
+streamlit>=1.35.0
+plotly>=5.20.0
+polars>=0.20.0
+duckdb>=0.10.0
+numpy>=1.26.0
+scikit-learn>=1.5.0
+xgboost>=2.0.0
+lightgbm>=4.3.0
+shap>=0.45.0
+joblib>=1.4.0

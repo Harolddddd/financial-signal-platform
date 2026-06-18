@@ -1,0 +1,70 @@
+{
+  "model_name": "lightgbm",
+  "version": "20260618T030055899290",
+  "params": {
+    "n_estimators": 300,
+    "max_depth": 6,
+    "learning_rate": 0.05,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "class_weight": "balanced",
+    "random_state": 42,
+    "n_jobs": -1,
+    "verbose": -1
+  },
+  "evaluation": {
+    "accuracy": 0.3275,
+    "precision_buy": 0.32517482517482516,
+    "recall_buy": 0.34831460674157305,
+    "f1_buy": 0.33634719710669075,
+    "f1_macro": 0.32724156192405823,
+    "confusion_matrix": [
+      [
+        93,
+        88,
+        86
+      ],
+      [
+        92,
+        81,
+        94
+      ],
+      [
+        101,
+        77,
+        88
+      ]
+    ],
+    "class_labels": [
+      "Buy",
+      "Hold",
+      "Sell"
+    ],
+    "n_samples": 800
+  },
+  "feature_cols": [
+    "sma_10",
+    "sma_20",
+    "sma_50",
+    "sma_200",
+    "ema_12",
+    "ema_26",
+    "rsi_14",
+    "macd",
+    "macd_signal",
+    "macd_hist",
+    "bb_upper",
+    "bb_lower",
+    "bb_width",
+    "atr_14",
+    "hist_vol_21",
+    "sent_pos_avg_3d",
+    "sent_pos_avg_5d",
+    "sent_pos_avg_10d",
+    "sent_pos_mom_3d",
+    "news_vol_spike",
+    "rel_strength_spy",
+    "vix_level"
+  ],
+  "trained_at": "2026-06-18T03:00:55.911922+00:00"
+}
