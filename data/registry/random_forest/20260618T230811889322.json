@@ -1,0 +1,67 @@
+{
+  "model_name": "random_forest",
+  "version": "20260618T230811889322",
+  "params": {
+    "n_estimators": 200,
+    "max_depth": 10,
+    "min_samples_leaf": 5,
+    "class_weight": "balanced",
+    "random_state": 42,
+    "n_jobs": -1
+  },
+  "evaluation": {
+    "accuracy": 0.4827566743805385,
+    "precision_buy": 0.4025352786414733,
+    "recall_buy": 0.3094318808604523,
+    "f1_buy": 0.3498960498960499,
+    "f1_macro": 0.40460074719595457,
+    "confusion_matrix": [
+      [
+        1683,
+        2775,
+        981
+      ],
+      [
+        1505,
+        6125,
+        1003
+      ],
+      [
+        993,
+        1907,
+        745
+      ]
+    ],
+    "class_labels": [
+      "Buy",
+      "Hold",
+      "Sell"
+    ],
+    "n_samples": 17717
+  },
+  "feature_cols": [
+    "sma_10",
+    "sma_20",
+    "sma_50",
+    "sma_200",
+    "ema_12",
+    "ema_26",
+    "rsi_14",
+    "macd",
+    "macd_signal",
+    "macd_hist",
+    "bb_upper",
+    "bb_lower",
+    "bb_width",
+    "atr_14",
+    "hist_vol_21",
+    "sent_pos_avg_3d",
+    "sent_pos_avg_5d",
+    "sent_pos_avg_10d",
+    "sent_pos_mom_3d",
+    "news_vol_spike",
+    "rel_strength_spy",
+    "vix_level"
+  ],
+  "trained_at": "2026-06-18T23:08:11.951483+00:00"
+}
