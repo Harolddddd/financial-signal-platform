@@ -29,4 +29,3 @@ def execute_many(
 ) -> None:
     with conn.cursor() as cur:
         psycopg2.extras.execute_batch(cur, sql, rows, page_size=1000)
-    conn.commit()

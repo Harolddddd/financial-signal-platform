@@ -1,5 +1,5 @@
 from __future__ import annotations
-from datetime import datetime
+from datetime import datetime, timezone
 import requests
 import polars as pl
 from config.settings import settings
@@ -21,7 +21,8 @@ def fetch_ohlcv_av(ticker: str, start: datetime, end: datetime) -> pl.DataFrame:
         raise ValueError(f"Alpha Vantage returned no time series for {ticker}")
     rows = []
     for date_str, vals in series.items():
-        dt = datetime.fromisoformat(date_str).replace(tzinfo=None)
+        # Parse directly as midnight UTC — no naive intermediate, no replace_time_zone
+        dt = datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
         if not (start.date() <= dt.date() <= end.date()):
             continue
         rows.append({
@@ -38,8 +39,4 @@ def fetch_ohlcv_av(ticker: str, start: datetime, end: datetime) -> pl.DataFrame:
         })
     if not rows:
         raise ValueError(f"Alpha Vantage: no data for {ticker} in range {start}–{end}")
-    return (
-        pl.DataFrame(rows)
-        .with_columns(pl.col("time").dt.replace_time_zone("UTC"))
-        .sort("time")
-    )
+    return pl.DataFrame(rows).sort("time")

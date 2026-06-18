@@ -41,12 +41,13 @@ CREATE TABLE IF NOT EXISTS news_articles (
     headline        TEXT        NOT NULL,
     body            TEXT,
     source          TEXT,
-    url             TEXT UNIQUE,
+    url             TEXT NOT NULL,
     relevance       DOUBLE PRECISION,
     sentiment_pos   DOUBLE PRECISION,
     sentiment_neg   DOUBLE PRECISION,
     sentiment_neu   DOUBLE PRECISION,
-    sentiment_label TEXT
+    sentiment_label TEXT,
+    UNIQUE (url, published_at)
 );
 SELECT create_hypertable('news_articles', 'published_at', if_not_exists => TRUE);
 

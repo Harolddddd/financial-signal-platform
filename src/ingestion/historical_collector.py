@@ -18,13 +18,14 @@ def fetch_ohlcv(
         start=start.strftime("%Y-%m-%d"),
         end=end.strftime("%Y-%m-%d"),
         interval=interval,
-        auto_adjust=True,
+        auto_adjust=False,
         back_adjust=False,
     )
     if raw.empty:
         raise ValueError(f"No data returned for {ticker}")
 
     raw = raw.reset_index()
+    # Normalise column names: "Adj Close" -> "adj_close", etc.
     raw.columns = [c.lower().replace(" ", "_") for c in raw.columns]
     if "date" in raw.columns:
         raw = raw.rename(columns={"date": "time"})
@@ -41,6 +42,7 @@ def fetch_ohlcv(
         "low": raw["low"].astype("float64").to_numpy(),
         "close": raw["close"].astype("float64").to_numpy(),
         "volume": raw["volume"].astype("int64").to_numpy(),
+        "adj_close": raw["adj_close"].astype("float64").to_numpy(),
         "dividends": raw.get("dividends", pd.Series([0.0] * len(raw))).astype("float64").to_numpy(),
         "stock_splits": raw.get("stock_splits", pd.Series([0.0] * len(raw))).astype("float64").to_numpy(),
     }
@@ -48,14 +50,14 @@ def fetch_ohlcv(
     df = pl.DataFrame(data)
 
     return df.select([
-        pl.col("time").str.to_datetime("%Y-%m-%d %H:%M:%S%z").cast(pl.Datetime("us", "UTC")),
+        pl.col("time").str.to_datetime("%Y-%m-%d %H:%M:%S%z").cast(pl.Datetime("us", "UTC")).dt.truncate("1d"),
         pl.col("ticker"),
         pl.col("open").cast(pl.Float64),
         pl.col("high").cast(pl.Float64),
         pl.col("low").cast(pl.Float64),
         pl.col("close").cast(pl.Float64),
         pl.col("volume").cast(pl.Int64),
-        pl.col("close").alias("adj_close").cast(pl.Float64),
+        pl.col("adj_close").cast(pl.Float64),
         pl.col("dividends").cast(pl.Float64),
         pl.col("stock_splits").cast(pl.Float64),
     ])

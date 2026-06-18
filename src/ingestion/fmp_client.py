@@ -1,5 +1,5 @@
 from __future__ import annotations
-from datetime import datetime
+from datetime import datetime, timezone
 import requests
 import polars as pl
 from config.settings import settings
@@ -20,7 +20,8 @@ def fetch_ohlcv_fmp(ticker: str, start: datetime, end: datetime) -> pl.DataFrame
         raise ValueError(f"FMP returned no data for {ticker}")
     rows = [
         {
-            "time": datetime.fromisoformat(item["date"]),
+            # Parse directly as midnight UTC — no naive intermediate, no replace_time_zone
+            "time": datetime.strptime(item["date"], "%Y-%m-%d").replace(tzinfo=timezone.utc),
             "ticker": ticker,
             "open": float(item["open"]),
             "high": float(item["high"]),
@@ -33,8 +34,4 @@ def fetch_ohlcv_fmp(ticker: str, start: datetime, end: datetime) -> pl.DataFrame
         }
         for item in series
     ]
-    return (
-        pl.DataFrame(rows)
-        .with_columns(pl.col("time").dt.replace_time_zone("UTC"))
-        .sort("time")
-    )
+    return pl.DataFrame(rows).sort("time")

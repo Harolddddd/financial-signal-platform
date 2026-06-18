@@ -23,7 +23,7 @@ INSERT INTO news_articles
     (published_at, ticker, headline, body, source, url, relevance,
      sentiment_pos, sentiment_neg, sentiment_neu, sentiment_label)
 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-ON CONFLICT (url) DO NOTHING
+ON CONFLICT (url, published_at) DO NOTHING
 """
 
 _FUND_SQL = """
@@ -41,6 +41,7 @@ def write_ohlcv(df: pl.DataFrame) -> int:
     conn = get_connection()
     try:
         execute_many(conn, _OHLCV_SQL, rows)
+        conn.commit()
     finally:
         release_connection(conn)
     return len(rows)
@@ -55,6 +56,7 @@ def write_news(pairs: list[tuple[NewsArticle, SentimentResult]]) -> int:
     conn = get_connection()
     try:
         execute_many(conn, _NEWS_SQL, rows)
+        conn.commit()
     finally:
         release_connection(conn)
     return len(rows)
@@ -73,5 +75,6 @@ def write_fundamentals(
     conn = get_connection()
     try:
         execute_many(conn, _FUND_SQL, rows)
+        conn.commit()
     finally:
         release_connection(conn)

@@ -24,12 +24,21 @@ class NewsArticle:
     published_at: datetime
 
 
-def collect_rss(ticker: str, max_items: int = 20) -> list[NewsArticle]:
+def collect_rss(
+    ticker: str,
+    max_items: int = 20,
+    from_date: datetime | None = None,
+    to_date: datetime | None = None,
+) -> list[NewsArticle]:
     feed = feedparser.parse(_RSS_TEMPLATE.format(ticker=ticker))
     articles: list[NewsArticle] = []
     for entry in feed.entries[:max_items]:
         try:
             ts = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
+            if from_date is not None and ts < from_date:
+                continue
+            if to_date is not None and ts > to_date:
+                continue
             articles.append(NewsArticle(
                 ticker=ticker,
                 headline=entry.get("title", ""),
@@ -114,7 +123,7 @@ def collect_all_news(
     seen: set[str] = set()
     result: list[NewsArticle] = []
     for article in (
-        collect_rss(ticker)
+        collect_rss(ticker, from_date=from_date, to_date=to_date)
         + collect_newsapi(ticker, from_date, to_date)
         + collect_finnhub(ticker, from_date, to_date)
     ):

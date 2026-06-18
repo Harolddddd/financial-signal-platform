@@ -23,6 +23,7 @@ def _make_yf_history_df():
             "High": [155.0, 156.0],
             "Low": [149.0, 150.0],
             "Close": [153.0, 154.0],
+            "Adj Close": [152.5, 153.5],
             "Volume": [1_000_000, 1_100_000],
             "Dividends": [0.0, 0.0],
             "Stock Splits": [0.0, 0.0],

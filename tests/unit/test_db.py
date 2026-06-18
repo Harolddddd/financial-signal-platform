@@ -38,8 +38,8 @@ def test_execute_many_inserts_rows():
         # Verify that execute_batch was called exactly once with correct arguments
         mock_execute_batch.assert_called_once_with(mock_cursor, sql, rows, page_size=1000)
 
-    # Verify commit was called
-    mock_conn.commit.assert_called_once()
+    # execute_many no longer commits — callers are responsible for committing
+    mock_conn.commit.assert_not_called()
 
     # Verify the cursor context manager was used correctly
     mock_conn.cursor.assert_called_once()
