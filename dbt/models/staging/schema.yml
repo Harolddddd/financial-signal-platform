@@ -1,0 +1,27 @@
+version: 2
+
+sources:
+  - name: public
+    tables:
+      - name: ohlcv
+      - name: news_articles
+      - name: features
+
+models:
+  - name: stg_ohlcv
+    description: "Cleaned OHLCV with positive close filter"
+    columns:
+      - name: time
+        tests: [not_null]
+      - name: ticker
+        tests: [not_null]
+      - name: close
+        tests: [not_null]
+
+  - name: stg_news_sentiment
+    description: "Cleaned news articles with coalesced nulls"
+    columns:
+      - name: published_at
+        tests: [not_null]
+      - name: ticker
+        tests: [not_null]

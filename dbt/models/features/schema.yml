@@ -1,0 +1,16 @@
+version: 2
+
+models:
+  - name: feat_sma
+    description: "20-day and 50-day SMAs validated in SQL"
+    columns:
+      - name: sma_20
+        tests: [not_null]
+
+  - name: feat_labels
+    description: "Buy/Hold/Sell labels computed via SQL LEAD window — reference for bias check"
+    columns:
+      - name: label
+        tests:
+          - accepted_values:
+              values: ["Buy", "Hold", "Sell"]
