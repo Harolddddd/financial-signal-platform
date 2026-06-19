@@ -12,7 +12,7 @@ st.markdown("""
 Navigate using the sidebar:
 
 - **Data Overview** — data ingestion status, ticker universe, date ranges
-- **Model Leaderboard** — all trained models ranked by composite grade
-- **Backtest Results** — equity curve, trade log, and financial metrics per model
-- **Live Signals** — today's Buy/Hold/Sell recommendations with SHAP explanations
+- **Strategy Leaderboard** — all strategies ranked by composite grade (walk-forward backtest)
+- **Backtest Results** — fold-by-fold performance metrics per strategy
+- **Live Signals** — today's Buy/Hold/Sell recommendations with confidence scores
 """)
