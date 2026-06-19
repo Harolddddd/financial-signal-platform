@@ -193,11 +193,11 @@ The original `walk_forward_backtest()` is not deleted until strategies are valid
 - `get_live_signals()` — use `result.signal` for signal display; remove SHAP dependency entirely (no `attach_explanations()` call)
 
 ### `dashboard/pages/4_Live_Signals.py`
-- Replace SHAP bar chart with a simple table of top features from `result.signal` per ticker
+- Replace SHAP bar chart with a simple table showing signal and confidence per ticker
 - `result.signal.value` drives the Buy/Hold/Sell badge; `result.confidence` drives the confidence meter
 
 ### `dashboard/config.py`
-- Add `OHLCV_COLS: list[str]` constant
+- Add `OHLCV_COLS: list[str]` constant — `["open", "high", "low", "close", "volume"]` plus the `time` index column; passed to rule-based strategies
 - Keep `FEATURE_COLS` for statistical strategies
 
 ### `dashboard/pages/2_Model_Leaderboard.py`
