@@ -1,28 +1,29 @@
+# dashboard/pages/2_Model_Leaderboard.py
 import streamlit as st
 import plotly.graph_objects as go
 import polars as pl
-from dashboard.config import PARQUET_DIR, REGISTRY_DIR, FEATURE_COLS, GRADE_COLORS
+from dashboard.config import PARQUET_DIR, OHLCV_COLS, FEATURE_COLS, GRADE_COLORS
 from dashboard.data_loader import get_leaderboard
 
-st.set_page_config(page_title="Model Leaderboard", layout="wide")
-st.header("Model Leaderboard")
+st.set_page_config(page_title="Strategy Leaderboard", layout="wide")
+st.header("Strategy Leaderboard")
 
 
 @st.cache_data(ttl=1800)
 def _leaderboard():
-    return get_leaderboard(REGISTRY_DIR, PARQUET_DIR, FEATURE_COLS)
+    return get_leaderboard(PARQUET_DIR, OHLCV_COLS, FEATURE_COLS)
 
 
 with st.spinner("Computing grades..."):
     leaderboard = _leaderboard()
 
 if not leaderboard:
-    st.warning("No trained models found in registry. Run the model_retrain_dag first.")
+    st.warning("No strategies found. Check src/strategies/strategies.yaml.")
     st.stop()
 
 rows = [{
     "Rank": i + 1,
-    "Model": g.model_name,
+    "Strategy": g.model_name,
     "Grade": g.grade.value,
     "Score": f"{g.composite_score:.3f}",
     "Precision Buy": f"{g.metrics.precision_buy:.3f}",
@@ -44,7 +45,7 @@ with col1:
         y=[g.metrics.precision_buy for g in leaderboard],
         marker_color=[GRADE_COLORS[g.grade.value] for g in leaderboard],
     ))
-    fig.update_layout(title="Precision (Buy class)", xaxis_title="Model",
+    fig.update_layout(title="Precision (Buy class)", xaxis_title="Strategy",
                       yaxis_title="Precision", yaxis_range=[0, 1])
     st.plotly_chart(fig, use_container_width=True)
 
@@ -54,6 +55,6 @@ with col2:
         y=[g.metrics.sharpe_ratio for g in leaderboard],
         marker_color=[GRADE_COLORS[g.grade.value] for g in leaderboard],
     ))
-    fig2.update_layout(title="Sharpe Ratio", xaxis_title="Model",
+    fig2.update_layout(title="Sharpe Ratio", xaxis_title="Strategy",
                        yaxis_title="Sharpe")
     st.plotly_chart(fig2, use_container_width=True)

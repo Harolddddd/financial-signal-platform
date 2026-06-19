@@ -1,7 +1,9 @@
+# dashboard/config.py
 from pathlib import Path
 
 PARQUET_DIR  = Path("data/features")
-REGISTRY_DIR = Path("data/registry")
+
+OHLCV_COLS = ["open", "high", "low", "close", "volume"]
 
 FEATURE_COLS = [
     "sma_10", "sma_20", "sma_50", "sma_200", "ema_12", "ema_26",

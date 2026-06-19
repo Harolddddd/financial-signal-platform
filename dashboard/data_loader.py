@@ -1,13 +1,16 @@
+# dashboard/data_loader.py
 from __future__ import annotations
 from pathlib import Path
 import logging
 
+import polars as pl
+
 from src.backtesting.grader import ModelGrade, grade_model, build_leaderboard
-from src.backtesting.walk_forward import WalkForwardBacktestResult, walk_forward_backtest
+from src.backtesting.walk_forward import WalkForwardBacktestResult
+from src.backtesting.strategy_runner import walk_forward_backtest_strategy
 from src.features.duckdb_client import load_training_data
-from src.models.registry import list_models, load_model
-from src.signals.signal_engine import Signal, generate_signals
-from src.explainability.xai import attach_explanations
+from src.strategies.base import LiveSignal, Signal
+from src.strategies.registry import list_strategies, load_strategy
 
 logger = logging.getLogger(__name__)
 
@@ -27,54 +30,81 @@ def get_data_summary(parquet_dir: Path) -> dict:
 
 
 def get_leaderboard(
-    registry_dir: Path,
     parquet_dir: Path,
+    ohlcv_cols: list[str],
     feature_cols: list[str],
 ) -> list[ModelGrade]:
-    records = list_models(registry_dir)
-    if not records:
+    names = list_strategies()
+    if not names:
         return []
 
     df = load_training_data(parquet_dir)
     grades: list[ModelGrade] = []
-    for record in records:
+    for name in names:
         try:
-            model = load_model(record.model_name, registry_dir)
-            result = walk_forward_backtest(
-                df, model, feature_cols,
+            strategy = load_strategy(name)
+            result = walk_forward_backtest_strategy(
+                df, strategy, ohlcv_cols, feature_cols,
                 train_window_days=400, test_window_days=21, step_days=21,
             )
             avg_metrics = result.folds[-1].metrics
-            grades.append(grade_model(record.model_name, avg_metrics))
+            grades.append(grade_model(name, avg_metrics))
         except Exception as e:
-            logger.warning("Leaderboard skipping %s: %s", record.model_name, e)
+            logger.warning("Leaderboard skipping %s: %s", name, e)
 
     return build_leaderboard(grades)
 
 
 def get_backtest_result(
-    model_name: str,
-    registry_dir: Path,
+    strategy_name: str,
     parquet_dir: Path,
+    ohlcv_cols: list[str],
     feature_cols: list[str],
 ) -> tuple[WalkForwardBacktestResult, ModelGrade]:
-    model = load_model(model_name, registry_dir)
+    strategy = load_strategy(strategy_name)
     df = load_training_data(parquet_dir)
-    result = walk_forward_backtest(df, model, feature_cols)
-    grade = grade_model(model_name, result.folds[-1].metrics)
+    result = walk_forward_backtest_strategy(
+        df, strategy, ohlcv_cols, feature_cols,
+        train_window_days=400, test_window_days=21, step_days=21,
+    )
+    grade = grade_model(strategy_name, result.folds[-1].metrics)
     return result, grade
 
 
 def get_live_signals(
-    registry_dir: Path,
     parquet_dir: Path,
+    ohlcv_cols: list[str],
     feature_cols: list[str],
     confidence_threshold: float = 0.75,
-) -> list[Signal]:
-    records = list_models(registry_dir)
-    if not records:
+) -> list[LiveSignal]:
+    names = list_strategies()
+    if not names:
         return []
-    model = load_model(records[0].model_name, registry_dir)
+
+    strategy = load_strategy(names[0])
     df = load_training_data(parquet_dir)
-    signals = generate_signals(model, df, feature_cols, confidence_threshold)
-    return attach_explanations(signals, model, df, feature_cols)
+    df_pd = df.to_pandas()
+
+    strategy.fit(df_pd)
+    pred = strategy.predict(df_pd)
+
+    df_with_pred = df.with_columns([
+        pl.Series("_conf", pred.confidence.tolist()),
+        pl.Series("_sig",  pred.signal.tolist()),
+    ])
+    latest = df_with_pred.sort("time").group_by("ticker").last()
+
+    live_signals: list[LiveSignal] = []
+    for row in latest.iter_rows(named=True):
+        conf = float(row["_conf"])
+        sig  = str(row["_sig"])
+        if sig == "Buy" and conf >= confidence_threshold:
+            live_signals.append(LiveSignal(
+                ticker=str(row["ticker"]),
+                date=str(row["time"]),
+                signal=Signal.BUY,
+                confidence=conf,
+                entry_price=float(row["close"]),
+                position_size=conf,
+            ))
+    return live_signals

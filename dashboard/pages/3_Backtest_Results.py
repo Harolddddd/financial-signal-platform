@@ -1,24 +1,24 @@
+# dashboard/pages/3_Backtest_Results.py
 import streamlit as st
 import plotly.graph_objects as go
-from dashboard.config import PARQUET_DIR, REGISTRY_DIR, FEATURE_COLS, GRADE_COLORS
+from dashboard.config import PARQUET_DIR, OHLCV_COLS, FEATURE_COLS, GRADE_COLORS
 from dashboard.data_loader import get_backtest_result
-from src.models.registry import list_models
+from src.strategies.registry import list_strategies
 
 st.set_page_config(page_title="Backtest Results", layout="wide")
 st.header("Backtest Results")
 
-records = list_models(REGISTRY_DIR)
-if not records:
-    st.warning("No models in registry.")
+strategy_names = list_strategies()
+if not strategy_names:
+    st.warning("No strategies in registry. Check src/strategies/strategies.yaml.")
     st.stop()
 
-model_names = [r.model_name for r in records]
-selected = st.selectbox("Select model", model_names)
+selected = st.selectbox("Select strategy", strategy_names)
 
 
 @st.cache_data(ttl=1800)
-def _backtest(model_name: str):
-    return get_backtest_result(model_name, REGISTRY_DIR, PARQUET_DIR, FEATURE_COLS)
+def _backtest(strategy_name: str):
+    return get_backtest_result(strategy_name, PARQUET_DIR, OHLCV_COLS, FEATURE_COLS)
 
 
 with st.spinner(f"Running walk-forward backtest for {selected}..."):
