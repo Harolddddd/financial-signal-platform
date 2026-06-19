@@ -28,7 +28,13 @@ class LogisticStrategy(Strategy):
         X = df[self._feature_cols].to_numpy()
         proba = self._model.predict_proba(X)
         classes = list(self._model.classes_)
-        buy_idx = classes.index("Buy") if "Buy" in classes else 0
+        if "Buy" not in classes:
+            n = len(df)
+            return PredictionResult(
+                confidence=pd.Series([0.0] * n),
+                signal=pd.Series(["Hold"] * n),
+            )
+        buy_idx = classes.index("Buy")
         confidence = pd.Series(proba[:, buy_idx])
         signal = pd.Series(["Buy" if c >= 0.6 else "Hold" for c in confidence])
         return PredictionResult(confidence=confidence, signal=signal)

@@ -6,6 +6,7 @@ import logging
 import polars as pl
 
 from src.backtesting.grader import ModelGrade, grade_model, build_leaderboard
+from src.backtesting.metrics import BacktestMetrics
 from src.backtesting.walk_forward import WalkForwardBacktestResult
 from src.backtesting.strategy_runner import walk_forward_backtest_strategy
 from src.features.duckdb_client import load_training_data
@@ -47,7 +48,18 @@ def get_leaderboard(
                 df, strategy, ohlcv_cols, feature_cols,
                 train_window_days=400, test_window_days=21, step_days=21,
             )
-            avg_metrics = result.folds[-1].metrics
+            avg_metrics = BacktestMetrics(
+                n_trades=sum(f.n_trades for f in result.folds),
+                win_rate=result.mean_win_rate,
+                profit_factor=0.0,
+                total_return_pct=0.0,
+                sharpe_ratio=result.mean_sharpe,
+                max_drawdown_pct=result.worst_drawdown,
+                precision_buy=result.mean_precision_buy,
+                recall_buy=0.0,
+                f1_buy=0.0,
+                accuracy=0.0,
+            )
             grades.append(grade_model(name, avg_metrics))
         except Exception as e:
             logger.warning("Leaderboard skipping %s: %s", name, e)
@@ -67,7 +79,19 @@ def get_backtest_result(
         df, strategy, ohlcv_cols, feature_cols,
         train_window_days=400, test_window_days=21, step_days=21,
     )
-    grade = grade_model(strategy_name, result.folds[-1].metrics)
+    avg_metrics = BacktestMetrics(
+        n_trades=sum(f.n_trades for f in result.folds),
+        win_rate=result.mean_win_rate,
+        profit_factor=0.0,
+        total_return_pct=0.0,
+        sharpe_ratio=result.mean_sharpe,
+        max_drawdown_pct=result.worst_drawdown,
+        precision_buy=result.mean_precision_buy,
+        recall_buy=0.0,
+        f1_buy=0.0,
+        accuracy=0.0,
+    )
+    grade = grade_model(strategy_name, avg_metrics)
     return result, grade
 
 
@@ -85,14 +109,17 @@ def get_live_signals(
     df = load_training_data(parquet_dir)
     df_pd = df.to_pandas()
 
-    strategy.fit(df_pd)
+    # Fit only on historical data (exclude last 21 rows) to avoid in-sample predictions
+    # for statistical strategies. Rule-based strategies ignore fit() so this is safe.
+    train_cutoff = max(0, len(df_pd) - 21)
+    strategy.fit(df_pd.iloc[:train_cutoff])
     pred = strategy.predict(df_pd)
 
     df_with_pred = df.with_columns([
         pl.Series("_conf", pred.confidence.tolist()),
         pl.Series("_sig",  pred.signal.tolist()),
     ])
-    latest = df_with_pred.sort("time").group_by("ticker").last()
+    latest = df_with_pred.sort("time").group_by("ticker", maintain_order=True).last()
 
     live_signals: list[LiveSignal] = []
     for row in latest.iter_rows(named=True):

@@ -11,6 +11,21 @@ from src.backtesting.walk_forward import FoldBacktestResult, WalkForwardBacktest
 logger = logging.getLogger(__name__)
 
 _REQUIRED = {"time", "close", "label", "forward_return_5d"}
+_REQUIRED_PASS_COLS = {"time", "ticker", "close", "label", "forward_return_5d"}
+
+
+def _select_cols(
+    df: pl.DataFrame,
+    strategy: Strategy,
+    ohlcv_cols: list[str],
+    feature_cols: list[str],
+) -> pl.DataFrame:
+    if strategy.data_source == "ohlcv":
+        keep = list(_REQUIRED_PASS_COLS | set(ohlcv_cols))
+    else:
+        keep = list(_REQUIRED_PASS_COLS | set(feature_cols))
+    available = [c for c in keep if c in df.columns]
+    return df.select(available)
 
 
 def walk_forward_backtest_strategy(
@@ -54,8 +69,8 @@ def walk_forward_backtest_strategy(
             continue
 
         try:
-            train_pd = train_df.to_pandas()
-            test_pd  = test_df.to_pandas()
+            train_pd = _select_cols(train_df, strategy, ohlcv_cols, feature_cols).to_pandas()
+            test_pd  = _select_cols(test_df,  strategy, ohlcv_cols, feature_cols).to_pandas()
             strategy.fit(train_pd)
             result = strategy.predict(test_pd)
             trades = _build_trades(test_df, result, confidence_threshold)
