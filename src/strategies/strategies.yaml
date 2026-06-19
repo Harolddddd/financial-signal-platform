@@ -1,0 +1,37 @@
+strategies:
+  - name: ma_crossover
+    class: src.strategies.rule_based.ma_crossover.MACrossover
+    params:
+      fast_window: 20
+      slow_window: 50
+
+  - name: rsi_threshold
+    class: src.strategies.rule_based.rsi.RSIThreshold
+    params:
+      period: 14
+      oversold: 30
+      overbought: 70
+
+  - name: macd_signal
+    class: src.strategies.rule_based.macd.MACDSignal
+    params:
+      fast: 12
+      slow: 26
+      signal_period: 9
+
+  - name: bollinger_bounce
+    class: src.strategies.rule_based.bollinger.BollingerBounce
+    params:
+      window: 20
+      num_std: 2.0
+
+  - name: logistic_regression
+    class: src.strategies.statistical.logistic.LogisticStrategy
+    params:
+      C: 1.0
+      max_iter: 200
+
+  - name: linear_regression
+    class: src.strategies.statistical.linear.LinearStrategy
+    params:
+      buy_threshold: 0.005
