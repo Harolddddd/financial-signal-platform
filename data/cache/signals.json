@@ -1,0 +1,141 @@
+{
+  "generated_at": "2026-07-07T18:33:27.570570+00:00",
+  "signals": [
+    {
+      "ticker": "AAPL",
+      "date": "2020-12-21 19:00:00-05:00",
+      "signal": "Buy",
+      "confidence": 0.6691517540782671,
+      "entry_price": 131.8800048828125,
+      "position_size": 0.6691517540782671
+    },
+    {
+      "ticker": "BRK-B",
+      "date": "2020-12-21 19:00:00-05:00",
+      "signal": "Buy",
+      "confidence": 0.6568389819293416,
+      "entry_price": 221.8800048828125,
+      "position_size": 0.6568389819293416
+    },
+    {
+      "ticker": "JNJ",
+      "date": "2020-12-21 19:00:00-05:00",
+      "signal": "Buy",
+      "confidence": 0.41214510230842244,
+      "entry_price": 152.72000122070312,
+      "position_size": 0.41214510230842244
+    },
+    {
+      "ticker": "JPM",
+      "date": "2020-12-21 19:00:00-05:00",
+      "signal": "Buy",
+      "confidence": 1.0,
+      "entry_price": 121.66999816894531,
+      "position_size": 1.0
+    },
+    {
+      "ticker": "LLY",
+      "date": "2020-12-21 19:00:00-05:00",
+      "signal": "Buy",
+      "confidence": 1.0,
+      "entry_price": 166.72000122070312,
+      "position_size": 1.0
+    },
+    {
+      "ticker": "MSFT",
+      "date": "2020-12-21 19:00:00-05:00",
+      "signal": "Buy",
+      "confidence": 0.10450968590852029,
+      "entry_price": 223.94000244140625,
+      "position_size": 0.10450968590852029
+    },
+    {
+      "ticker": "ORCL",
+      "date": "2020-12-21 19:00:00-05:00",
+      "signal": "Buy",
+      "confidence": 0.57907014521695,
+      "entry_price": 65.1500015258789,
+      "position_size": 0.57907014521695
+    },
+    {
+      "ticker": "TSM",
+      "date": "2020-12-21 19:00:00-05:00",
+      "signal": "Buy",
+      "confidence": 1.0,
+      "entry_price": 103.94000244140625,
+      "position_size": 1.0
+    },
+    {
+      "ticker": "UNH",
+      "date": "2020-12-21 19:00:00-05:00",
+      "signal": "Buy",
+      "confidence": 0.2502147569467139,
+      "entry_price": 335.010009765625,
+      "position_size": 0.2502147569467139
+    },
+    {
+      "ticker": "WMT",
+      "date": "2020-12-21 19:00:00-05:00",
+      "signal": "Buy",
+      "confidence": 0.26032499341242543,
+      "entry_price": 48.06666564941406,
+      "position_size": 0.26032499341242543
+    },
+    {
+      "ticker": "XOM",
+      "date": "2020-12-21 19:00:00-05:00",
+      "signal": "Buy",
+      "confidence": 1.0,
+      "entry_price": 41.2400016784668,
+      "position_size": 1.0
+    },
+    {
+      "ticker": "GOOGL",
+      "date": "2020-12-21 19:00:00-05:00",
+      "signal": "Buy",
+      "confidence": 0.7944701795061208,
+      "entry_price": 86.01100158691406,
+      "position_size": 0.7944701795061208
+    },
+    {
+      "ticker": "MA",
+      "date": "2020-12-21 19:00:00-05:00",
+      "signal": "Buy",
+      "confidence": 0.45518996897290004,
+      "entry_price": 332.239990234375,
+      "position_size": 0.45518996897290004
+    },
+    {
+      "ticker": "V",
+      "date": "2020-12-21 19:00:00-05:00",
+      "signal": "Buy",
+      "confidence": 0.5763597631806224,
+      "entry_price": 205.83999633789062,
+      "position_size": 0.5763597631806224
+    },
+    {
+      "ticker": "AVGO",
+      "date": "2020-12-21 19:00:00-05:00",
+      "signal": "Buy",
+      "confidence": 1.0,
+      "entry_price": 43.310001373291016,
+      "position_size": 1.0
+    },
+    {
+      "ticker": "TSLA",
+      "date": "2020-12-21 19:00:00-05:00",
+      "signal": "Buy",
+      "confidence": 1.0,
+      "entry_price": 213.44667053222656,
+      "position_size": 1.0
+    },
+    {
+      "ticker": "META",
+      "date": "2020-12-21 19:00:00-05:00",
+      "signal": "Buy",
+      "confidence": 0.13467204407765784,
+      "entry_price": 267.0899963378906,
+      "position_size": 0.13467204407765784
+    }
+  ]
+}

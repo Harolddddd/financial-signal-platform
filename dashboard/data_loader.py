@@ -1,13 +1,14 @@
 # dashboard/data_loader.py
 from __future__ import annotations
-from pathlib import Path
+import json
 import logging
+from pathlib import Path
 
 import polars as pl
 
-from src.backtesting.grader import ModelGrade, grade_model, build_leaderboard
+from src.backtesting.grader import Grade, ModelGrade, grade_model, build_leaderboard
 from src.backtesting.metrics import BacktestMetrics
-from src.backtesting.walk_forward import WalkForwardBacktestResult
+from src.backtesting.walk_forward import FoldBacktestResult, WalkForwardBacktestResult
 from src.backtesting.strategy_runner import walk_forward_backtest_strategy
 from src.features.duckdb_client import load_training_data
 from src.strategies.base import LiveSignal, Signal
@@ -15,8 +16,59 @@ from src.strategies.registry import list_strategies, load_strategy
 
 logger = logging.getLogger(__name__)
 
+CACHE_DIR = Path("data/cache")
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _load_cache(path: Path) -> dict | None:
+    if path.exists():
+        try:
+            return json.loads(path.read_text())
+        except Exception as exc:
+            logger.warning("Cache read failed (%s): %s — falling back to live compute", path, exc)
+    return None
+
+
+def _metrics_from_dict(d: dict) -> BacktestMetrics:
+    return BacktestMetrics(
+        n_trades=d["n_trades"],
+        win_rate=d["win_rate"],
+        profit_factor=d["profit_factor"],
+        total_return_pct=d["total_return_pct"],
+        sharpe_ratio=d["sharpe_ratio"],
+        max_drawdown_pct=d["max_drawdown_pct"],
+        precision_buy=d["precision_buy"],
+        recall_buy=d["recall_buy"],
+        f1_buy=d["f1_buy"],
+        accuracy=d["accuracy"],
+    )
+
+
+def _grade_from_dict(d: dict) -> ModelGrade:
+    return ModelGrade(
+        model_name=d["model_name"],
+        grade=Grade(d["grade"]),
+        composite_score=d["composite_score"],
+        metrics=_metrics_from_dict(d["metrics"]),
+    )
+
+
+def _safe(name: str) -> str:
+    return name.replace(" ", "_").replace("/", "_")
+
+
+# ---------------------------------------------------------------------------
+# Public API — each function tries the cache first, falls back to live compute
+# ---------------------------------------------------------------------------
 
 def get_data_summary(parquet_dir: Path) -> dict:
+    cached = _load_cache(CACHE_DIR / "data_summary.json")
+    if cached:
+        return cached
+
     df = load_training_data(parquet_dir)
     tickers = df["ticker"].unique().to_list() if "ticker" in df.columns else []
     time_min = str(df["time"].min()) if "time" in df.columns else "N/A"
@@ -35,6 +87,10 @@ def get_leaderboard(
     ohlcv_cols: list[str],
     feature_cols: list[str],
 ) -> list[ModelGrade]:
+    cached = _load_cache(CACHE_DIR / "leaderboard.json")
+    if cached:
+        return [_grade_from_dict(g) for g in cached["grades"]]
+
     names = list_strategies()
     if not names:
         return []
@@ -73,6 +129,29 @@ def get_backtest_result(
     ohlcv_cols: list[str],
     feature_cols: list[str],
 ) -> tuple[WalkForwardBacktestResult, ModelGrade]:
+    cached = _load_cache(CACHE_DIR / f"backtest_{_safe(strategy_name)}.json")
+    if cached:
+        folds = [
+            FoldBacktestResult(
+                fold=f["fold"],
+                train_start=f["train_start"],
+                train_end=f["train_end"],
+                test_start=f["test_start"],
+                test_end=f["test_end"],
+                metrics=_metrics_from_dict(f["metrics"]),
+                n_trades=f["n_trades"],
+            )
+            for f in cached["folds"]
+        ]
+        wf = WalkForwardBacktestResult(
+            folds=folds,
+            mean_sharpe=cached["mean_sharpe"],
+            mean_win_rate=cached["mean_win_rate"],
+            mean_precision_buy=cached["mean_precision_buy"],
+            worst_drawdown=cached["worst_drawdown"],
+        )
+        return wf, _grade_from_dict(cached["grade"])
+
     strategy = load_strategy(strategy_name)
     df = load_training_data(parquet_dir)
     result = walk_forward_backtest_strategy(
@@ -101,6 +180,22 @@ def get_live_signals(
     feature_cols: list[str],
     confidence_threshold: float = 0.75,
 ) -> list[LiveSignal]:
+    cached = _load_cache(CACHE_DIR / "signals.json")
+    if cached:
+        # Cache stores all signals at threshold=0; filter here so the slider works.
+        return [
+            LiveSignal(
+                ticker=s["ticker"],
+                date=s["date"],
+                signal=Signal(s["signal"]),
+                confidence=s["confidence"],
+                entry_price=s["entry_price"],
+                position_size=s["position_size"],
+            )
+            for s in cached["signals"]
+            if s["signal"] == "Buy" and s["confidence"] >= confidence_threshold
+        ]
+
     names = list_strategies()
     if not names:
         return []
@@ -109,8 +204,6 @@ def get_live_signals(
     df = load_training_data(parquet_dir)
     df_pd = df.to_pandas()
 
-    # Fit only on historical data (exclude last 21 rows) to avoid in-sample predictions
-    # for statistical strategies. Rule-based strategies ignore fit() so this is safe.
     train_cutoff = max(0, len(df_pd) - 21)
     strategy.fit(df_pd.iloc[:train_cutoff])
     pred = strategy.predict(df_pd)

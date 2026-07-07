@@ -1,0 +1,29 @@
+{
+  "n_tickers": 20,
+  "n_rows": 92565,
+  "tickers": [
+    "AAPL",
+    "AMZN",
+    "AVGO",
+    "BRK-B",
+    "GOOGL",
+    "HD",
+    "JNJ",
+    "JPM",
+    "LLY",
+    "MA",
+    "META",
+    "MSFT",
+    "NVDA",
+    "ORCL",
+    "TSLA",
+    "TSM",
+    "UNH",
+    "V",
+    "WMT",
+    "XOM"
+  ],
+  "date_range_start": "2000-01-02 19:00:00-05:00",
+  "date_range_end": "2020-12-21 19:00:00-05:00",
+  "generated_at": "2026-07-07T18:32:08.558039+00:00"
+}
