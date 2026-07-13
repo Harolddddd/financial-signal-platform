@@ -2,6 +2,7 @@
 from pathlib import Path
 
 PARQUET_DIR  = Path("data/features")
+REGISTRY_DIR = Path("data/registry")
 
 OHLCV_COLS = ["open", "high", "low", "close", "volume"]
 

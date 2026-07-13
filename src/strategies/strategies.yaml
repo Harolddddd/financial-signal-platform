@@ -35,3 +35,138 @@ strategies:
     class: src.strategies.statistical.linear.LinearStrategy
     params:
       buy_threshold: 0.005
+
+  - name: stochastic_oscillator
+    class: src.strategies.rule_based.stochastic.StochasticOscillator
+    params:
+      k_period: 14
+      d_period: 3
+      oversold: 20.0
+
+  - name: cci
+    class: src.strategies.rule_based.cci.CCIStrategy
+    params:
+      period: 20
+      oversold: -100.0
+
+  - name: williams_r
+    class: src.strategies.rule_based.williams_r.WilliamsR
+    params:
+      period: 14
+      oversold: -80.0
+
+  - name: donchian_breakout
+    class: src.strategies.rule_based.donchian_breakout.DonchianBreakout
+    params:
+      period: 20
+
+  - name: obv_trend
+    class: src.strategies.rule_based.obv_trend.OBVTrend
+    params:
+      obv_window: 20
+      price_window: 5
+
+  - name: mean_reversion
+    class: src.strategies.rule_based.mean_reversion.MeanReversion
+    params:
+      window: 60
+      z_threshold: -1.5
+
+  - name: momentum
+    class: src.strategies.rule_based.momentum.MomentumStrategy
+    params:
+      period: 20
+      threshold: 0.03
+
+  - name: triple_ma
+    class: src.strategies.rule_based.triple_ma.TripleMAFilter
+    params:
+      short: 10
+      mid: 50
+      long: 200
+
+  - name: ridge_regression
+    class: src.strategies.statistical.ridge.RidgeStrategy
+    params:
+      alpha: 1.0
+      buy_threshold: 0.005
+
+  - name: gradient_boosting
+    class: src.strategies.statistical.gradient_boosting.GradientBoostingStrategy
+    params:
+      max_iter: 100
+      max_depth: 3
+      learning_rate: 0.1
+
+  - name: rsi_macd_combo
+    class: src.strategies.rule_based.rsi_macd_combo.RSIMACDCombo
+    params:
+      rsi_period: 14
+      rsi_oversold: 35.0
+      macd_fast: 12
+      macd_slow: 26
+      macd_signal: 9
+
+  - name: bollinger_rsi_combo
+    class: src.strategies.rule_based.bollinger_rsi_combo.BollingerRSICombo
+    params:
+      bb_window: 20
+      bb_std: 2.0
+      rsi_period: 14
+      rsi_max: 45.0
+
+  - name: ma_volume_confirm
+    class: src.strategies.rule_based.ma_volume_confirm.MAVolumeConfirm
+    params:
+      fast: 20
+      slow: 50
+      vol_window: 20
+      vol_multiplier: 1.5
+
+  - name: parabolic_sar
+    class: src.strategies.rule_based.parabolic_sar.ParabolicSAR
+    params:
+      af_start: 0.02
+      af_step: 0.02
+      af_max: 0.2
+
+  - name: keltner_breakout
+    class: src.strategies.rule_based.keltner_breakout.KeltnerBreakout
+    params:
+      ema_period: 20
+      atr_period: 14
+      multiplier: 2.0
+
+  - name: dema_crossover
+    class: src.strategies.rule_based.dema_crossover.DEMACrossover
+    params:
+      fast: 10
+      slow: 30
+
+  - name: elder_ray
+    class: src.strategies.rule_based.elder_ray.ElderRay
+    params:
+      period: 13
+
+  - name: pvt_trend
+    class: src.strategies.rule_based.pvt_trend.PVTTrend
+    params:
+      pvt_window: 20
+      price_window: 5
+
+  - name: atr_breakout
+    class: src.strategies.rule_based.atr_breakout.ATRBreakout
+    params:
+      lookback: 10
+      atr_period: 14
+      atr_multiplier: 0.5
+
+  - name: trend_pullback
+    class: src.strategies.rule_based.trend_pullback.TrendPullback
+    params:
+      short: 10
+      mid: 50
+      long: 200
+      rsi_period: 14
+      rsi_low: 35.0
+      rsi_high: 50.0

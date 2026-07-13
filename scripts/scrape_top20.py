@@ -10,15 +10,46 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 logger = logging.getLogger(__name__)
 
 TICKERS: list[str] = [
+    # Mega-cap tech
     "AAPL", "MSFT", "NVDA", "AMZN", "GOOGL",
-    "META", "TSLA", "BRK-B", "AVGO", "TSM",
-    "JPM", "LLY", "V", "WMT", "UNH",
-    "XOM", "MA", "ORCL", "JNJ", "HD",
+    "META", "TSLA", "AVGO", "TSM", "ORCL",
+    "ADBE", "CRM", "AMD", "INTC", "QCOM",
+    "TXN", "NOW", "AMAT", "MU", "LRCX",
+    # Financials
+    "JPM", "V", "MA", "BAC", "WFC",
+    "GS", "MS", "BLK", "AXP", "C",
+    # Healthcare
+    "UNH", "LLY", "JNJ", "PFE", "ABT",
+    "MRK", "AMGN", "TMO", "ISRG", "GILD",
+    # Consumer & Retail
+    "WMT", "HD", "COST", "PG", "KO",
+    "PEP", "NKE", "MCD", "SBUX", "TGT",
+    # Energy & Industrials
+    "XOM", "CVX", "CAT", "HON", "RTX",
+    "NEE", "LIN", "DE", "UPS", "GE",
+    # Communication & Media
+    "DIS", "NFLX", "T", "VZ", "CMCSA",
+    # Other large-caps
+    "BRK-B", "BX",
+    # Cybersecurity & Cloud
+    "PANW", "CRWD", "SNOW", "PLTR", "ZS",
+    # Financials (extended)
+    "SCHW", "COF", "USB", "ICE", "SPGI",
+    # Healthcare (extended)
+    "REGN", "VRTX", "CVS", "CI", "ZBH",
+    # Consumer (extended)
+    "LOW", "LULU", "ROST",
+    # Energy (extended)
+    "SLB", "EOG",
+    # Industrials / Defense / Transport
+    "LMT", "NOC", "FDX",
+    # Semiconductors
+    "MRVL", "ARM",
 ]
 BENCHMARK_TICKERS: list[str] = ["SPY", "^VIX"]
 
-START = datetime(2000, 1, 1, tzinfo=timezone.utc)
-END   = datetime(2020, 12, 31, tzinfo=timezone.utc)
+START = datetime(1990, 1, 1, tzinfo=timezone.utc)
+END   = datetime.now(tz=timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
 
 _OUTPUT_DIR = Path("data/raw/ohlcv")
 
