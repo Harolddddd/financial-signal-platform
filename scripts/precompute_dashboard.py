@@ -15,10 +15,10 @@ from pathlib import Path
 from dashboard.config import CONFIDENCE_THRESHOLD, FEATURE_COLS, OHLCV_COLS, PARQUET_DIR
 from dashboard.data_loader import (
     get_backtest_result,
-    get_data_summary,
     get_leaderboard,
     get_live_signals,
 )
+from src.features.duckdb_client import load_training_data
 from src.strategies.registry import list_strategies
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -60,8 +60,17 @@ def _safe(name: str) -> str:
 
 def step_data_summary() -> None:
     logger.info("[1/4] data summary")
-    summary = get_data_summary(PARQUET_DIR)
-    summary["generated_at"] = _now()
+    # Read directly from parquets — never read from cache here, that defeats the purpose.
+    df = load_training_data(PARQUET_DIR)
+    tickers = sorted(df["ticker"].unique().to_list()) if "ticker" in df.columns else []
+    summary = {
+        "n_tickers": len(tickers),
+        "n_rows": len(df),
+        "tickers": tickers,
+        "date_range_start": str(df["time"].min()) if "time" in df.columns else "N/A",
+        "date_range_end":   str(df["time"].max()) if "time" in df.columns else "N/A",
+        "generated_at": _now(),
+    }
     _write(CACHE_DIR / "data_summary.json", summary)
 
 
