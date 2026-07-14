@@ -43,8 +43,14 @@ def compute_metrics(trades: list[Trade]) -> BacktestMetrics:
     profit_factor = gross_profit / gross_loss if gross_loss > 0 else float("inf")
     total_return = float(returns.sum())
 
-    std = returns.std() if len(returns) > 1 else 1e-9
-    sharpe = float((returns.mean() / std) * np.sqrt(252 / 5)) if std > 0 else 0.0
+    # Require enough trades for std to be meaningful; cap to prevent fold outliers
+    # from dominating the cross-fold mean (tiny std on 1-2-trade folds → ∞).
+    if len(returns) < 5:
+        sharpe = 0.0
+    else:
+        std = float(returns.std())
+        raw = float((returns.mean() / std) * np.sqrt(252 / 5)) if std > 1e-6 else 0.0
+        sharpe = max(-5.0, min(5.0, raw))
 
     equity = np.cumprod(1 + returns)
     peak = np.maximum.accumulate(equity)

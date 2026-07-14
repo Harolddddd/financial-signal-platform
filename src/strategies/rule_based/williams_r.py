@@ -18,8 +18,9 @@ class WilliamsR(Strategy):
         wr = -100 * (high_max - df["close"]) / denom
 
         buy = wr < self.oversold
-        # Confidence: deeper below -80 = more oversold = stronger buy
-        confidence = ((self.oversold - wr) / abs(self.oversold)).clip(0, 1).fillna(0.0)
+        # Confidence: 0 at the oversold threshold, 1 at maximum oversold (-100).
+        # Range = 100 + oversold (e.g. 20 when oversold=-80).
+        confidence = ((self.oversold - wr) / (100.0 + self.oversold)).clip(0, 1).fillna(0.0)
         signal = pd.Series(["Buy" if b else "Hold" for b in buy.fillna(False)], index=df.index)
         return PredictionResult(confidence=confidence.reset_index(drop=True),
                                 signal=signal.reset_index(drop=True))

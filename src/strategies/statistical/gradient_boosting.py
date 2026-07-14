@@ -8,15 +8,16 @@ _META = {"time", "ticker", "label", "forward_return_5d"}
 
 
 class GradientBoostingStrategy(Strategy):
-    # Uses HistGradientBoostingClassifier which natively handles NaN values.
     data_source = "features"
+    handles_nan = True  # HistGBT natively handles NaN; skip dropna() in the runner
 
-    def __init__(self, max_iter: int = 100, max_depth: int = 3, learning_rate: float = 0.1) -> None:
+    def __init__(self, max_iter: int = 50, max_depth: int = 3, learning_rate: float = 0.1) -> None:
         self.max_iter = max_iter
         self.max_depth = max_depth
         self.learning_rate = learning_rate
         self._model = HistGradientBoostingClassifier(
-            max_iter=max_iter, max_depth=max_depth, learning_rate=learning_rate
+            max_iter=max_iter, max_depth=max_depth, learning_rate=learning_rate,
+            early_stopping=False,
         )
         self._feature_cols: list[str] = []
 

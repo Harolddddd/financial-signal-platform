@@ -13,14 +13,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from dashboard.config import CONFIDENCE_THRESHOLD, FEATURE_COLS, OHLCV_COLS, PARQUET_DIR
-from dashboard.data_loader import (
-    get_backtest_result,
-    get_live_signals,
-)
-from src.backtesting.grader import Grade, ModelGrade
+from dashboard.data_loader import get_live_signals
+from src.backtesting.grader import grade_model
 from src.backtesting.metrics import BacktestMetrics
+from src.backtesting.strategy_runner import walk_forward_backtest_strategy
 from src.features.duckdb_client import load_training_data
-from src.strategies.registry import list_strategies
+from src.strategies.registry import list_strategies, load_strategy
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
@@ -96,11 +94,32 @@ def step_leaderboard() -> None:
 
 
 def step_backtests() -> None:
-    logger.info("[2/4] per-strategy backtests")
+    logger.info("[2/4] per-strategy backtests — running walk-forward fresh (no cache read)")
+    # Load data once; reuse across all strategies.
+    df = load_training_data(PARQUET_DIR)
     for name in list_strategies():
         logger.info("  strategy: %s", name)
         try:
-            wf, grade = get_backtest_result(name, PARQUET_DIR, OHLCV_COLS, FEATURE_COLS)
+            strategy = load_strategy(name)
+            wf = walk_forward_backtest_strategy(
+                df, strategy, OHLCV_COLS, FEATURE_COLS,
+                train_window_days=400, test_window_days=21, step_days=21,
+            )
+            # Aggregate across all folds for the grade.
+            total_trades = sum(f.n_trades for f in wf.folds)
+            avg_metrics = BacktestMetrics(
+                n_trades=total_trades,
+                win_rate=wf.mean_win_rate,
+                profit_factor=0.0,
+                total_return_pct=0.0,
+                sharpe_ratio=wf.mean_sharpe,
+                max_drawdown_pct=wf.worst_drawdown,
+                precision_buy=wf.mean_precision_buy,
+                recall_buy=0.0,
+                f1_buy=0.0,
+                accuracy=0.0,
+            )
+            g = grade_model(name, avg_metrics)
             _write(CACHE_DIR / f"backtest_{_safe(name)}.json", {
                 "generated_at": _now(),
                 "strategy_name": name,
@@ -109,10 +128,10 @@ def step_backtests() -> None:
                 "mean_precision_buy": wf.mean_precision_buy,
                 "worst_drawdown": wf.worst_drawdown,
                 "grade": {
-                    "model_name": grade.model_name,
-                    "grade": grade.grade.value,
-                    "composite_score": grade.composite_score,
-                    "metrics": _metrics_dict(grade.metrics),
+                    "model_name": g.model_name,
+                    "grade": g.grade.value,
+                    "composite_score": g.composite_score,
+                    "metrics": _metrics_dict(g.metrics),
                 },
                 "folds": [
                     {
@@ -127,6 +146,8 @@ def step_backtests() -> None:
                     for f in wf.folds
                 ],
             })
+            logger.info("    trades=%d  sharpe=%.3f  prec_buy=%.3f  grade=%s",
+                        total_trades, wf.mean_sharpe, wf.mean_precision_buy, g.grade.value)
         except Exception as exc:
             logger.error("  FAILED %s: %s", name, exc)
 
