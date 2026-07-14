@@ -54,8 +54,30 @@ Plan 4 — Backtest + Signals + Dashboard
   ↓  A–D grades, live signals → Streamlit at localhost:8501
 ```
 
-**Label Schema:** 5-day forward return → Buy (>+2%) / Hold / Sell (<-2%)  
-**Grading Formula:** `precision_buy × 0.40 + tanh(sharpe/2) × 0.30 + (1 − norm_drawdown) × 0.30`
+**Label Schema:** 5-day forward return → Buy (>+2%) / Hold / Sell (<-2%)
+
+**Grading Formula:**
+```
+composite_score = 0.40 × precision_buy
+               + 0.30 × tanh(sharpe_ratio / 2)
+               + 0.30 × (1 − min(max_drawdown, 50%) / 50%)
+```
+
+| Component | Weight | What it measures |
+|-----------|--------|-----------------|
+| Precision Buy | 40% | Of all "Buy" signals fired, fraction where the stock actually rose >2% over the next 5 days. Primary signal quality metric. |
+| Sharpe Ratio | 30% | Risk-adjusted return, squashed through tanh(x/2) to keep it bounded 0–1 regardless of magnitude. |
+| Max Drawdown | 30% | Worst peak-to-trough loss during backtesting, normalized against a 50% worst-case cap. Lower drawdown → higher score. |
+
+**Grade Thresholds:**
+| Grade | Score Range | Interpretation |
+|-------|-------------|----------------|
+| A | ≥ 0.65 | High-quality signal; precision and risk profile both strong |
+| B | ≥ 0.50 | Above average; usable with moderate confidence |
+| C | ≥ 0.35 | Marginal; signal exists but risk-adjusted returns are weak |
+| D | < 0.35 | Poor; no reliable edge found in walk-forward testing |
+
+The 40/30/30 weighting reflects a long-only philosophy: getting Buy signals right (precision) matters most, with equal split between return efficiency and downside protection.
 
 ---
 
