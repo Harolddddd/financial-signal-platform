@@ -15,9 +15,10 @@ from pathlib import Path
 from dashboard.config import CONFIDENCE_THRESHOLD, FEATURE_COLS, OHLCV_COLS, PARQUET_DIR
 from dashboard.data_loader import (
     get_backtest_result,
-    get_leaderboard,
     get_live_signals,
 )
+from src.backtesting.grader import Grade, ModelGrade
+from src.backtesting.metrics import BacktestMetrics
 from src.features.duckdb_client import load_training_data
 from src.strategies.registry import list_strategies
 
@@ -75,24 +76,27 @@ def step_data_summary() -> None:
 
 
 def step_leaderboard() -> None:
-    logger.info("[2/4] leaderboard (walk-forward for all strategies)")
-    grades = get_leaderboard(PARQUET_DIR, OHLCV_COLS, FEATURE_COLS)
+    logger.info("[3/4] leaderboard — aggregating from per-strategy backtest caches")
+    # Build the leaderboard from the individual backtest files written in step_backtests().
+    # Never call get_leaderboard() here — it reads the old leaderboard.json and writes it back.
+    grades: list[dict] = []
+    for name in list_strategies():
+        cache_path = CACHE_DIR / f"backtest_{_safe(name)}.json"
+        if cache_path.exists():
+            d = json.loads(cache_path.read_text())
+            grades.append(d["grade"])
+        else:
+            logger.warning("  no backtest cache for %s — skipping from leaderboard", name)
+
+    grades.sort(key=lambda g: g["composite_score"], reverse=True)
     _write(CACHE_DIR / "leaderboard.json", {
         "generated_at": _now(),
-        "grades": [
-            {
-                "model_name": g.model_name,
-                "grade": g.grade.value,
-                "composite_score": g.composite_score,
-                "metrics": _metrics_dict(g.metrics),
-            }
-            for g in grades
-        ],
+        "grades": grades,
     })
 
 
 def step_backtests() -> None:
-    logger.info("[3/4] per-strategy backtests")
+    logger.info("[2/4] per-strategy backtests")
     for name in list_strategies():
         logger.info("  strategy: %s", name)
         try:
@@ -151,10 +155,10 @@ def step_signals() -> None:
 
 def main() -> None:
     logger.info("=== Precomputing dashboard cache → %s ===", CACHE_DIR)
-    step_data_summary()
-    step_leaderboard()
-    step_backtests()
-    step_signals()
+    step_data_summary()   # [1/4] parquet → data_summary.json
+    step_backtests()      # [2/4] per-strategy walk-forward → backtest_*.json
+    step_leaderboard()    # [3/4] aggregate backtest_*.json → leaderboard.json
+    step_signals()        # [4/4] live signals → signals.json
     logger.info("=== Done. Run: git add data/cache/ && git commit && git push ===")
 
 
