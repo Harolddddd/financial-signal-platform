@@ -12,11 +12,12 @@ import logging
 from datetime import datetime, timezone
 from pathlib import Path
 
+import polars as pl
+
 from dashboard.config import CONFIDENCE_THRESHOLD, FEATURE_COLS, OHLCV_COLS, PARQUET_DIR
-from dashboard.data_loader import get_live_signals
 from src.backtesting.grader import grade_model
 from src.backtesting.metrics import BacktestMetrics
-from src.backtesting.strategy_runner import walk_forward_backtest_strategy
+from src.backtesting.strategy_runner import _is_stateless, _select_cols, walk_forward_backtest_strategy
 from src.features.duckdb_client import load_training_data
 from src.strategies.registry import list_strategies, load_strategy
 
@@ -153,22 +154,74 @@ def step_backtests() -> None:
 
 
 def step_signals() -> None:
-    logger.info("[4/4] live signals (threshold=0.0 — store all, filter at display time)")
-    # Store at threshold=0.0 so the dashboard slider can re-filter without recomputing.
-    signals = get_live_signals(PARQUET_DIR, OHLCV_COLS, FEATURE_COLS, confidence_threshold=0.0)
+    logger.info("[4/4] live signals — computing fresh from all strategies (no cache read)")
+    df = load_training_data(PARQUET_DIR)
+    latest_date = df["time"].max()
+    has_ticker = "ticker" in df.columns
+    tickers: list[str] = sorted(df["ticker"].unique().to_list()) if has_ticker else ["__all__"]
+
+    # Pre-partition by ticker once.
+    ticker_pdfs: dict[str, dict] = {}
+    for ticker in tickers:
+        t_pl = df.filter(pl.col("ticker") == ticker) if has_ticker else df
+        ticker_pdfs[ticker] = t_pl  # keep as Polars for per-strategy column selection
+
+    all_signals: list[dict] = []
+    for name in list_strategies():
+        logger.info("  signals: %s", name)
+        try:
+            strategy = load_strategy(name)
+
+            if not _is_stateless(strategy):
+                # Fit on all data for a live signal (no train/test split needed).
+                train_pd = _select_cols(df, strategy, OHLCV_COLS, FEATURE_COLS).to_pandas()
+                if not getattr(strategy, "handles_nan", False):
+                    train_pd = train_pd.dropna()
+                if len(train_pd) < 100:
+                    logger.warning("  %s: too few rows after dropna, skipping", name)
+                    continue
+                strategy.fit(train_pd)
+
+            for ticker in tickers:
+                t_pd = _select_cols(ticker_pdfs[ticker], strategy, OHLCV_COLS, FEATURE_COLS).to_pandas()
+                if len(t_pd) == 0:
+                    continue
+                try:
+                    result = strategy.predict(t_pd)
+                except Exception as exc:
+                    logger.debug("  %s %s predict failed: %s", name, ticker, exc)
+                    continue
+
+                # Find the row matching the latest date.
+                if "time" not in t_pd.columns:
+                    continue
+                latest_rows = t_pd[t_pd["time"] == latest_date]
+                if latest_rows.empty:
+                    continue
+                pos = t_pd.index.get_loc(latest_rows.index[0])
+                if pos >= len(result.signal):
+                    continue
+
+                sig = str(result.signal.iloc[pos])
+                conf = float(result.confidence.iloc[pos])
+                close = float(t_pd["close"].iloc[pos]) if "close" in t_pd.columns else 0.0
+                all_signals.append({
+                    "ticker": ticker if ticker != "__all__" else "ALL",
+                    "date": str(latest_date),
+                    "signal": sig,
+                    "confidence": conf,
+                    "entry_price": close,
+                    "position_size": conf,
+                    "strategy": name,
+                })
+        except Exception as exc:
+            logger.error("  signals FAILED %s: %s", name, exc)
+
+    buy_count = sum(1 for s in all_signals if s["signal"] == "Buy")
+    logger.info("  total signals: %d  buy: %d", len(all_signals), buy_count)
     _write(CACHE_DIR / "signals.json", {
         "generated_at": _now(),
-        "signals": [
-            {
-                "ticker": s.ticker,
-                "date": s.date,
-                "signal": s.signal.value,
-                "confidence": s.confidence,
-                "entry_price": s.entry_price,
-                "position_size": s.position_size,
-            }
-            for s in signals
-        ],
+        "signals": all_signals,
     })
 
 
