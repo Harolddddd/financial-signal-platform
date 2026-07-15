@@ -170,3 +170,29 @@ strategies:
       rsi_period: 14
       rsi_low: 35.0
       rsi_high: 50.0
+
+  - name: random_forest
+    class: src.strategies.statistical.random_forest.RandomForestStrategy
+    params:
+      n_estimators: 100
+      max_depth: 10
+
+  - name: xgboost_strategy
+    class: src.strategies.statistical.xgboost_strategy.XGBoostStrategy
+    params:
+      n_estimators: 100
+      max_depth: 6
+      learning_rate: 0.1
+
+  - name: lightgbm_strategy
+    class: src.strategies.statistical.lightgbm_strategy.LightGBMStrategy
+    params:
+      n_estimators: 100
+      max_depth: 6
+      learning_rate: 0.1
+
+  - name: extra_trees
+    class: src.strategies.statistical.extra_trees.ExtraTreesStrategy
+    params:
+      n_estimators: 100
+      max_depth: 10
