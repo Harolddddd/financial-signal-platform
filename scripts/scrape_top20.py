@@ -45,10 +45,31 @@ TICKERS: list[str] = [
     "LMT", "NOC", "FDX",
     # Semiconductors
     "MRVL", "ARM",
+    # Sector & Index ETFs
+    "QQQ", "IWM", "XLK", "XLF", "XLE", "XLV", "XLI", "XLP", "GLD", "TLT",
+    # Healthcare (new)
+    "ABBV", "MDT", "BSX", "HUM", "SYK",
+    # Financials (new)
+    "CME", "PRU", "ADP", "TROW", "TRV",
+    # Energy / Industrials (new)
+    "OXY", "MPC", "PSX", "HAL", "NSC",
+    # Industrials (new)
+    "MMM", "ITW", "SWK", "GWW", "PH",
+    # Consumer Discretionary (new)
+    "BKNG", "TJX", "TDG", "DAL", "HLT",
+    # Consumer Staples (new)
+    "KMB", "PM", "KR", "SYY", "YUM",
+    # Real Estate / Utilities (new)
+    "PLD", "SPG", "SO", "DUK", "XEL",
+    # Tech / Communication (new)
+    "CSCO", "ACN", "MSCI", "F", "TMUS",
+    # Diversified (new)
+    "BA", "WM", "ECL", "DHR", "AMT",
+    "MMC", "PGR", "SHW", "UNP", "PSA",
 ]
 BENCHMARK_TICKERS: list[str] = ["SPY", "^VIX"]
 
-START = datetime(1990, 1, 1, tzinfo=timezone.utc)
+START = datetime(1980, 1, 1, tzinfo=timezone.utc)
 END   = datetime.now(tz=timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
 
 _OUTPUT_DIR = Path("data/raw/ohlcv")
