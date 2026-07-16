@@ -196,3 +196,43 @@ strategies:
     params:
       n_estimators: 100
       max_depth: 10
+
+  - name: svm_strategy
+    class: src.strategies.statistical.svm_strategy.SVMStrategy
+    params:
+      kernel: rbf
+      C: 1.0
+
+  - name: mlp_classifier
+    class: src.strategies.statistical.mlp_classifier.MLPStrategy
+    params:
+      hidden_layer_sizes: [64, 32]
+      max_iter: 200
+
+  - name: adaboost
+    class: src.strategies.statistical.adaboost.AdaBoostStrategy
+    params:
+      n_estimators: 100
+
+  - name: knn_classifier
+    class: src.strategies.statistical.knn_classifier.KNNStrategy
+    params:
+      n_neighbors: 10
+
+  - name: ichimoku_cloud
+    class: src.strategies.rule_based.ichimoku_cloud.IchimokuCloud
+
+  - name: chaikin_money_flow
+    class: src.strategies.rule_based.chaikin_money_flow.ChaikinMoneyFlow
+    params:
+      period: 20
+
+  - name: aroon_oscillator
+    class: src.strategies.rule_based.aroon_oscillator.AroonOscillator
+    params:
+      period: 25
+
+  - name: vwap_cross
+    class: src.strategies.rule_based.vwap_cross.VWAPCross
+    params:
+      window: 20
