@@ -134,7 +134,7 @@ def step_new_backtests(df) -> None:
 
 
 def main() -> None:
-    logger.info("=== Incremental precompute: 8 new strategies ===")
+    logger.info("=== Incremental precompute: %d new strategies ===", len(_NEW_STRATEGIES))
     df = load_training_data(PARQUET_DIR)
     logger.info("Loaded %d rows across %d tickers", len(df), df["ticker"].n_unique())
 
@@ -143,9 +143,9 @@ def main() -> None:
     # Reuse existing step_leaderboard and step_signals — they read all backtest_*.json
     # and run all 38 strategies respectively.
     from scripts.precompute_dashboard import step_leaderboard, step_signals
-    logger.info("[2/3] leaderboard — aggregating all 38 backtest files")
+    logger.info("[2/3] leaderboard — aggregating all backtest files")
     step_leaderboard()
-    logger.info("[3/3] live signals — running all 38 strategies")
+    logger.info("[3/3] live signals — running all strategies")
     step_signals()
 
     logger.info("=== Done. Run: git add data/cache/ && git commit && git push ===")

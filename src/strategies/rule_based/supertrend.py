@@ -38,7 +38,7 @@ class SuperTrend(Strategy):
             if np.isnan(prev) or np.isnan(lower_band[i]) or np.isnan(upper_band[i]):
                 st_arr[i] = lower_band[i]
                 continue
-            if close_arr[i - 1] > prev:
+            if close_arr[i] > prev:
                 st_arr[i] = max(lower_band[i], prev)
             else:
                 st_arr[i] = min(upper_band[i], prev)
