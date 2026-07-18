@@ -236,3 +236,35 @@ strategies:
     class: src.strategies.rule_based.vwap_cross.VWAPCross
     params:
       window: 20
+
+  - name: catboost_strategy
+    class: src.strategies.statistical.catboost_strategy.CatBoostStrategy
+    params:
+      iterations: 200
+      depth: 6
+      learning_rate: 0.1
+
+  - name: hist_gradient_boosting
+    class: src.strategies.statistical.hist_gradient_boosting.HistGradientBoostingStrategy
+    params:
+      max_iter: 200
+      max_depth: 6
+      learning_rate: 0.1
+
+  - name: supertrend
+    class: src.strategies.rule_based.supertrend.SuperTrend
+    params:
+      atr_period: 10
+      multiplier: 3.0
+
+  - name: adx_trend
+    class: src.strategies.rule_based.adx_trend.ADXTrend
+    params:
+      period: 14
+      adx_threshold: 25.0
+
+  - name: money_flow_index
+    class: src.strategies.rule_based.money_flow_index.MoneyFlowIndex
+    params:
+      period: 14
+      oversold: 30.0
