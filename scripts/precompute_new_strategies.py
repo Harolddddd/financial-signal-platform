@@ -34,6 +34,11 @@ _NEW_STRATEGIES = [
     "chaikin_money_flow",
     "aroon_oscillator",
     "vwap_cross",
+    "catboost_strategy",
+    "hist_gradient_boosting",
+    "supertrend",
+    "adx_trend",
+    "money_flow_index",
 ]
 
 
