@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-15T23:40:42.826057+00:00",
+  "generated_at": "2026-07-17T23:48:12.301413+00:00",
   "grades": [
     {
       "model_name": "extra_trees",
@@ -155,6 +155,23 @@
       }
     },
     {
+      "model_name": "mlp_classifier",
+      "grade": "C",
+      "composite_score": 0.4349,
+      "metrics": {
+        "n_trades": 40553,
+        "win_rate": 0.558115088725213,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.9211732084600037,
+        "max_drawdown_pct": 0.2734350603371396,
+        "precision_buy": 0.424509846676094,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
       "model_name": "bollinger_bounce",
       "grade": "C",
       "composite_score": 0.434,
@@ -217,6 +234,23 @@
         "sharpe_ratio": 0.8907822296422979,
         "max_drawdown_pct": 0.2729243670911694,
         "precision_buy": 0.42199570102472383,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "model_name": "chaikin_money_flow",
+      "grade": "C",
+      "composite_score": 0.4265,
+      "metrics": {
+        "n_trades": 2115,
+        "win_rate": 0.1112089891269523,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.8215837721719463,
+        "max_drawdown_pct": 0.021932457756490047,
+        "precision_buy": 0.05726686393739822,
         "recall_buy": 0.0,
         "f1_buy": 0.0,
         "accuracy": 0.0
@@ -342,6 +376,23 @@
       }
     },
     {
+      "model_name": "knn_classifier",
+      "grade": "D",
+      "composite_score": 0.3171,
+      "metrics": {
+        "n_trades": 82868,
+        "win_rate": 0.5670130655313829,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.9034007715048924,
+        "max_drawdown_pct": 0.42677342233347837,
+        "precision_buy": 0.36553661705487256,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
       "model_name": "keltner_breakout",
       "grade": "D",
       "composite_score": 0.3067,
@@ -353,6 +404,40 @@
         "sharpe_ratio": 0.4762325853781075,
         "max_drawdown_pct": 0.17071784208123694,
         "precision_buy": 0.09743420112870753,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "model_name": "svm_strategy",
+      "grade": "D",
+      "composite_score": 0.3,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "model_name": "adaboost",
+      "grade": "D",
+      "composite_score": 0.3,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
         "recall_buy": 0.0,
         "f1_buy": 0.0,
         "accuracy": 0.0
@@ -410,6 +495,23 @@
       }
     },
     {
+      "model_name": "ichimoku_cloud",
+      "grade": "D",
+      "composite_score": 0.2752,
+      "metrics": {
+        "n_trades": 208758,
+        "win_rate": 0.23634897657122902,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.7593598701292441,
+        "max_drawdown_pct": 0.3106230875919844,
+        "precision_buy": 0.13199448695064195,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
       "model_name": "ma_crossover",
       "grade": "D",
       "composite_score": 0.2747,
@@ -427,6 +529,23 @@
       }
     },
     {
+      "model_name": "aroon_oscillator",
+      "grade": "D",
+      "composite_score": 0.2747,
+      "metrics": {
+        "n_trades": 111771,
+        "win_rate": 0.2321215836764729,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.5935983847774875,
+        "max_drawdown_pct": 0.2696255779297404,
+        "precision_buy": 0.12482697727562377,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
       "model_name": "macd_signal",
       "grade": "D",
       "composite_score": 0.2707,
@@ -438,6 +557,23 @@
         "sharpe_ratio": 0.6522211743688615,
         "max_drawdown_pct": 0.29048289946160566,
         "precision_buy": 0.1263030524251249,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "model_name": "vwap_cross",
+      "grade": "D",
+      "composite_score": 0.2613,
+      "metrics": {
+        "n_trades": 76500,
+        "win_rate": 0.2164470617322411,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.515893381765474,
+        "max_drawdown_pct": 0.27872140556145675,
+        "precision_buy": 0.1320618563248048,
         "recall_buy": 0.0,
         "f1_buy": 0.0,
         "accuracy": 0.0

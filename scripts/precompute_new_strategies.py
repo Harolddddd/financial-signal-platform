@@ -69,6 +69,10 @@ def _write(path: Path, data: dict) -> None:
 def step_new_backtests(df) -> None:
     logger.info("[1/3] backtests — %d new strategies", len(_NEW_STRATEGIES))
     for name in _NEW_STRATEGIES:
+        cache_path = CACHE_DIR / f"backtest_{_safe(name)}.json"
+        if cache_path.exists():
+            logger.info("  strategy: %s  [SKIP — cache exists]", name)
+            continue
         logger.info("  strategy: %s", name)
         try:
             strategy = load_strategy(name)
