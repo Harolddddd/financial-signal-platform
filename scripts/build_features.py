@@ -70,6 +70,67 @@ _STOCK_TICKERS: list[str] = [
     # Diversified (new)
     "BA", "WM", "ECL", "DHR", "AMT",
     "MMC", "PGR", "SHW", "UNP", "PSA",
+    # ── S&P 500 expansion ──────────────────────────────────────────────────
+    # Technology
+    "ADSK", "AKAM", "ANSS", "APP", "CDNS", "CTSH", "DXCM", "EPAM",
+    "FFIV", "FISV", "FTNT", "GEN", "HPE", "HPQ", "IBM", "JNPR", "KEYS",
+    "KLAC", "LDOS", "MPWR", "NET", "NTAP", "NXPI", "ON", "PAYC", "PYPL",
+    "SWKS", "TRMB", "TYL", "VRSN", "WDAY", "ZBRA", "ZM",
+    # Healthcare
+    "A", "ABC", "BAX", "BDX", "BIO", "BIIB", "CAH", "CNC", "CTLT",
+    "DVA", "EW", "HCA", "HOLX", "HSIC", "IDXX", "IQV",
+    "LH", "MCK", "MOH", "MRNA", "MTD", "PODD", "RVTY", "STE",
+    "TFX", "VTRS", "ZTS", "COO", "CRL", "DGX", "INCY", "VEEV",
+    # Financials
+    "ACGL", "AFL", "AIG", "AJG", "AIZ", "ALL", "ALLY", "AMP", "AON",
+    "BEN", "BK", "CBOE", "CFG", "CMA", "DFS", "FITB", "GL", "HBAN",
+    "KEY", "MCO", "MET", "MKTX", "NTRS", "PFG", "PNC", "RE", "RJF",
+    "STT", "UNM", "WRB", "WTW", "ZION", "CINF", "FIS", "FNF", "LNC",
+    "NDAQ", "RGA", "SEIC", "SSNC", "VOYA",
+    # Consumer Discretionary
+    "AZO", "BBY", "CMG", "DECK", "DG", "DLTR", "DPZ", "ETSY",
+    "FIVE", "GPC", "HAS", "LKQ", "LVS", "LYV", "MAR", "MGM",
+    "MKC", "MNST", "MO", "NCLH", "NVR", "PHM", "PVH", "RCL",
+    "SJM", "STZ", "TAP", "TPR", "ULTA", "VFC", "WHR", "WSM", "YUMC",
+    "BWA", "CDW", "EL", "HRL", "HSY", "KHC", "KVUE", "SKX", "TXRH",
+    # Energy
+    "APA", "BKR", "CTRA", "DVN", "FANG", "HES", "MRO", "NOV",
+    "PBF", "RRC", "TRGP", "VLO", "WMB",
+    # Industrials
+    "AME", "APTV", "AXON", "BR", "CARR", "DOV", "EMN", "EMR",
+    "ETN", "FAST", "FLS", "GEV", "GNRC", "HII", "HWM", "IEX",
+    "IR", "JCI", "KNX", "LII", "LSTR", "MAS", "MHK", "MLM",
+    "NUE", "OC", "ODFL", "OTIS", "PCAR", "PPG", "PWR",
+    "ROK", "RSG", "SNA", "TER", "TXT", "UBER", "URI",
+    "VRSK", "WAB", "XYL", "ALB", "ALK",
+    # REITs
+    "AVB", "BXP", "CPT", "EQR", "ESS", "EXR", "FRT", "HST",
+    "IRM", "KIM", "MAA", "NNN", "O", "REG", "UDR", "VTR", "WY",
+    # Utilities
+    "AEE", "AES", "ATO", "CNP", "D", "ETR", "EXC", "FE",
+    "LNT", "NI", "NRG", "PCG", "SRE", "VST", "WEC",
+    # Materials
+    "APD", "CE", "CF", "CTVA", "DD", "FCX", "IP", "IFF",
+    "LYB", "MOS", "NEM", "PKG", "RS", "STLD",
+    # Communication Services
+    "CHTR", "EA", "MTCH", "PARA", "PINS", "SNAP", "TTWO", "WBD",
+    # ── Russell 1000 mid-caps ──────────────────────────────────────────────
+    "AGCO", "AOS", "APO", "ARCC", "AWK", "AXS", "BAH", "BALL",
+    "BBWI", "BG", "BURL", "CPB", "CSL", "CUBE", "EFX",
+    "EQT", "EXPE", "FMC", "GLOB", "HIG", "INGR", "ITT",
+    "JBHT", "K", "LAMR", "LEA", "LEN", "LPX", "LW", "MANH",
+    "MELI", "MORN", "MTH", "MTZ", "NLY", "NTRA", "NVT", "NXST",
+    "OKE", "POOL", "PRI", "QRVO", "REXR", "RMD", "RPRX", "RRX",
+    "SBAC", "SEE", "SFM", "SKY", "SLGN", "SM", "SMAR",
+    "SNX", "THC", "TOST", "TPL", "TPX", "TREX", "TRNO",
+    "TWO", "USFD", "UTHR", "VICI", "VMI", "WING", "WPC",
+    "CLX", "CMS", "CW", "DT", "ELAN", "ESAB", "EVR",
+    "EXPD", "FWONA", "GGG", "JEF",
+    "LAZ", "LEVI", "MMS", "ORI",
+    "PSN", "SF", "SPSC", "STAG",
+    "TRN", "UMBF", "VNT", "WFRD", "WMS",
+    "ANET", "BRO", "CSGP", "DDOG", "ENPH",
+    "GDDY", "LNTH", "OGN", "RBLX", "SAIA",
 ]
 
 

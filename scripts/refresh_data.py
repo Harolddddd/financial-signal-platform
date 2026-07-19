@@ -17,10 +17,23 @@ _FEATURE_DIR = Path("data/features")
 _AUX_TICKERS = ["SPY", "^VIX"]
 
 
+_HISTORY_START = datetime(1990, 1, 1, tzinfo=timezone.utc)
+
+
 def _refresh_raw(ticker: str, today: datetime) -> None:
     raw_path = _RAW_DIR / f"{ticker}.parquet"
     if not raw_path.exists():
-        logger.warning("  %s — no raw file, skipping", ticker)
+        # New ticker — fetch full history
+        logger.info("  %s — new ticker, fetching full history from %s", ticker, _HISTORY_START.date())
+        try:
+            rows = fetch_ohlcv(ticker, _HISTORY_START, today)
+            if len(rows) == 0:
+                logger.warning("  %s — no data returned (delisted / invalid?)", ticker)
+                return
+            rows.write_parquet(raw_path)
+            logger.info("  %s fetched %d rows", ticker, len(rows))
+        except Exception as exc:
+            logger.warning("  %s full fetch failed: %s", ticker, exc)
         return
     existing = pl.read_parquet(raw_path)
     max_ts = existing["time"].max()
