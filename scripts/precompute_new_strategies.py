@@ -39,6 +39,11 @@ _NEW_STRATEGIES = [
     "supertrend",
     "adx_trend",
     "money_flow_index",
+    "gaussian_nb",
+    "lda_strategy",
+    "stoch_rsi",
+    "hull_ma",
+    "trix",
 ]
 
 
