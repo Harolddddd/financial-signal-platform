@@ -268,3 +268,30 @@ strategies:
     params:
       period: 14
       oversold: 30.0
+
+  - name: gaussian_nb
+    class: src.strategies.statistical.gaussian_nb_strategy.GaussianNBStrategy
+    params:
+      var_smoothing: 1.0e-9
+
+  - name: lda_strategy
+    class: src.strategies.statistical.lda_strategy.LDAStrategy
+    params:
+      solver: svd
+
+  - name: stoch_rsi
+    class: src.strategies.rule_based.stoch_rsi.StochRSI
+    params:
+      rsi_period: 14
+      stoch_period: 14
+      oversold: 0.2
+
+  - name: hull_ma
+    class: src.strategies.rule_based.hull_ma.HullMA
+    params:
+      period: 20
+
+  - name: trix
+    class: src.strategies.rule_based.trix.TRIX
+    params:
+      period: 15
