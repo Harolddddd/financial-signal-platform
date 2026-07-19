@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-18T22:28:05.001917+00:00",
+  "generated_at": "2026-07-19T01:52:20.744600+00:00",
   "grades": [
     {
       "model_name": "extra_trees",
@@ -166,6 +166,23 @@
         "sharpe_ratio": 1.3660876125578625,
         "max_drawdown_pct": 0.15228252019241298,
         "precision_buy": 0.18723055101781447,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "model_name": "lda_strategy",
+      "grade": "C",
+      "composite_score": 0.4528,
+      "metrics": {
+        "n_trades": 17897,
+        "win_rate": 0.31174670488603845,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.9018649210449298,
+        "max_drawdown_pct": 0.11810006130483579,
+        "precision_buy": 0.24205020725672124,
         "recall_buy": 0.0,
         "f1_buy": 0.0,
         "accuracy": 0.0
@@ -342,6 +359,23 @@
       }
     },
     {
+      "model_name": "stoch_rsi",
+      "grade": "C",
+      "composite_score": 0.3936,
+      "metrics": {
+        "n_trades": 99549,
+        "win_rate": 0.2701442761686002,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 1.1360935365034703,
+        "max_drawdown_pct": 0.21421783904526262,
+        "precision_buy": 0.1699778004049346,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
       "model_name": "atr_breakout",
       "grade": "C",
       "composite_score": 0.3934,
@@ -353,6 +387,23 @@
         "sharpe_ratio": 0.5968957078571491,
         "max_drawdown_pct": 0.06800424798760941,
         "precision_buy": 0.11814736645115863,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "model_name": "trix",
+      "grade": "C",
+      "composite_score": 0.3904,
+      "metrics": {
+        "n_trades": 4585,
+        "win_rate": 0.12712720908540534,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.6472522847821123,
+        "max_drawdown_pct": 0.07312373746518039,
+        "precision_buy": 0.10103927582508324,
         "recall_buy": 0.0,
         "f1_buy": 0.0,
         "accuracy": 0.0
@@ -438,6 +489,23 @@
         "sharpe_ratio": 0.9034007715048924,
         "max_drawdown_pct": 0.42677342233347837,
         "precision_buy": 0.36553661705487256,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "model_name": "gaussian_nb",
+      "grade": "D",
+      "composite_score": 0.307,
+      "metrics": {
+        "n_trades": 143179,
+        "win_rate": 0.5644066917990614,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.9597863795451576,
+        "max_drawdown_pct": 0.4817646020933983,
+        "precision_buy": 0.40546138896980494,
         "recall_buy": 0.0,
         "f1_buy": 0.0,
         "accuracy": 0.0
@@ -727,6 +795,23 @@
         "sharpe_ratio": 0.6030499414404035,
         "max_drawdown_pct": 0.3398837850051075,
         "precision_buy": 0.13011770337366083,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "model_name": "hull_ma",
+      "grade": "D",
+      "composite_score": 0.2336,
+      "metrics": {
+        "n_trades": 167061,
+        "win_rate": 0.23051896284908743,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.47610471943339255,
+        "max_drawdown_pct": 0.31783017674686465,
+        "precision_buy": 0.13552427030789288,
         "recall_buy": 0.0,
         "f1_buy": 0.0,
         "accuracy": 0.0
