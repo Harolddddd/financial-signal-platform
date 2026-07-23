@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-22T05:04:36.131030+00:00",
+  "generated_at": "2026-07-23T02:20:31.234760+00:00",
   "grades": [
     {
       "model_name": "extra_trees",
@@ -240,6 +240,23 @@
       }
     },
     {
+      "model_name": "logistic_regression",
+      "grade": "C",
+      "composite_score": 0.3819,
+      "metrics": {
+        "n_trades": 19998,
+        "win_rate": 0.37350848424370253,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.2976373163165924,
+        "max_drawdown_pct": 0.11922361402989241,
+        "precision_buy": 0.2726871547207189,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
       "model_name": "bollinger_rsi_combo",
       "grade": "C",
       "composite_score": 0.3817,
@@ -387,23 +404,6 @@
         "sharpe_ratio": 0.7205655002480675,
         "max_drawdown_pct": 0.18656042159759786,
         "precision_buy": 0.14819134785707688,
-        "recall_buy": 0.0,
-        "f1_buy": 0.0,
-        "accuracy": 0.0
-      }
-    },
-    {
-      "model_name": "logistic_regression",
-      "grade": "C",
-      "composite_score": 0.3509,
-      "metrics": {
-        "n_trades": 18922,
-        "win_rate": 0.377048185480112,
-        "profit_factor": 0.0,
-        "total_return_pct": 0.0,
-        "sharpe_ratio": 0.07897394314071206,
-        "max_drawdown_pct": 0.11998670655359767,
-        "precision_buy": 0.2775174398156751,
         "recall_buy": 0.0,
         "f1_buy": 0.0,
         "accuracy": 0.0
