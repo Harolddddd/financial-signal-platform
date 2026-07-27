@@ -63,6 +63,9 @@ def main() -> None:
     logger.info("[1/3] backtests — running all %d strategies (no skip)", len(all_strategies))
     for name in all_strategies:
         cache_path = CACHE_DIR / f"backtest_{_safe(name)}.json"
+        if cache_path.exists():
+            logger.info("  strategy: %s  [SKIP — cache exists]", name)
+            continue
         logger.info("  strategy: %s", name)
         try:
             strategy = load_strategy(name)
