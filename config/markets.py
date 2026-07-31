@@ -2,6 +2,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+
 
 @dataclass(frozen=True)
 class MarketConfig:
@@ -18,7 +20,7 @@ MARKETS: dict[str, MarketConfig] = {
     "us": MarketConfig(
         name="us",
         label="United States (S&P 500)",
-        data_root=Path("markets/us/data"),
+        data_root=_REPO_ROOT / "markets" / "us" / "data",
         universe="sp500",
         benchmark_ticker="SPY",
         vol_index_ticker="^VIX",
@@ -27,7 +29,7 @@ MARKETS: dict[str, MarketConfig] = {
     "china": MarketConfig(
         name="china",
         label="China A-Share (CSI 300)",
-        data_root=Path("markets/china/data"),
+        data_root=_REPO_ROOT / "markets" / "china" / "data",
         universe="csi300",
         benchmark_ticker="000300.SS",
         vol_index_ticker=None,

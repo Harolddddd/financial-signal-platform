@@ -2,5 +2,6 @@
 **/__pycache__/
 *.pyc
 *.log
+data/raw/
 markets/*/data/raw/
 .superpowers/

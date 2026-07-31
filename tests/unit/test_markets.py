@@ -9,7 +9,7 @@ def test_us_market_config():
     us = get_market("us")
     assert isinstance(us, MarketConfig)
     assert us.name == "us"
-    assert us.data_root == Path("markets/us/data")
+    assert us.data_root == Path(__file__).resolve().parents[2] / "markets" / "us" / "data"
     assert us.universe == "sp500"
     assert us.benchmark_ticker == "SPY"
     assert us.vol_index_ticker == "^VIX"
@@ -19,7 +19,7 @@ def test_us_market_config():
 def test_china_market_config():
     china = get_market("china")
     assert china.name == "china"
-    assert china.data_root == Path("markets/china/data")
+    assert china.data_root == Path(__file__).resolve().parents[2] / "markets" / "china" / "data"
     assert china.universe == "csi300"
     assert china.benchmark_ticker == "000300.SS"
     assert china.vol_index_ticker is None
