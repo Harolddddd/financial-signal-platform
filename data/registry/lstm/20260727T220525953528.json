@@ -1,0 +1,68 @@
+{
+  "model_name": "lstm",
+  "version": "20260727T220525953528",
+  "params": {
+    "seq_len": 20,
+    "hidden_size": 64,
+    "n_layers": 2,
+    "dropout": 0.2,
+    "lr": 0.001,
+    "epochs": 30,
+    "batch_size": 64
+  },
+  "evaluation": {
+    "accuracy": 0.5066488882482252,
+    "precision_buy": 0.4910008024762123,
+    "recall_buy": 0.5070439209186693,
+    "f1_buy": 0.49889341875364007,
+    "f1_macro": 0.49327736188649673,
+    "confusion_matrix": [
+      [
+        4283,
+        3075,
+        1089
+      ],
+      [
+        3017,
+        6948,
+        2231
+      ],
+      [
+        1423,
+        2855,
+        2828
+      ]
+    ],
+    "class_labels": [
+      "Buy",
+      "Hold",
+      "Sell"
+    ],
+    "n_samples": 27749
+  },
+  "feature_cols": [
+    "sma_10",
+    "sma_20",
+    "sma_50",
+    "sma_200",
+    "ema_12",
+    "ema_26",
+    "rsi_14",
+    "macd",
+    "macd_signal",
+    "macd_hist",
+    "bb_upper",
+    "bb_lower",
+    "bb_width",
+    "atr_14",
+    "hist_vol_21",
+    "sent_pos_avg_3d",
+    "sent_pos_avg_5d",
+    "sent_pos_avg_10d",
+    "sent_pos_mom_3d",
+    "news_vol_spike",
+    "rel_strength_spy",
+    "vix_level"
+  ],
+  "trained_at": "2026-07-27T22:05:25.961991+00:00"
+}

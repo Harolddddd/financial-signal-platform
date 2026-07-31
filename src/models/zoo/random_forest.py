@@ -21,6 +21,13 @@ class RandomForestClassifier_(BaseClassifier):
     def fit(self, X: np.ndarray, y: np.ndarray) -> None:
         self._model.fit(X, y)
 
+    def fit_incremental(self, X: np.ndarray, y: np.ndarray, n_new_trees: int = 50) -> None:
+        """Grow the forest with additional trees fit only on the new rows,
+        keeping the existing trees (and the data they saw) untouched."""
+        self._model.set_params(warm_start=True, n_estimators=self._model.n_estimators + n_new_trees)
+        self._model.fit(X, y)
+        self._model.set_params(warm_start=False)
+
     def predict(self, X: np.ndarray) -> np.ndarray:
         return self._model.predict(X)
 

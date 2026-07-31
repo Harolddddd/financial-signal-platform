@@ -1,23 +1,10 @@
 strategies:
-  - name: ma_crossover
-    class: src.strategies.rule_based.ma_crossover.MACrossover
-    params:
-      fast_window: 20
-      slow_window: 50
-
   - name: rsi_threshold
     class: src.strategies.rule_based.rsi.RSIThreshold
     params:
       period: 14
       oversold: 30
       overbought: 70
-
-  - name: macd_signal
-    class: src.strategies.rule_based.macd.MACDSignal
-    params:
-      fast: 12
-      slow: 26
-      signal_period: 9
 
   - name: bollinger_bounce
     class: src.strategies.rule_based.bollinger.BollingerBounce
@@ -55,17 +42,6 @@ strategies:
       period: 14
       oversold: -80.0
 
-  - name: donchian_breakout
-    class: src.strategies.rule_based.donchian_breakout.DonchianBreakout
-    params:
-      period: 20
-
-  - name: obv_trend
-    class: src.strategies.rule_based.obv_trend.OBVTrend
-    params:
-      obv_window: 20
-      price_window: 5
-
   - name: mean_reversion
     class: src.strategies.rule_based.mean_reversion.MeanReversion
     params:
@@ -84,12 +60,6 @@ strategies:
       short: 10
       mid: 50
       long: 200
-
-  - name: ridge_regression
-    class: src.strategies.statistical.ridge.RidgeStrategy
-    params:
-      alpha: 1.0
-      buy_threshold: 0.005
 
   - name: gradient_boosting
     class: src.strategies.statistical.gradient_boosting.GradientBoostingStrategy
@@ -114,34 +84,6 @@ strategies:
       bb_std: 2.0
       rsi_period: 14
       rsi_max: 45.0
-
-  - name: ma_volume_confirm
-    class: src.strategies.rule_based.ma_volume_confirm.MAVolumeConfirm
-    params:
-      fast: 20
-      slow: 50
-      vol_window: 20
-      vol_multiplier: 1.5
-
-  - name: parabolic_sar
-    class: src.strategies.rule_based.parabolic_sar.ParabolicSAR
-    params:
-      af_start: 0.02
-      af_step: 0.02
-      af_max: 0.2
-
-  - name: keltner_breakout
-    class: src.strategies.rule_based.keltner_breakout.KeltnerBreakout
-    params:
-      ema_period: 20
-      atr_period: 14
-      multiplier: 2.0
-
-  - name: dema_crossover
-    class: src.strategies.rule_based.dema_crossover.DEMACrossover
-    params:
-      fast: 10
-      slow: 30
 
   - name: elder_ray
     class: src.strategies.rule_based.elder_ray.ElderRay
@@ -184,35 +126,17 @@ strategies:
       max_depth: 6
       learning_rate: 0.1
 
-  - name: lightgbm_strategy
-    class: src.strategies.statistical.lightgbm_strategy.LightGBMStrategy
-    params:
-      n_estimators: 100
-      max_depth: 6
-      learning_rate: 0.1
-
   - name: extra_trees
     class: src.strategies.statistical.extra_trees.ExtraTreesStrategy
     params:
       n_estimators: 100
       max_depth: 10
 
-  - name: svm_strategy
-    class: src.strategies.statistical.svm_strategy.SVMStrategy
-    params:
-      kernel: rbf
-      C: 1.0
-
   - name: mlp_classifier
     class: src.strategies.statistical.mlp_classifier.MLPStrategy
     params:
       hidden_layer_sizes: [64, 32]
       max_iter: 200
-
-  - name: adaboost
-    class: src.strategies.statistical.adaboost.AdaBoostStrategy
-    params:
-      n_estimators: 100
 
   - name: knn_classifier
     class: src.strategies.statistical.knn_classifier.KNNStrategy
@@ -227,16 +151,6 @@ strategies:
     params:
       period: 20
 
-  - name: aroon_oscillator
-    class: src.strategies.rule_based.aroon_oscillator.AroonOscillator
-    params:
-      period: 25
-
-  - name: vwap_cross
-    class: src.strategies.rule_based.vwap_cross.VWAPCross
-    params:
-      window: 20
-
   - name: catboost_strategy
     class: src.strategies.statistical.catboost_strategy.CatBoostStrategy
     params:
@@ -244,24 +158,11 @@ strategies:
       depth: 6
       learning_rate: 0.1
 
-  - name: hist_gradient_boosting
-    class: src.strategies.statistical.hist_gradient_boosting.HistGradientBoostingStrategy
-    params:
-      max_iter: 200
-      max_depth: 6
-      learning_rate: 0.1
-
   - name: supertrend
     class: src.strategies.rule_based.supertrend.SuperTrend
     params:
       atr_period: 10
       multiplier: 3.0
-
-  - name: adx_trend
-    class: src.strategies.rule_based.adx_trend.ADXTrend
-    params:
-      period: 14
-      adx_threshold: 25.0
 
   - name: money_flow_index
     class: src.strategies.rule_based.money_flow_index.MoneyFlowIndex
@@ -279,19 +180,21 @@ strategies:
     params:
       solver: svd
 
-  - name: stoch_rsi
-    class: src.strategies.rule_based.stoch_rsi.StochRSI
-    params:
-      rsi_period: 14
-      stoch_period: 14
-      oversold: 0.2
-
-  - name: hull_ma
-    class: src.strategies.rule_based.hull_ma.HullMA
-    params:
-      period: 20
-
   - name: trix
     class: src.strategies.rule_based.trix.TRIX
     params:
       period: 15
+
+  - name: kalman_trend
+    class: src.strategies.rule_based.kalman_trend.KalmanTrend
+    params:
+      process_var: 1.0e-4
+      obs_var: 1.0
+      slope_threshold: 0.0
+
+  - name: isolation_forest_anomaly
+    class: src.strategies.statistical.isolation_forest_strategy.IsolationForestAnomaly
+    params:
+      n_estimators: 100
+      contamination: 0.05
+      rsi_oversold: 40.0

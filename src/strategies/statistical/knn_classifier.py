@@ -13,7 +13,7 @@ class KNNStrategy(Strategy):
         self._model = KNeighborsClassifier(
             n_neighbors=n_neighbors,
             weights="distance",
-            n_jobs=-1,
+            n_jobs=4,
         )
         self._feature_cols: list[str] = []
 

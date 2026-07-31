@@ -24,6 +24,14 @@ class BaseClassifier(ABC):
     def fit(self, X: np.ndarray, y: np.ndarray) -> None:
         """Train on X (n_samples, n_features) with string labels y."""
 
+    def fit_incremental(self, X: np.ndarray, y: np.ndarray) -> None:
+        """Continue training from the current state using only new data.
+
+        Default falls back to a full fit; override in subclasses that
+        support warm-starting / continued boosting.
+        """
+        self.fit(X, y)
+
     @abstractmethod
     def predict(self, X: np.ndarray) -> np.ndarray:
         """Return string label predictions, shape (n_samples,)."""

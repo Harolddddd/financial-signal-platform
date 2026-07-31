@@ -19,6 +19,7 @@ class CatBoostStrategy(Strategy):
             eval_metric="Accuracy",
             random_seed=42,
             verbose=0,
+            thread_count=4,
         )
         self._classes: list[str] = []
         self._feature_cols: list[str] = []

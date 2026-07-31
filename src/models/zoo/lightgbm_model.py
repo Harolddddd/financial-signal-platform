@@ -28,6 +28,15 @@ class LightGBMClassifier(BaseClassifier):
         y_enc = self._le.fit_transform(y)
         self._model.fit(X, y_enc)
 
+    def fit_incremental(self, X: np.ndarray, y: np.ndarray, n_new_trees: int = 50) -> None:
+        """Continue boosting the existing model — add n_new_trees trained
+        only on the new rows, on top of the previously fitted trees."""
+        y_enc = self._le.transform(y)
+        old_booster = self._model.booster_
+        continued = LGBMClassifier(**{**self.default_params, "n_estimators": n_new_trees})
+        continued.fit(X, y_enc, init_model=old_booster)
+        self._model = continued
+
     def predict(self, X: np.ndarray) -> np.ndarray:
         return self._le.inverse_transform(self._model.predict(X))
 

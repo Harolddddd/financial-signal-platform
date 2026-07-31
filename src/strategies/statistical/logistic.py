@@ -25,7 +25,7 @@ class LogisticStrategy(Strategy):
     def predict(self, df: pd.DataFrame) -> PredictionResult:
         if not self._feature_cols:
             raise ValueError("Call fit() before predict()")
-        X = df[self._feature_cols].to_numpy()
+        X = df[self._feature_cols].fillna(0.0).to_numpy()
         proba = self._model.predict_proba(X)
         classes = list(self._model.classes_)
         if "Buy" not in classes:

@@ -15,6 +15,7 @@ from pathlib import Path
 import polars as pl
 
 from dashboard.config import CONFIDENCE_THRESHOLD, FEATURE_COLS, OHLCV_COLS, PARQUET_DIR
+from scripts.build_features import build_live_features
 from src.backtesting.grader import grade_model
 from src.backtesting.metrics import BacktestMetrics
 from src.backtesting.strategy_runner import _is_stateless, _select_cols, walk_forward_backtest_strategy
@@ -94,17 +95,17 @@ def step_leaderboard() -> None:
     })
 
 
-def step_backtests() -> None:
+def step_backtests(names: list[str] | None = None, step_days: int = 21) -> None:
     logger.info("[2/4] per-strategy backtests — running walk-forward fresh (no cache read)")
     # Load data once; reuse across all strategies.
     df = load_training_data(PARQUET_DIR)
-    for name in list_strategies():
+    for name in (names if names is not None else list_strategies()):
         logger.info("  strategy: %s", name)
         try:
             strategy = load_strategy(name)
             wf = walk_forward_backtest_strategy(
                 df, strategy, OHLCV_COLS, FEATURE_COLS,
-                train_window_days=400, test_window_days=21, step_days=21,
+                train_window_days=400, test_window_days=21, step_days=step_days,
             )
             # Aggregate across all folds for the grade.
             total_trades = sum(f.n_trades for f in wf.folds)
@@ -153,21 +154,34 @@ def step_backtests() -> None:
             logger.error("  FAILED %s: %s", name, exc)
 
 
-def step_signals() -> None:
+def step_signals(exclude: list[str] | None = None) -> None:
     logger.info("[4/4] live signals — computing fresh from all strategies (no cache read)")
+    # Fit on the labeled/trimmed training data — unchanged, since fit() needs
+    # a real label and this keeps training/backtesting behavior untouched.
     df = load_training_data(PARQUET_DIR)
-    latest_date = df["time"].max()
-    has_ticker = "ticker" in df.columns
-    tickers: list[str] = sorted(df["ticker"].unique().to_list()) if has_ticker else ["__all__"]
 
-    # Pre-partition by ticker once.
+    # Predict on a separately-built, un-trimmed feature snapshot so "today's"
+    # signal actually reflects the latest raw trading day instead of trailing
+    # by forward_days (the labeled parquet can't have a label for those rows,
+    # so it drops them — but predict() never needs a label at all).
+    live_df = build_live_features()
+    has_ticker = "ticker" in live_df.columns
+    tickers: list[str] = sorted(live_df["ticker"].unique().to_list()) if has_ticker else ["__all__"]
+
+    # Pre-partition by ticker once. Raw data is written sorted by time, and
+    # the feature/indicator pipeline preserves row order, so each ticker's
+    # last row is genuinely its latest available trading day.
     ticker_pdfs: dict[str, dict] = {}
     for ticker in tickers:
-        t_pl = df.filter(pl.col("ticker") == ticker) if has_ticker else df
+        t_pl = live_df.filter(pl.col("ticker") == ticker) if has_ticker else live_df
         ticker_pdfs[ticker] = t_pl  # keep as Polars for per-strategy column selection
 
+    exclude_set = set(exclude or [])
     all_signals: list[dict] = []
     for name in list_strategies():
+        if name in exclude_set:
+            logger.info("  signals: %s — skipped", name)
+            continue
         logger.info("  signals: %s", name)
         try:
             strategy = load_strategy(name)
@@ -184,7 +198,7 @@ def step_signals() -> None:
 
             for ticker in tickers:
                 t_pd = _select_cols(ticker_pdfs[ticker], strategy, OHLCV_COLS, FEATURE_COLS).to_pandas()
-                if len(t_pd) == 0:
+                if len(t_pd) == 0 or "time" not in t_pd.columns:
                     continue
                 try:
                     result = strategy.predict(t_pd)
@@ -192,22 +206,18 @@ def step_signals() -> None:
                     logger.debug("  %s %s predict failed: %s", name, ticker, exc)
                     continue
 
-                # Find the row matching the latest date.
-                if "time" not in t_pd.columns:
-                    continue
-                latest_rows = t_pd[t_pd["time"] == latest_date]
-                if latest_rows.empty:
-                    continue
-                pos = t_pd.index.get_loc(latest_rows.index[0])
+                # Last row = this ticker's own latest available trading day.
+                pos = len(t_pd) - 1
                 if pos >= len(result.signal):
                     continue
 
                 sig = str(result.signal.iloc[pos])
                 conf = float(result.confidence.iloc[pos])
                 close = float(t_pd["close"].iloc[pos]) if "close" in t_pd.columns else 0.0
+                ticker_date = t_pd["time"].iloc[pos]
                 all_signals.append({
                     "ticker": ticker if ticker != "__all__" else "ALL",
-                    "date": str(latest_date),
+                    "date": str(ticker_date),
                     "signal": sig,
                     "confidence": conf,
                     "entry_price": close,

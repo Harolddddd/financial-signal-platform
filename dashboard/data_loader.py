@@ -228,3 +228,73 @@ def get_live_signals(
                 position_size=conf,
             ))
     return live_signals
+
+
+def get_combined_ratings() -> tuple[list[dict], dict[str, list[dict]]]:
+    """Aggregate every strategy's live signal for each ticker into one
+    overall Buy Rating, weighted by that strategy's leaderboard composite
+    score — stronger track-record strategies count for more. Cache-only
+    (no live-compute fallback): both signals.json and leaderboard.json must
+    already exist.
+
+    Returns (summary_rows, detail_by_ticker):
+      summary_rows: one row per ticker — ticker, overall_rating (0-100),
+        n_buy, n_strategies, date, entry_price — sorted by overall_rating
+        descending.
+      detail_by_ticker: ticker -> per-strategy contribution rows (each with
+        its own date/entry_price too), sorted by contribution descending,
+        for the drill-down view.
+    """
+    leaderboard = _load_cache(CACHE_DIR / "leaderboard.json")
+    signals = _load_cache(CACHE_DIR / "signals.json")
+    if not leaderboard or not signals:
+        return [], {}
+
+    weights = {g["model_name"]: g["composite_score"] for g in leaderboard["grades"]}
+
+    by_ticker: dict[str, list[dict]] = {}
+    for s in signals["signals"]:
+        by_ticker.setdefault(s["ticker"], []).append(s)
+
+    summary_rows: list[dict] = []
+    detail_by_ticker: dict[str, list[dict]] = {}
+    for ticker, rows in by_ticker.items():
+        total_weight = 0.0
+        weighted_buy = 0.0
+        n_buy = 0
+        detail: list[dict] = []
+        latest_date = max((r["date"] for r in rows), default="")
+        entry_price = next((r["entry_price"] for r in rows if r["date"] == latest_date), 0.0)
+        for r in rows:
+            w = weights.get(r["strategy"], 0.0)
+            if w <= 0:
+                continue
+            is_buy = r["signal"] == "Buy"
+            contribution = w * r["confidence"] if is_buy else 0.0
+            total_weight += w
+            weighted_buy += contribution
+            n_buy += int(is_buy)
+            detail.append({
+                "strategy": r["strategy"],
+                "weight": w,
+                "signal": r["signal"],
+                "confidence": r["confidence"],
+                "contribution": contribution,
+                "date": r["date"],
+                "entry_price": r["entry_price"],
+            })
+        if total_weight <= 0:
+            continue
+        detail.sort(key=lambda d: d["contribution"], reverse=True)
+        detail_by_ticker[ticker] = detail
+        summary_rows.append({
+            "ticker": ticker,
+            "overall_rating": 100.0 * weighted_buy / total_weight,
+            "n_buy": n_buy,
+            "n_strategies": len(detail),
+            "date": latest_date,
+            "entry_price": entry_price,
+        })
+
+    summary_rows.sort(key=lambda r: r["overall_rating"], reverse=True)
+    return summary_rows, detail_by_ticker

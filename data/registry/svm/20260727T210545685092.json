@@ -1,0 +1,66 @@
+{
+  "model_name": "svm",
+  "version": "20260727T210545685092",
+  "params": {
+    "C": 1.0,
+    "kernel": "rbf",
+    "probability": true,
+    "class_weight": "balanced",
+    "random_state": 42
+  },
+  "evaluation": {
+    "accuracy": 0.45516666666666666,
+    "precision_buy": 0.37124658780709735,
+    "recall_buy": 0.2311614730878187,
+    "f1_buy": 0.2849162011173184,
+    "f1_macro": 0.40860933322744053,
+    "confusion_matrix": [
+      [
+        408,
+        752,
+        605
+      ],
+      [
+        369,
+        1773,
+        567
+      ],
+      [
+        322,
+        654,
+        550
+      ]
+    ],
+    "class_labels": [
+      "Buy",
+      "Hold",
+      "Sell"
+    ],
+    "n_samples": 6000
+  },
+  "feature_cols": [
+    "sma_10",
+    "sma_20",
+    "sma_50",
+    "sma_200",
+    "ema_12",
+    "ema_26",
+    "rsi_14",
+    "macd",
+    "macd_signal",
+    "macd_hist",
+    "bb_upper",
+    "bb_lower",
+    "bb_width",
+    "atr_14",
+    "hist_vol_21",
+    "sent_pos_avg_3d",
+    "sent_pos_avg_5d",
+    "sent_pos_avg_10d",
+    "sent_pos_mom_3d",
+    "news_vol_spike",
+    "rel_strength_spy",
+    "vix_level"
+  ],
+  "trained_at": "2026-07-27T21:05:45.700923+00:00"
+}

@@ -12,7 +12,7 @@ class ExtraTreesStrategy(Strategy):
     def __init__(self, n_estimators: int = 100, max_depth: int = 10, random_state: int = 42) -> None:
         self._model = ExtraTreesClassifier(
             n_estimators=n_estimators, max_depth=max_depth,
-            class_weight="balanced", n_jobs=-1, random_state=random_state,
+            class_weight="balanced", n_jobs=4, random_state=random_state,
         )
         self._feature_cols: list[str] = []
 

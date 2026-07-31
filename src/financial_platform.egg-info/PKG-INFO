@@ -16,6 +16,14 @@ Requires-Dist: vaderSentiment>=3.3.2
 Requires-Dist: apache-airflow>=2.9.0
 Requires-Dist: requests>=2.32.0
 Requires-Dist: pyyaml>=6.0.1
+Requires-Dist: scikit-learn>=1.5.0
+Requires-Dist: xgboost>=2.0.0
+Requires-Dist: lightgbm>=4.3.0
+Requires-Dist: optuna>=3.6.0
+Requires-Dist: joblib>=1.4.0
+Requires-Dist: shap>=0.45.0
+Requires-Dist: streamlit>=1.35.0
+Requires-Dist: plotly>=5.20.0
 Provides-Extra: dev
 Requires-Dist: pytest>=8.2.0; extra == "dev"
 Requires-Dist: pytest-mock>=3.14.0; extra == "dev"

@@ -24,7 +24,7 @@ class LinearStrategy(Strategy):
     def predict(self, df: pd.DataFrame) -> PredictionResult:
         if not self._feature_cols:
             raise ValueError("Call fit() before predict()")
-        X = df[self._feature_cols].to_numpy()
+        X = df[self._feature_cols].fillna(0.0).to_numpy()
         pred_return = self._model.predict(X)
         # Map predicted return [-10%, +10%] → confidence [0, 1]
         confidence = pd.Series(((pred_return + 0.10) / 0.20).clip(0, 1))

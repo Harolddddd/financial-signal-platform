@@ -1,0 +1,67 @@
+{
+  "model_name": "mlp",
+  "version": "20260727T210232224511",
+  "params": {
+    "hidden_layer_sizes": "(128, 64)",
+    "activation": "relu",
+    "max_iter": 300,
+    "early_stopping": true,
+    "validation_fraction": 0.1,
+    "random_state": 42
+  },
+  "evaluation": {
+    "accuracy": 0.4928856477012095,
+    "precision_buy": 0.42127216614252305,
+    "recall_buy": 0.2964386303376698,
+    "f1_buy": 0.3479990674325024,
+    "f1_macro": 0.4004292491615072,
+    "confusion_matrix": [
+      [
+        57467,
+        115913,
+        20478
+      ],
+      [
+        39062,
+        239433,
+        16029
+      ],
+      [
+        39884,
+        98520,
+        23730
+      ]
+    ],
+    "class_labels": [
+      "Buy",
+      "Hold",
+      "Sell"
+    ],
+    "n_samples": 650516
+  },
+  "feature_cols": [
+    "sma_10",
+    "sma_20",
+    "sma_50",
+    "sma_200",
+    "ema_12",
+    "ema_26",
+    "rsi_14",
+    "macd",
+    "macd_signal",
+    "macd_hist",
+    "bb_upper",
+    "bb_lower",
+    "bb_width",
+    "atr_14",
+    "hist_vol_21",
+    "sent_pos_avg_3d",
+    "sent_pos_avg_5d",
+    "sent_pos_avg_10d",
+    "sent_pos_mom_3d",
+    "news_vol_spike",
+    "rel_strength_spy",
+    "vix_level"
+  ],
+  "trained_at": "2026-07-27T21:02:32.240421+00:00"
+}

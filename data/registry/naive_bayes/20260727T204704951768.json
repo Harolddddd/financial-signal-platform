@@ -1,0 +1,62 @@
+{
+  "model_name": "naive_bayes",
+  "version": "20260727T204704951768",
+  "params": {
+    "var_smoothing": 1e-09
+  },
+  "evaluation": {
+    "accuracy": 0.4777284494155409,
+    "precision_buy": 0.40491132103964966,
+    "recall_buy": 0.24896057939316407,
+    "f1_buy": 0.3083385507838953,
+    "f1_macro": 0.3254557654644993,
+    "confusion_matrix": [
+      [
+        48263,
+        142593,
+        3002
+      ],
+      [
+        32024,
+        259739,
+        2761
+      ],
+      [
+        38907,
+        120459,
+        2768
+      ]
+    ],
+    "class_labels": [
+      "Buy",
+      "Hold",
+      "Sell"
+    ],
+    "n_samples": 650516
+  },
+  "feature_cols": [
+    "sma_10",
+    "sma_20",
+    "sma_50",
+    "sma_200",
+    "ema_12",
+    "ema_26",
+    "rsi_14",
+    "macd",
+    "macd_signal",
+    "macd_hist",
+    "bb_upper",
+    "bb_lower",
+    "bb_width",
+    "atr_14",
+    "hist_vol_21",
+    "sent_pos_avg_3d",
+    "sent_pos_avg_5d",
+    "sent_pos_avg_10d",
+    "sent_pos_mom_3d",
+    "news_vol_spike",
+    "rel_strength_spy",
+    "vix_level"
+  ],
+  "trained_at": "2026-07-27T20:47:04.954605+00:00"
+}

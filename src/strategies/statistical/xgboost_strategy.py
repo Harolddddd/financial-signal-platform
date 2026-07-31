@@ -16,7 +16,7 @@ class XGBoostStrategy(Strategy):
             n_estimators=n_estimators, max_depth=max_depth,
             learning_rate=learning_rate, tree_method="hist",
             eval_metric="mlogloss", random_state=random_state,
-            n_jobs=-1, verbosity=0,
+            n_jobs=4, verbosity=0,
         )
         self._le = LabelEncoder()
         self._feature_cols: list[str] = []

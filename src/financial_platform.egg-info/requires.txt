@@ -12,6 +12,14 @@ vaderSentiment>=3.3.2
 apache-airflow>=2.9.0
 requests>=2.32.0
 pyyaml>=6.0.1
+scikit-learn>=1.5.0
+xgboost>=2.0.0
+lightgbm>=4.3.0
+optuna>=3.6.0
+joblib>=1.4.0
+shap>=0.45.0
+streamlit>=1.35.0
+plotly>=5.20.0
 
 [dev]
 pytest>=8.2.0

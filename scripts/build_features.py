@@ -149,13 +149,43 @@ def build_features_for_ticker(
     raw_dir: Path,
     spy_df: pl.DataFrame,
     vix_df: pl.DataFrame,
+    drop_label_nulls: bool = True,
 ) -> pl.DataFrame:
     df = pl.read_parquet(raw_dir / f"{ticker}.parquet")
     df = add_technical_indicators(df)
     df = add_cross_asset_features(df, spy_df, vix_df)
     df = add_neutral_sentiment(df)
     df = add_labels(df)
-    return df.drop_nulls(subset=["label"])
+    if drop_label_nulls:
+        # Training/backtesting need a real label — the last forward_days
+        # rows can't have one yet, so they're dropped for that use case.
+        return df.drop_nulls(subset=["label"])
+    # Live inference doesn't need a label at all, so keep every row —
+    # including the most recent trading day, which is what makes "today's"
+    # signal actually be today instead of trailing by forward_days.
+    return df
+
+
+def build_live_features(raw_dir: Path = _RAW_DIR) -> pl.DataFrame:
+    """Full per-ticker feature history through the latest raw trading day,
+    with no label-driven trim on the tail. Used only for live signals —
+    training/backtesting must keep using the labeled data/features/*.parquet
+    (via load_training_data) so their results stay unaffected."""
+    spy_df = pl.read_parquet(raw_dir / "SPY.parquet")
+    vix_df = pl.read_parquet(raw_dir / "^VIX.parquet")
+
+    frames: list[pl.DataFrame] = []
+    for ticker in _STOCK_TICKERS:
+        raw_path = raw_dir / f"{ticker}.parquet"
+        if not raw_path.exists():
+            continue
+        try:
+            frames.append(build_features_for_ticker(
+                ticker, raw_dir, spy_df, vix_df, drop_label_nulls=False,
+            ))
+        except Exception as exc:
+            logger.warning("  live features FAILED %s: %s", ticker, exc)
+    return pl.concat(frames, how="vertical_relaxed")
 
 
 def main() -> None:

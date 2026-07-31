@@ -1,0 +1,65 @@
+{
+  "model_name": "logistic_regression",
+  "version": "20260727T204649829830",
+  "params": {
+    "C": 1.0,
+    "max_iter": 1000,
+    "random_state": 42,
+    "class_weight": "balanced"
+  },
+  "evaluation": {
+    "accuracy": 0.46801001051472985,
+    "precision_buy": 0.38120922028872517,
+    "recall_buy": 0.3077097669428138,
+    "f1_buy": 0.34053873533920004,
+    "f1_macro": 0.4138771335152484,
+    "confusion_matrix": [
+      [
+        59652,
+        89441,
+        44765
+      ],
+      [
+        51419,
+        203463,
+        39642
+      ],
+      [
+        45410,
+        75391,
+        41333
+      ]
+    ],
+    "class_labels": [
+      "Buy",
+      "Hold",
+      "Sell"
+    ],
+    "n_samples": 650516
+  },
+  "feature_cols": [
+    "sma_10",
+    "sma_20",
+    "sma_50",
+    "sma_200",
+    "ema_12",
+    "ema_26",
+    "rsi_14",
+    "macd",
+    "macd_signal",
+    "macd_hist",
+    "bb_upper",
+    "bb_lower",
+    "bb_width",
+    "atr_14",
+    "hist_vol_21",
+    "sent_pos_avg_3d",
+    "sent_pos_avg_5d",
+    "sent_pos_avg_10d",
+    "sent_pos_mom_3d",
+    "news_vol_spike",
+    "rel_strength_spy",
+    "vix_level"
+  ],
+  "trained_at": "2026-07-27T20:46:49.831829+00:00"
+}

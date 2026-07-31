@@ -27,4 +27,11 @@ def load_training_data(
     sql = f"SELECT * FROM read_parquet('{pattern}') {where} ORDER BY ticker, time"
 
     conn = duckdb.connect()
+    # DuckDB auto-detects memory_limit as ~80% of system RAM (25GB on a
+    # 27.6GB machine) with no cap otherwise — enough on its own to starve
+    # the rest of the system (Windows, streamlit, joblib workers) and has
+    # caused multiple crash-reboots. This dataset is ~1GB in memory; a few
+    # GB of headroom is more than sufficient.
+    conn.execute("SET memory_limit='4GB'")
+    conn.execute("SET threads TO 4")
     return conn.execute(sql).pl()

@@ -14,7 +14,7 @@ class LightGBMStrategy(Strategy):
         self._model = LGBMClassifier(
             n_estimators=n_estimators, max_depth=max_depth,
             learning_rate=learning_rate, class_weight="balanced",
-            random_state=random_state, n_jobs=-1, verbose=-1,
+            random_state=random_state, n_jobs=4, verbose=-1,
         )
         self._feature_cols: list[str] = []
 

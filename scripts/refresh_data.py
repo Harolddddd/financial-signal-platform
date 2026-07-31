@@ -63,6 +63,7 @@ def main() -> None:
     today = datetime.now(timezone.utc)
     logger.info("=== Data refresh → %s ===", today.date())
 
+    _RAW_DIR.mkdir(parents=True, exist_ok=True)
     logger.info("[1/2] Refreshing raw OHLCV (%d stock tickers + aux)", len(_STOCK_TICKERS))
     for ticker in list(_STOCK_TICKERS) + _AUX_TICKERS:
         _refresh_raw(ticker, today)
