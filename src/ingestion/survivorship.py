@@ -1,9 +1,10 @@
 from datetime import datetime
-from pathlib import Path
 
 import polars as pl
 
-_CSV_PATH = Path(__file__).parents[2] / "data" / "index_compositions" / "sp500_changes.csv"
+from config.markets import get_market
+
+_CSV_PATH = get_market("us").data_root / "index_compositions" / "sp500_changes.csv"
 
 
 def load_sp500_changes() -> pl.DataFrame:

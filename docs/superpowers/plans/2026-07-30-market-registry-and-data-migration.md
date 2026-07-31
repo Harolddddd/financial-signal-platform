@@ -10,7 +10,7 @@
 
 ## Global Constraints
 
-- Zero behavior change to any of the existing 162 tests — they must pass unmodified after this plan (see `docs/DEVELOPER_GUIDE.md`: `pytest tests/unit/ tests/integration/ -q` → `162 passed`).
+- Zero behavior change to any existing test. `docs/DEVELOPER_GUIDE.md` claims `162 passed`, but that's stale — the measured baseline on this branch (before any change in this plan) is **331 passed, 12 failed, 2 skipped**. The 12 failures are pre-existing and unrelated to this plan: Airflow version drift (`ImportError: cannot import name 'ObjectStoragePath'` in `test_dags.py`, `test_feature_dag.py`, `test_model_retrain_dag.py`), a stale ticker-count assertion (`test_scrape_top20.py::test_tickers_list_has_20_stocks` expects 20, the real list has grown to 152), and a flaky Sharpe-ratio edge case (`test_backtest_metrics.py::test_sharpe_ratio_positive_for_consistent_gains`). Do not fix these — they are out of scope. The bar for this plan is: same 12 failures, same 2 skipped, zero new failures, plus whatever new tests each task adds.
 - No new dependencies.
 - `data/raw/` is gitignored (630MB, untracked) — the migration must not accidentally bring it under git tracking at its new path.
 - Follow the approved design: `docs/superpowers/specs/2026-07-30-us-china-market-split-design.md`.
@@ -209,7 +209,7 @@ One caveat: `_CSV_PATH` is now a path relative to the process's current working 
 - [ ] **Step 5: Run the full existing test suite to confirm nothing broke**
 
 Run: `pytest tests/unit/ tests/integration/ -q`
-Expected: `166 passed` — the pre-existing 162 plus Task 1's 4 new `test_markets.py` tests, zero failures/errors.
+Expected: `335 passed, 12 failed, 2 skipped` — the measured baseline (331 passed, 12 failed, 2 skipped) plus Task 1's 4 new `test_markets.py` tests. The 12 failures must be the *same* pre-existing ones named in Global Constraints — if any different test fails, that's a real regression from this task.
 
 - [ ] **Step 6: Verify the gitignore fix actually excludes the moved raw data**
 
