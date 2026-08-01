@@ -14,6 +14,7 @@ from pathlib import Path
 from datetime import datetime
 import logging
 
+from config.markets import get_market
 from dashboard.config import FEATURE_COLS, REGISTRY_DIR
 from src.features.duckdb_client import load_training_data
 from src.models.evaluator import evaluate
@@ -22,7 +23,7 @@ from src.models.registry import list_models, load_model, save_model
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
-_FEATURE_DIR = Path("data/features")
+_FEATURE_DIR = get_market("us").data_root / "features"
 _TRAIN_RATIO = 0.8
 _MODEL_NAMES = ["random_forest", "xgboost", "lightgbm"]
 

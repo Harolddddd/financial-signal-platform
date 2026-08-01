@@ -48,3 +48,23 @@ def test_refresh_data_dirs_resolve_under_markets_us_data():
     from scripts.refresh_data import _RAW_DIR, _FEATURE_DIR
     assert _RAW_DIR == _US_ROOT / "raw" / "ohlcv"
     assert _FEATURE_DIR == _US_ROOT / "features"
+
+
+def test_incremental_train_feature_dir_resolves_under_markets_us_data():
+    from scripts.incremental_train import _FEATURE_DIR
+    assert _FEATURE_DIR == _US_ROOT / "features"
+
+
+def test_train_new_models_feature_dir_resolves_under_markets_us_data():
+    from scripts.train_new_models import _FEATURE_DIR
+    assert _FEATURE_DIR == _US_ROOT / "features"
+
+
+def test_train_lstm_only_feature_dir_resolves_under_markets_us_data():
+    from scripts.train_lstm_only import _FEATURE_DIR
+    assert _FEATURE_DIR == _US_ROOT / "features"
+
+
+def test_train_models_feature_dir_resolves_under_markets_us_data():
+    from scripts.train_models import _FEATURE_DIR
+    assert _FEATURE_DIR == _US_ROOT / "features"

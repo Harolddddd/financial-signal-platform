@@ -14,6 +14,7 @@ import logging
 
 import polars as pl
 
+from config.markets import get_market
 from dashboard.config import FEATURE_COLS, REGISTRY_DIR
 from src.features.duckdb_client import load_training_data
 from src.models.base_classifier import BaseClassifier
@@ -28,7 +29,7 @@ from src.models.zoo.svm_model import SVMClassifier
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
-_FEATURE_DIR = Path("data/features")
+_FEATURE_DIR = get_market("us").data_root / "features"
 _TRAIN_RATIO = 0.8
 _SVM_SAMPLE_SIZE = 30_000
 _LSTM_WINDOW_DAYS = 420

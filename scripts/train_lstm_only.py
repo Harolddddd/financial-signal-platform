@@ -5,6 +5,7 @@ import logging
 
 import polars as pl
 
+from config.markets import get_market
 from dashboard.config import FEATURE_COLS, REGISTRY_DIR
 from src.features.duckdb_client import load_training_data
 from src.models.zoo.lstm_model import LSTMClassifier
@@ -13,7 +14,7 @@ from scripts.train_new_models import train_and_save, _LSTM_WINDOW_DAYS
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
-_FEATURE_DIR = Path("data/features")
+_FEATURE_DIR = get_market("us").data_root / "features"
 
 
 def main() -> None:
