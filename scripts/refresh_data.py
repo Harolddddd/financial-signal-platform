@@ -1,4 +1,4 @@
-"""Incrementally refresh OHLCV data for all 151 tickers to today, then rebuild features."""
+"""Incrementally refresh OHLCV data for the given market's tickers to today, then rebuild features."""
 from __future__ import annotations
 import logging
 from datetime import datetime, timedelta, timezone
@@ -18,7 +18,7 @@ _RAW_DIR = get_market("us").data_root / "raw" / "ohlcv"
 _FEATURE_DIR = get_market("us").data_root / "features"
 _AUX_TICKERS_BY_MARKET: dict[str, list[str]] = {
     "us": ["SPY", "^VIX"],
-    "china": ["000300.SS"],
+    "china": ["510300.SS"],
 }
 
 
@@ -68,7 +68,11 @@ def main(market: str = "us") -> None:
     market_cfg = get_market(market)
     raw_dir = market_cfg.data_root / "raw" / "ohlcv"
     feature_dir = market_cfg.data_root / "features"
+    if market not in _TICKERS_BY_MARKET:
+        raise KeyError(f"No ticker list configured for market {market!r} in _TICKERS_BY_MARKET")
     tickers = _TICKERS_BY_MARKET[market]
+    if market not in _AUX_TICKERS_BY_MARKET:
+        raise KeyError(f"No aux ticker list configured for market {market!r} in _AUX_TICKERS_BY_MARKET")
     aux_tickers = _AUX_TICKERS_BY_MARKET[market]
 
     today = datetime.now(timezone.utc)
@@ -79,7 +83,13 @@ def main(market: str = "us") -> None:
     for ticker in list(tickers) + aux_tickers:
         _refresh_raw(ticker, today, raw_dir)
 
-    benchmark_df = pl.read_parquet(raw_dir / f"{market_cfg.benchmark_ticker}.parquet")
+    benchmark_path = raw_dir / f"{market_cfg.benchmark_ticker}.parquet"
+    if not benchmark_path.exists():
+        raise FileNotFoundError(
+            f"{market_cfg.benchmark_ticker}.parquet missing from {raw_dir}/. "
+            "Run scripts/refresh_data.py first."
+        )
+    benchmark_df = pl.read_parquet(benchmark_path)
     if market_cfg.vol_index_ticker:
         vix_df = pl.read_parquet(raw_dir / f"{market_cfg.vol_index_ticker}.parquet")
     else:

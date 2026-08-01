@@ -204,6 +204,8 @@ def main(market: str = "us") -> None:
     market_cfg = get_market(market)
     raw_dir = market_cfg.data_root / "raw" / "ohlcv"
     feature_dir = market_cfg.data_root / "features"
+    if market not in _TICKERS_BY_MARKET:
+        raise KeyError(f"No ticker list configured for market {market!r} in _TICKERS_BY_MARKET")
     tickers = _TICKERS_BY_MARKET[market]
 
     benchmark_path = raw_dir / f"{market_cfg.benchmark_ticker}.parquet"

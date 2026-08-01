@@ -31,7 +31,7 @@ MARKETS: dict[str, MarketConfig] = {
         label="China A-Share (CSI 300)",
         data_root=_REPO_ROOT / "markets" / "china" / "data",
         universe="csi300",
-        benchmark_ticker="000300.SS",
+        benchmark_ticker="510300.SS",
         vol_index_ticker=None,
         currency="CNY",
     ),

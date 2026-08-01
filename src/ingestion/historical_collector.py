@@ -30,8 +30,19 @@ def fetch_ohlcv(
     if "date" in raw.columns:
         raw = raw.rename(columns={"date": "time"})
 
-    # Convert timezone-aware datetime to string for Polars compatibility (avoids PyArrow requirement)
-    raw["time"] = pd.to_datetime(raw["time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S%z")
+    # yfinance returns bars tz-aware in the exchange's LOCAL timezone, stamped
+    # at local midnight. Converting straight to UTC shifts UTC+ exchanges
+    # (e.g. Asia/Shanghai) back onto the previous calendar day, since local
+    # midnight becomes 16:00 UTC the day before — invisible for US tickers
+    # only because their negative UTC offset keeps the date the same.
+    # tz_localize(None) strips the tz label WITHOUT converting the underlying
+    # wall-clock value, preserving the correct local trading-day date; we then
+    # relabel it UTC for the rest of the pipeline, which only ever uses the
+    # date component (truncated to day immediately below).
+    local_time = pd.to_datetime(raw["time"])
+    if local_time.dt.tz is not None:
+        local_time = local_time.dt.tz_localize(None)
+    raw["time"] = local_time.dt.strftime("%Y-%m-%d %H:%M:%S+0000")
 
     # Build data dict with simple numpy types to avoid PyArrow requirement
     data = {

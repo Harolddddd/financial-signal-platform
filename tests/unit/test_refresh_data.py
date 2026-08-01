@@ -1,13 +1,12 @@
 from datetime import datetime, timezone
 
 import polars as pl
-import pytest
 
 
 def test_aux_tickers_by_market():
     from scripts.refresh_data import _AUX_TICKERS_BY_MARKET
     assert _AUX_TICKERS_BY_MARKET["us"] == ["SPY", "^VIX"]
-    assert _AUX_TICKERS_BY_MARKET["china"] == ["000300.SS"]
+    assert _AUX_TICKERS_BY_MARKET["china"] == ["510300.SS"]
 
 
 def test_refresh_raw_new_ticker_writes_to_given_raw_dir(tmp_path, monkeypatch):

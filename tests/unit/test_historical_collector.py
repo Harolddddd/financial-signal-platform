@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from unittest.mock import MagicMock, patch
 import polars as pl
 import pandas as pd
@@ -44,6 +44,31 @@ def test_fetch_ohlcv_returns_polars_dataframe(mock_ticker):
     assert "ticker" in df.columns
     assert df["ticker"][0] == "AAPL"
     assert len(df) == 2
+
+
+@patch("src.ingestion.historical_collector.yf.Ticker")
+def test_fetch_ohlcv_preserves_local_trading_date_for_utc_positive_exchange(mock_ticker):
+    idx = pd.DatetimeIndex(["2024-01-02", "2024-01-03"], name="Date", tz="Asia/Shanghai")
+    history_df = pd.DataFrame(
+        {
+            "Open": [1700.0, 1705.0], "High": [1710.0, 1715.0],
+            "Low": [1695.0, 1700.0], "Close": [1705.0, 1710.0],
+            "Adj Close": [1705.0, 1710.0],
+            "Volume": [100_000, 110_000],
+            "Dividends": [0.0, 0.0], "Stock Splits": [0.0, 0.0],
+        },
+        index=idx,
+    )
+    mock_ticker.return_value.history.return_value = history_df
+
+    df = fetch_ohlcv(
+        "600519.SS",
+        datetime(2024, 1, 1, tzinfo=timezone.utc),
+        datetime(2024, 1, 5, tzinfo=timezone.utc),
+    )
+
+    dates = df["time"].dt.date().to_list()
+    assert dates == [date(2024, 1, 2), date(2024, 1, 3)]
 
 
 @patch("src.ingestion.historical_collector.yf.Ticker")

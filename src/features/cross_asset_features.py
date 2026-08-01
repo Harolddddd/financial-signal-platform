@@ -41,6 +41,7 @@ def synthetic_vol_index(benchmark_df: pl.DataFrame, window: int = 21) -> pl.Data
     vix_df (time, close) so it flows through add_cross_asset_features()
     unchanged. Used when a market has no reliable direct vol-index ticker
     (MarketConfig.vol_index_ticker is None)."""
+    benchmark_df = benchmark_df.filter(pl.col("close").is_finite() & (pl.col("close") > 0))
     log_ret = (pl.col("close") / pl.col("close").shift(1)).log()
     realized_vol = (
         log_ret.rolling_std(window_size=window) * (252 ** 0.5) * 100

@@ -21,7 +21,7 @@ def test_china_market_config():
     assert china.name == "china"
     assert china.data_root == Path(__file__).resolve().parents[2] / "markets" / "china" / "data"
     assert china.universe == "csi300"
-    assert china.benchmark_ticker == "000300.SS"
+    assert china.benchmark_ticker == "510300.SS"
     assert china.vol_index_ticker is None
     assert china.currency == "CNY"
 
