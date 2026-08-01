@@ -54,3 +54,19 @@ def test_train_and_save_raises_on_empty_df(tmp_path):
     df = pl.DataFrame({col: [] for col in FEATURE_COLS + ["time", "ticker", "label"]})
     with pytest.raises(ValueError, match="No training data"):
         train_and_save(RandomForestClassifier_(), df, FEATURE_COLS, tmp_path)
+
+
+def test_market_paths_for_us():
+    from scripts.train_models import _market_paths
+    from config.markets import get_market
+    feature_dir, registry_dir = _market_paths("us")
+    assert feature_dir == get_market("us").data_root / "features"
+    assert registry_dir == get_market("us").data_root / "registry"
+
+
+def test_market_paths_for_china():
+    from scripts.train_models import _market_paths
+    from config.markets import get_market
+    feature_dir, registry_dir = _market_paths("china")
+    assert feature_dir == get_market("china").data_root / "features"
+    assert registry_dir == get_market("china").data_root / "registry"

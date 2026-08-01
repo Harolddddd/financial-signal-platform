@@ -4,8 +4,8 @@ import logging
 import numpy as np
 import polars as pl
 
-from config.markets import get_market
-from dashboard.ui_config import FEATURE_COLS, REGISTRY_DIR
+from config.markets import MARKETS, get_market
+from dashboard.ui_config import FEATURE_COLS
 from src.features.duckdb_client import load_training_data
 from src.models.base_classifier import BaseClassifier
 from src.models.evaluator import evaluate
@@ -19,6 +19,11 @@ logger = logging.getLogger(__name__)
 
 _FEATURE_DIR = get_market("us").data_root / "features"
 _TRAIN_RATIO = 0.8
+
+
+def _market_paths(market: str) -> tuple[Path, Path]:
+    market_cfg = get_market(market)
+    return market_cfg.data_root / "features", market_cfg.data_root / "registry"
 
 
 def train_and_save(
@@ -58,18 +63,20 @@ def train_and_save(
     return path
 
 
-def main() -> None:
-    if not _FEATURE_DIR.exists() or not any(_FEATURE_DIR.glob("*.parquet")):
+def main(market: str = "us") -> None:
+    feature_dir, registry_dir = _market_paths(market)
+
+    if not feature_dir.exists() or not any(feature_dir.glob("*.parquet")):
         raise FileNotFoundError(
-            "No feature parquets found in markets/us/data/features/. "
+            f"No feature parquets found in {feature_dir}/. "
             "Run scripts/build_features.py first."
         )
 
-    logger.info("Loading feature data from %s ...", _FEATURE_DIR)
-    df = load_training_data(_FEATURE_DIR)
+    logger.info("Loading feature data from %s ...", feature_dir)
+    df = load_training_data(feature_dir)
     logger.info("Loaded %d rows across %d tickers", len(df), df["ticker"].n_unique())
 
-    REGISTRY_DIR.mkdir(parents=True, exist_ok=True)
+    registry_dir.mkdir(parents=True, exist_ok=True)
 
     models: list[BaseClassifier] = [
         RandomForestClassifier_(),
@@ -80,14 +87,18 @@ def main() -> None:
     for model in models:
         logger.info("Training %s ...", model.name)
         try:
-            train_and_save(model, df, FEATURE_COLS, REGISTRY_DIR)
+            train_and_save(model, df, FEATURE_COLS, registry_dir)
         except Exception as exc:
             logger.error("FAILED %s: %s", model.name, exc)
 
     print("\nTraining complete. Registry contents:")
-    for p in sorted(REGISTRY_DIR.rglob("*.json")):
+    for p in sorted(registry_dir.rglob("*.json")):
         print(f"  {p}")
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--market", default="us", choices=sorted(MARKETS))
+    args = parser.parse_args()
+    main(args.market)
