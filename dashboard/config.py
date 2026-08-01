@@ -1,8 +1,10 @@
 # dashboard/config.py
 from pathlib import Path
 
-PARQUET_DIR  = Path("data/features")
-REGISTRY_DIR = Path("data/registry")
+from config.markets import get_market
+
+PARQUET_DIR  = get_market("us").data_root / "features"
+REGISTRY_DIR = get_market("us").data_root / "registry"
 
 OHLCV_COLS = ["open", "high", "low", "close", "volume"]
 

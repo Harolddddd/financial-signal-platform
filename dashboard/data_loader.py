@@ -6,6 +6,7 @@ from pathlib import Path
 
 import polars as pl
 
+from config.markets import get_market
 from src.backtesting.grader import Grade, ModelGrade, grade_model, build_leaderboard
 from src.backtesting.metrics import BacktestMetrics
 from src.backtesting.walk_forward import FoldBacktestResult, WalkForwardBacktestResult
@@ -16,7 +17,7 @@ from src.strategies.registry import list_strategies, load_strategy
 
 logger = logging.getLogger(__name__)
 
-CACHE_DIR = Path("data/cache")
+CACHE_DIR = get_market("us").data_root / "cache"
 
 
 # ---------------------------------------------------------------------------

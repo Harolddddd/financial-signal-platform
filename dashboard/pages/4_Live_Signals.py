@@ -5,10 +5,11 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
+from config.markets import get_market
 from dashboard.config import CONFIDENCE_THRESHOLD, PARQUET_DIR, OHLCV_COLS, FEATURE_COLS
 from dashboard.data_loader import get_live_signals
 
-CACHE_DIR = Path("data/cache")
+CACHE_DIR = get_market("us").data_root / "cache"
 
 st.set_page_config(page_title="Live Signals", layout="wide")
 st.header("Live Buy Signals")
