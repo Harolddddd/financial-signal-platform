@@ -3,8 +3,23 @@ universes:
     description: "S&P 500 constituents — populated at runtime from survivorship module"
     tickers: []
   csi300:
-    description: "CSI 300 constituents (China A-share) — static list, populated by the China ingestion plan"
-    tickers: []
+    description: "CSI 300 pilot subset (15 tickers, China A-share) — full 300-constituent list is a follow-up plan"
+    tickers:
+      - "600519.SS"
+      - "601318.SS"
+      - "600036.SS"
+      - "601398.SS"
+      - "000858.SZ"
+      - "000333.SZ"
+      - "002594.SZ"
+      - "300750.SZ"
+      - "600887.SS"
+      - "601012.SS"
+      - "002415.SZ"
+      - "300059.SZ"
+      - "601888.SS"
+      - "600030.SS"
+      - "000651.SZ"
   watchlist:
     description: "Small test watchlist"
     tickers:

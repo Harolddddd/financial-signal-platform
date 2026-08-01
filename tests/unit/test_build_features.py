@@ -79,3 +79,12 @@ def test_build_features_for_ticker_has_no_null_labels(tmp_path):
     df = build_features_for_ticker("AAPL", raw_dir, spy, vix)
     assert df["label"].null_count() == 0
     assert set(df["label"].unique().to_list()).issubset({"Buy", "Hold", "Sell"})
+
+
+def test_tickers_by_market_has_expected_markets():
+    from scripts.build_features import _STOCK_TICKERS, _STOCK_TICKERS_CHINA, _TICKERS_BY_MARKET
+    assert _TICKERS_BY_MARKET["us"] == _STOCK_TICKERS
+    assert _TICKERS_BY_MARKET["china"] == _STOCK_TICKERS_CHINA
+    assert len(_STOCK_TICKERS_CHINA) == 15
+    assert all(t.endswith(".SS") or t.endswith(".SZ") for t in _STOCK_TICKERS_CHINA)
+    assert len(set(_STOCK_TICKERS_CHINA)) == 15  # no duplicates

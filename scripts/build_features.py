@@ -3,9 +3,9 @@ import logging
 
 import polars as pl
 
-from config.markets import get_market
+from config.markets import MARKETS, get_market
 from src.features.technical_indicators import add_technical_indicators
-from src.features.cross_asset_features import add_cross_asset_features
+from src.features.cross_asset_features import add_cross_asset_features, synthetic_vol_index
 from src.features.label_generator import add_labels
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -134,6 +134,17 @@ _STOCK_TICKERS: list[str] = [
     "GDDY", "LNTH", "OGN", "RBLX", "SAIA",
 ]
 
+_STOCK_TICKERS_CHINA: list[str] = [
+    "600519.SS", "601318.SS", "600036.SS", "601398.SS", "000858.SZ",
+    "000333.SZ", "002594.SZ", "300750.SZ", "600887.SS", "601012.SS",
+    "002415.SZ", "300059.SZ", "601888.SS", "600030.SS", "000651.SZ",
+]
+
+_TICKERS_BY_MARKET: dict[str, list[str]] = {
+    "us": _STOCK_TICKERS,
+    "china": _STOCK_TICKERS_CHINA,
+}
+
 
 def add_neutral_sentiment(df: pl.DataFrame) -> pl.DataFrame:
     return df.with_columns([
@@ -189,33 +200,45 @@ def build_live_features(raw_dir: Path = _RAW_DIR) -> pl.DataFrame:
     return pl.concat(frames, how="vertical_relaxed")
 
 
-def main() -> None:
-    spy_path = _RAW_DIR / "SPY.parquet"
-    vix_path = _RAW_DIR / "^VIX.parquet"
+def main(market: str = "us") -> None:
+    market_cfg = get_market(market)
+    raw_dir = market_cfg.data_root / "raw" / "ohlcv"
+    feature_dir = market_cfg.data_root / "features"
+    tickers = _TICKERS_BY_MARKET[market]
 
-    if not spy_path.exists() or not vix_path.exists():
+    benchmark_path = raw_dir / f"{market_cfg.benchmark_ticker}.parquet"
+    if not benchmark_path.exists():
         raise FileNotFoundError(
-            "SPY.parquet or ^VIX.parquet missing from markets/us/data/raw/ohlcv/. "
-            "Run scripts/scrape_top20.py first."
+            f"{market_cfg.benchmark_ticker}.parquet missing from {raw_dir}/. "
+            "Run scripts/refresh_data.py first."
         )
+    benchmark_df = pl.read_parquet(benchmark_path)
 
-    spy_df = pl.read_parquet(spy_path)
-    vix_df = pl.read_parquet(vix_path)
+    if market_cfg.vol_index_ticker:
+        vol_path = raw_dir / f"{market_cfg.vol_index_ticker}.parquet"
+        if not vol_path.exists():
+            raise FileNotFoundError(
+                f"{market_cfg.vol_index_ticker}.parquet missing from {raw_dir}/. "
+                "Run scripts/refresh_data.py first."
+            )
+        vix_df = pl.read_parquet(vol_path)
+    else:
+        vix_df = synthetic_vol_index(benchmark_df)
 
-    _FEATURE_DIR.mkdir(parents=True, exist_ok=True)
+    feature_dir.mkdir(parents=True, exist_ok=True)
 
     successes: list[tuple[str, int]] = []
     failures:  list[tuple[str, str]] = []
 
-    for ticker in _STOCK_TICKERS:
-        raw_path = _RAW_DIR / f"{ticker}.parquet"
+    for ticker in tickers:
+        raw_path = raw_dir / f"{ticker}.parquet"
         if not raw_path.exists():
             logger.warning("Skipping %s — raw parquet not found", ticker)
             failures.append((ticker, "raw parquet not found"))
             continue
         try:
-            df = build_features_for_ticker(ticker, _RAW_DIR, spy_df, vix_df)
-            out_path = _FEATURE_DIR / f"{ticker}.parquet"
+            df = build_features_for_ticker(ticker, raw_dir, benchmark_df, vix_df)
+            out_path = feature_dir / f"{ticker}.parquet"
             df.write_parquet(out_path)
             logger.info("OK    %s — %d rows → %s", ticker, len(df), out_path)
             successes.append((ticker, len(df)))
@@ -232,4 +255,8 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--market", default="us", choices=sorted(MARKETS))
+    args = parser.parse_args()
+    main(args.market)
