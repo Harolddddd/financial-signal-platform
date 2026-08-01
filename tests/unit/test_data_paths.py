@@ -68,3 +68,19 @@ def test_train_lstm_only_feature_dir_resolves_under_markets_us_data():
 def test_train_models_feature_dir_resolves_under_markets_us_data():
     from scripts.train_models import _FEATURE_DIR
     assert _FEATURE_DIR == _US_ROOT / "features"
+
+
+def test_precompute_new_strategies_cache_dir_resolves_under_markets_us_data():
+    from scripts.precompute_new_strategies import CACHE_DIR
+    assert CACHE_DIR == _US_ROOT / "cache"
+    assert CACHE_DIR.exists()
+
+
+def test_precompute_dashboard_cache_dir_resolves_under_markets_us_data():
+    from scripts.precompute_dashboard import CACHE_DIR
+    assert CACHE_DIR == _US_ROOT / "cache"
+
+
+def test_precompute_full_cache_dir_resolves_under_markets_us_data():
+    from scripts.precompute_full import CACHE_DIR
+    assert CACHE_DIR == _US_ROOT / "cache"

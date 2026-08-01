@@ -12,6 +12,7 @@ import logging
 from datetime import datetime, timezone
 from pathlib import Path
 
+from config.markets import get_market
 from dashboard.config import FEATURE_COLS, OHLCV_COLS, PARQUET_DIR
 from src.backtesting.grader import grade_model
 from src.backtesting.metrics import BacktestMetrics
@@ -22,7 +23,7 @@ from src.strategies.registry import list_strategies, load_strategy
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
-CACHE_DIR = Path("data/cache")
+CACHE_DIR = get_market("us").data_root / "cache"
 
 
 def _now() -> str:

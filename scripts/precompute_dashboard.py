@@ -14,6 +14,7 @@ from pathlib import Path
 
 import polars as pl
 
+from config.markets import get_market
 from dashboard.config import CONFIDENCE_THRESHOLD, FEATURE_COLS, OHLCV_COLS, PARQUET_DIR
 from scripts.build_features import build_live_features
 from src.backtesting.grader import grade_model
@@ -25,7 +26,7 @@ from src.strategies.registry import list_strategies, load_strategy
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
-CACHE_DIR = Path("data/cache")
+CACHE_DIR = get_market("us").data_root / "cache"
 
 
 def _now() -> str:
