@@ -67,3 +67,21 @@ def test_missing_vix_date_becomes_null():
     })
     result = add_cross_asset_features(stock, spy, vix)
     assert result["vix_level"][1] is None or result["vix_level"].is_null()[1]
+
+
+def test_synthetic_vol_index_returns_time_and_close_columns():
+    import numpy as np
+    from src.features.cross_asset_features import synthetic_vol_index
+
+    n = 60
+    rng = np.random.default_rng(0)
+    closes = (100 * np.exp(np.cumsum(rng.normal(0, 0.01, n)))).tolist()
+    benchmark = _df(closes, ticker="000300.SS")
+
+    result = synthetic_vol_index(benchmark, window=21)
+
+    assert set(result.columns) == {"time", "close"}
+    assert 0 < len(result) < n
+    assert result["close"].null_count() == 0
+    assert (result["close"] > 0).all()
+    assert (result["close"] < 200).all()  # sane VIX-style upper bound
