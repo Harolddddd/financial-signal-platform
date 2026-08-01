@@ -97,8 +97,42 @@ def test_build_live_features_default_market_is_us():
     assert sig.parameters["market"].default == "us"
 
 
-def test_build_live_features_china_reads_from_china_raw_dir_and_tickers():
+def test_build_live_features_china_reads_from_china_raw_dir_and_tickers(tmp_path, monkeypatch):
     from scripts.build_features import build_live_features, _STOCK_TICKERS_CHINA
+    from config.markets import MARKETS
+
+    # Create synthetic OHLCV data for a few tickers in a temp directory
+    # build_live_features looks for raw_dir at data_root / "raw" / "ohlcv"
+    raw_dir = tmp_path / "raw" / "ohlcv"
+    raw_dir.mkdir(parents=True, exist_ok=True)
+
+    # Create data for the benchmark ticker and a couple of regular tickers
+    benchmark_ticker = "510300.SS"
+    test_tickers = [benchmark_ticker, "000009.SZ", "600000.SS"]
+
+    for ticker in test_tickers:
+        ohlcv_df = _make_ohlcv(ticker, n=100)
+        ohlcv_df.write_parquet(raw_dir / f"{ticker}.parquet")
+
+    # Monkeypatch get_market to return a modified config with our temp directory
+    def mock_get_market(name):
+        if name == "china":
+            cfg = MARKETS["china"]
+            # Return a new config with data_root pointing to our temp directory
+            from config.markets import MarketConfig
+            return MarketConfig(
+                name=cfg.name,
+                label=cfg.label,
+                data_root=tmp_path,
+                universe=cfg.universe,
+                benchmark_ticker=cfg.benchmark_ticker,
+                vol_index_ticker=cfg.vol_index_ticker,
+                currency=cfg.currency,
+            )
+        return MARKETS[name]
+
+    monkeypatch.setattr("scripts.build_features.get_market", mock_get_market)
+
     df = build_live_features(market="china")
     assert len(df) > 0
     assert set(df["ticker"].unique().to_list()).issubset(set(_STOCK_TICKERS_CHINA))
