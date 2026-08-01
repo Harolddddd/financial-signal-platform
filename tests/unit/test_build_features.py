@@ -85,6 +85,6 @@ def test_tickers_by_market_has_expected_markets():
     from scripts.build_features import _STOCK_TICKERS, _STOCK_TICKERS_CHINA, _TICKERS_BY_MARKET
     assert _TICKERS_BY_MARKET["us"] == _STOCK_TICKERS
     assert _TICKERS_BY_MARKET["china"] == _STOCK_TICKERS_CHINA
-    assert len(_STOCK_TICKERS_CHINA) == 15
+    assert len(_STOCK_TICKERS_CHINA) == 500
     assert all(t.endswith(".SS") or t.endswith(".SZ") for t in _STOCK_TICKERS_CHINA)
-    assert len(set(_STOCK_TICKERS_CHINA)) == 15  # no duplicates
+    assert len(set(_STOCK_TICKERS_CHINA)) == 500  # no duplicates
