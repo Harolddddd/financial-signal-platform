@@ -3,6 +3,7 @@ import logging
 
 import polars as pl
 
+from config.markets import get_market
 from src.features.technical_indicators import add_technical_indicators
 from src.features.cross_asset_features import add_cross_asset_features
 from src.features.label_generator import add_labels
@@ -10,8 +11,8 @@ from src.features.label_generator import add_labels
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
-_RAW_DIR     = Path("data/raw/ohlcv")
-_FEATURE_DIR = Path("data/features")
+_RAW_DIR     = get_market("us").data_root / "raw" / "ohlcv"
+_FEATURE_DIR = get_market("us").data_root / "features"
 
 _STOCK_TICKERS: list[str] = [
     # Mega-cap tech

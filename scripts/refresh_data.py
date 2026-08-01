@@ -6,14 +6,15 @@ from pathlib import Path
 
 import polars as pl
 
+from config.markets import get_market
 from scripts.build_features import _STOCK_TICKERS, build_features_for_ticker
 from src.ingestion.historical_collector import fetch_ohlcv
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
-_RAW_DIR = Path("data/raw/ohlcv")
-_FEATURE_DIR = Path("data/features")
+_RAW_DIR = get_market("us").data_root / "raw" / "ohlcv"
+_FEATURE_DIR = get_market("us").data_root / "features"
 _AUX_TICKERS = ["SPY", "^VIX"]
 
 

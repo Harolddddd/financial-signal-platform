@@ -4,6 +4,7 @@ from pathlib import Path
 
 import polars as pl
 
+from config.markets import get_market
 from src.ingestion.historical_collector import fetch_ohlcv
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -72,7 +73,7 @@ BENCHMARK_TICKERS: list[str] = ["SPY", "^VIX"]
 START = datetime(1980, 1, 1, tzinfo=timezone.utc)
 END   = datetime.now(tz=timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
 
-_OUTPUT_DIR = Path("data/raw/ohlcv")
+_OUTPUT_DIR = get_market("us").data_root / "raw" / "ohlcv"
 
 
 def scrape_ticker(

@@ -28,3 +28,23 @@ def test_live_signals_page_no_longer_hardcodes_old_data_path():
     source = Path("dashboard/pages/4_Live_Signals.py").read_text()
     assert 'Path("data/cache")' not in source
     assert "get_market(" in source
+
+
+def test_scrape_top20_output_dir_resolves_under_markets_us_data():
+    from scripts.scrape_top20 import _OUTPUT_DIR
+    assert _OUTPUT_DIR == _US_ROOT / "raw" / "ohlcv"
+    assert _OUTPUT_DIR.exists()
+
+
+def test_build_features_dirs_resolve_under_markets_us_data():
+    from scripts.build_features import _RAW_DIR, _FEATURE_DIR
+    assert _RAW_DIR == _US_ROOT / "raw" / "ohlcv"
+    assert _FEATURE_DIR == _US_ROOT / "features"
+    assert _RAW_DIR.exists()
+    assert _FEATURE_DIR.exists()
+
+
+def test_refresh_data_dirs_resolve_under_markets_us_data():
+    from scripts.refresh_data import _RAW_DIR, _FEATURE_DIR
+    assert _RAW_DIR == _US_ROOT / "raw" / "ohlcv"
+    assert _FEATURE_DIR == _US_ROOT / "features"
