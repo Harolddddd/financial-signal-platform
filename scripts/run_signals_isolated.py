@@ -28,6 +28,7 @@ from pathlib import Path
 
 import psutil
 
+from config.markets import get_market
 from dashboard.config import PARQUET_DIR
 from scripts.build_features import build_live_features
 from src.features.duckdb_client import load_training_data
@@ -36,9 +37,11 @@ from src.strategies.registry import list_strategies
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
-_PARTIAL_DIR = Path("data/cache/signals_partial")
-_LIVE_CACHE = Path("data/cache/_tmp_live_features.parquet")
-_TRAIN_CACHE = Path("data/cache/_tmp_training_data.parquet")
+_CACHE_DIR = get_market("us").data_root / "cache"
+_PARTIAL_DIR = _CACHE_DIR / "signals_partial"
+_LIVE_CACHE = _CACHE_DIR / "_tmp_live_features.parquet"
+_TRAIN_CACHE = _CACHE_DIR / "_tmp_training_data.parquet"
+_SIGNALS_PATH = _CACHE_DIR / "signals.json"
 _MIN_FREE_GB = 3.0
 _POLL_SECONDS = 1.0
 _EXCLUDE = {"knn_classifier"}
@@ -154,11 +157,11 @@ def _merge_and_write() -> None:
 
     buy_count = sum(1 for s in all_signals if s["signal"] == "Buy")
     logger.info("  total signals: %d  buy: %d", len(all_signals), buy_count)
-    Path("data/cache/signals.json").write_text(json.dumps({
+    _SIGNALS_PATH.write_text(json.dumps({
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "signals": all_signals,
     }, indent=2, default=str))
-    logger.info("  wrote data/cache/signals.json")
+    logger.info("  wrote %s", _SIGNALS_PATH)
 
 
 if __name__ == "__main__":

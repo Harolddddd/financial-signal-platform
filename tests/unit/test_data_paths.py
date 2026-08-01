@@ -84,3 +84,28 @@ def test_precompute_dashboard_cache_dir_resolves_under_markets_us_data():
 def test_precompute_full_cache_dir_resolves_under_markets_us_data():
     from scripts.precompute_full import CACHE_DIR
     assert CACHE_DIR == _US_ROOT / "cache"
+
+
+def test_signal_one_strategy_paths_resolve_under_markets_us_data():
+    from scripts.signal_one_strategy import _OUT_DIR, _LIVE_CACHE, _TRAIN_CACHE
+    assert _OUT_DIR == _US_ROOT / "cache" / "signals_partial"
+    assert _LIVE_CACHE == _US_ROOT / "cache" / "_tmp_live_features.parquet"
+    assert _TRAIN_CACHE == _US_ROOT / "cache" / "_tmp_training_data.parquet"
+
+
+def test_run_signals_isolated_paths_resolve_under_markets_us_data():
+    from scripts.run_signals_isolated import _PARTIAL_DIR, _LIVE_CACHE, _TRAIN_CACHE, _SIGNALS_PATH
+    assert _PARTIAL_DIR == _US_ROOT / "cache" / "signals_partial"
+    assert _LIVE_CACHE == _US_ROOT / "cache" / "_tmp_live_features.parquet"
+    assert _TRAIN_CACHE == _US_ROOT / "cache" / "_tmp_training_data.parquet"
+    assert _SIGNALS_PATH == _US_ROOT / "cache" / "signals.json"
+
+
+def test_signal_one_strategy_and_run_signals_isolated_agree_on_cache_paths():
+    # The parent (run_signals_isolated) writes _LIVE_CACHE/_TRAIN_CACHE for
+    # the child (signal_one_strategy, spawned as a subprocess) to read —
+    # they must always point at the exact same files.
+    from scripts.signal_one_strategy import _LIVE_CACHE as child_live, _TRAIN_CACHE as child_train
+    from scripts.run_signals_isolated import _LIVE_CACHE as parent_live, _TRAIN_CACHE as parent_train
+    assert child_live == parent_live
+    assert child_train == parent_train

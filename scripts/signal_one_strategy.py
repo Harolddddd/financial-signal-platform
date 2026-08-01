@@ -15,6 +15,7 @@ from pathlib import Path
 
 import polars as pl
 
+from config.markets import get_market
 from dashboard.config import FEATURE_COLS, OHLCV_COLS, PARQUET_DIR
 from scripts.build_features import build_live_features
 from src.backtesting.strategy_runner import _is_stateless, _select_cols
@@ -24,9 +25,10 @@ from src.strategies.registry import load_strategy
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
-_OUT_DIR = Path("data/cache/signals_partial")
-_LIVE_CACHE = Path("data/cache/_tmp_live_features.parquet")
-_TRAIN_CACHE = Path("data/cache/_tmp_training_data.parquet")
+_CACHE_DIR = get_market("us").data_root / "cache"
+_OUT_DIR = _CACHE_DIR / "signals_partial"
+_LIVE_CACHE = _CACHE_DIR / "_tmp_live_features.parquet"
+_TRAIN_CACHE = _CACHE_DIR / "_tmp_training_data.parquet"
 
 
 def _load_live_df() -> pl.DataFrame:
