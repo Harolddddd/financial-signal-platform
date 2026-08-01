@@ -170,7 +170,7 @@ def build_features_for_ticker(
 def build_live_features(raw_dir: Path = _RAW_DIR) -> pl.DataFrame:
     """Full per-ticker feature history through the latest raw trading day,
     with no label-driven trim on the tail. Used only for live signals —
-    training/backtesting must keep using the labeled data/features/*.parquet
+    training/backtesting must keep using the labeled markets/us/data/features/*.parquet
     (via load_training_data) so their results stay unaffected."""
     spy_df = pl.read_parquet(raw_dir / "SPY.parquet")
     vix_df = pl.read_parquet(raw_dir / "^VIX.parquet")
@@ -195,7 +195,7 @@ def main() -> None:
 
     if not spy_path.exists() or not vix_path.exists():
         raise FileNotFoundError(
-            "SPY.parquet or ^VIX.parquet missing from data/raw/ohlcv/. "
+            "SPY.parquet or ^VIX.parquet missing from markets/us/data/raw/ohlcv/. "
             "Run scripts/scrape_top20.py first."
         )
 

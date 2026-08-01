@@ -2,7 +2,7 @@
 import streamlit as st
 import plotly.graph_objects as go
 import polars as pl
-from dashboard.config import PARQUET_DIR, OHLCV_COLS, FEATURE_COLS, GRADE_COLORS
+from dashboard.ui_config import PARQUET_DIR, OHLCV_COLS, FEATURE_COLS, GRADE_COLORS
 from dashboard.data_loader import get_leaderboard
 
 st.set_page_config(page_title="Strategy Leaderboard", layout="wide")

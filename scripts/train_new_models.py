@@ -15,7 +15,7 @@ import logging
 import polars as pl
 
 from config.markets import get_market
-from dashboard.config import FEATURE_COLS, REGISTRY_DIR
+from dashboard.ui_config import FEATURE_COLS, REGISTRY_DIR
 from src.features.duckdb_client import load_training_data
 from src.models.base_classifier import BaseClassifier
 from src.models.evaluator import evaluate
@@ -69,7 +69,7 @@ def train_and_save(model: BaseClassifier, df: pl.DataFrame, feature_cols: list[s
 
 def main() -> None:
     if not _FEATURE_DIR.exists() or not any(_FEATURE_DIR.glob("*.parquet")):
-        raise FileNotFoundError("No feature parquets found in data/features/.")
+        raise FileNotFoundError("No feature parquets found in markets/us/data/features/.")
 
     logger.info("Loading full feature data from %s ...", _FEATURE_DIR)
     df = load_training_data(_FEATURE_DIR)

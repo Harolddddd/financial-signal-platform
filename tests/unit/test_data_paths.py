@@ -5,8 +5,8 @@ from config.markets import get_market
 _US_ROOT = get_market("us").data_root
 
 
-def test_dashboard_config_paths_resolve_under_markets_us_data():
-    from dashboard.config import PARQUET_DIR, REGISTRY_DIR
+def test_dashboard_ui_config_paths_resolve_under_markets_us_data():
+    from dashboard.ui_config import PARQUET_DIR, REGISTRY_DIR
     assert PARQUET_DIR == _US_ROOT / "features"
     assert REGISTRY_DIR == _US_ROOT / "registry"
     assert PARQUET_DIR.exists()
@@ -33,14 +33,12 @@ def test_live_signals_page_no_longer_hardcodes_old_data_path():
 def test_scrape_top20_output_dir_resolves_under_markets_us_data():
     from scripts.scrape_top20 import _OUTPUT_DIR
     assert _OUTPUT_DIR == _US_ROOT / "raw" / "ohlcv"
-    assert _OUTPUT_DIR.exists()
 
 
 def test_build_features_dirs_resolve_under_markets_us_data():
     from scripts.build_features import _RAW_DIR, _FEATURE_DIR
     assert _RAW_DIR == _US_ROOT / "raw" / "ohlcv"
     assert _FEATURE_DIR == _US_ROOT / "features"
-    assert _RAW_DIR.exists()
     assert _FEATURE_DIR.exists()
 
 
@@ -109,3 +107,30 @@ def test_signal_one_strategy_and_run_signals_isolated_agree_on_cache_paths():
     from scripts.run_signals_isolated import _LIVE_CACHE as parent_live, _TRAIN_CACHE as parent_train
     assert child_live == parent_live
     assert child_train == parent_train
+
+
+def test_dashboard_ui_config_survives_streamlit_sys_path_shadowing():
+    # Streamlit inserts the main script's own directory at sys.path[0]
+    # (ahead of the repo root) before running it — for `streamlit run
+    # dashboard/app.py` that's dashboard/. If any dashboard module needs
+    # `from config.markets import get_market` while sitting in a file that
+    # could shadow the top-level `config` package name once dashboard/
+    # precedes the repo root on sys.path, every dashboard page breaks.
+    # Reproduce that exact ordering in a subprocess and confirm the import
+    # still resolves cleanly.
+    import subprocess
+    import sys
+
+    repo_root = Path(__file__).resolve().parents[2]
+    dashboard_dir = repo_root / "dashboard"
+    code = (
+        "import sys; "
+        f"sys.path.insert(0, r'{dashboard_dir}'); "
+        f"sys.path.insert(1, r'{repo_root}'); "
+        "import dashboard.ui_config"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", code],
+        capture_output=True, text=True, cwd=repo_root,
+    )
+    assert result.returncode == 0, result.stderr

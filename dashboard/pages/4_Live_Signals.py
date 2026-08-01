@@ -1,12 +1,11 @@
 # dashboard/pages/4_Live_Signals.py
 import json
-from pathlib import Path
 
 import pandas as pd
 import streamlit as st
 
 from config.markets import get_market
-from dashboard.config import CONFIDENCE_THRESHOLD, PARQUET_DIR, OHLCV_COLS, FEATURE_COLS
+from dashboard.ui_config import CONFIDENCE_THRESHOLD, PARQUET_DIR, OHLCV_COLS, FEATURE_COLS
 from dashboard.data_loader import get_live_signals
 
 CACHE_DIR = get_market("us").data_root / "cache"

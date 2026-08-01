@@ -1,6 +1,4 @@
-# dashboard/config.py
-from pathlib import Path
-
+# dashboard/ui_config.py
 from config.markets import get_market
 
 PARQUET_DIR  = get_market("us").data_root / "features"

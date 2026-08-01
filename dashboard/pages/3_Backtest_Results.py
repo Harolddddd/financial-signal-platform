@@ -1,7 +1,7 @@
 # dashboard/pages/3_Backtest_Results.py
 import streamlit as st
 import plotly.graph_objects as go
-from dashboard.config import PARQUET_DIR, OHLCV_COLS, FEATURE_COLS, GRADE_COLORS
+from dashboard.ui_config import PARQUET_DIR, OHLCV_COLS, FEATURE_COLS, GRADE_COLORS
 from dashboard.data_loader import get_backtest_result
 from src.strategies.registry import list_strategies
 

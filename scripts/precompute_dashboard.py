@@ -1,6 +1,6 @@
 """
-Run locally to pre-compute all dashboard data and write JSON to data/cache/.
-Commit data/cache/ and push — Render reads from these files instead of
+Run locally to pre-compute all dashboard data and write JSON to markets/us/data/cache/.
+Commit markets/us/data/cache/ and push — Render reads from these files instead of
 recomputing on every cold start.
 
 Usage:
@@ -15,7 +15,7 @@ from pathlib import Path
 import polars as pl
 
 from config.markets import get_market
-from dashboard.config import CONFIDENCE_THRESHOLD, FEATURE_COLS, OHLCV_COLS, PARQUET_DIR
+from dashboard.ui_config import CONFIDENCE_THRESHOLD, FEATURE_COLS, OHLCV_COLS, PARQUET_DIR
 from scripts.build_features import build_live_features
 from src.backtesting.grader import grade_model
 from src.backtesting.metrics import BacktestMetrics
@@ -244,7 +244,7 @@ def main() -> None:
     step_backtests()      # [2/4] per-strategy walk-forward → backtest_*.json
     step_leaderboard()    # [3/4] aggregate backtest_*.json → leaderboard.json
     step_signals()        # [4/4] live signals → signals.json
-    logger.info("=== Done. Run: git add data/cache/ && git commit && git push ===")
+    logger.info("=== Done. Run: git add markets/us/data/cache/ && git commit && git push ===")
 
 
 if __name__ == "__main__":

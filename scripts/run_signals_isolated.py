@@ -10,11 +10,11 @@ so the culprit strategy can be inspected.
 Speed: the live-features/training data (~5-8s to build) is computed ONCE
 here and cached to parquet for every subprocess to read, instead of each of
 31 subprocesses rebuilding it from scratch. Also resumable — strategies
-that already have a data/cache/signals_partial/{name}.json are skipped, so
+that already have a markets/us/data/cache/signals_partial/{name}.json are skipped, so
 a killed/interrupted run can just be re-invoked (pass --force to redo all).
 
-After all strategies succeed, merges data/cache/signals_partial/*.json into
-the final data/cache/signals.json (same schema step_signals() would write).
+After all strategies succeed, merges markets/us/data/cache/signals_partial/*.json into
+the final markets/us/data/cache/signals.json (same schema step_signals() would write).
 """
 from __future__ import annotations
 import json
@@ -24,12 +24,11 @@ import sys
 import threading
 import time
 from datetime import datetime, timezone
-from pathlib import Path
 
 import psutil
 
 from config.markets import get_market
-from dashboard.config import PARQUET_DIR
+from dashboard.ui_config import PARQUET_DIR
 from scripts.build_features import build_live_features
 from src.features.duckdb_client import load_training_data
 from src.strategies.registry import list_strategies

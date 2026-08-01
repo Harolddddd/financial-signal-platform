@@ -1,12 +1,11 @@
 """Retry just the LSTM leg of scripts/train_new_models.py after the tz-comparison fix."""
-from pathlib import Path
 from datetime import datetime, timedelta, timezone
 import logging
 
 import polars as pl
 
 from config.markets import get_market
-from dashboard.config import FEATURE_COLS, REGISTRY_DIR
+from dashboard.ui_config import FEATURE_COLS, REGISTRY_DIR
 from src.features.duckdb_client import load_training_data
 from src.models.zoo.lstm_model import LSTMClassifier
 from scripts.train_new_models import train_and_save, _LSTM_WINDOW_DAYS

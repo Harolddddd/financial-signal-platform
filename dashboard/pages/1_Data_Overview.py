@@ -1,6 +1,6 @@
 import streamlit as st
 import plotly.graph_objects as go
-from dashboard.config import PARQUET_DIR, FEATURE_COLS
+from dashboard.ui_config import PARQUET_DIR, FEATURE_COLS
 from dashboard.data_loader import get_data_summary
 from src.features.duckdb_client import load_training_data
 

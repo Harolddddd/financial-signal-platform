@@ -46,7 +46,7 @@ def test_add_neutral_sentiment_adds_all_columns():
 
 def test_build_features_for_ticker_returns_required_cols(tmp_path):
     from scripts.build_features import build_features_for_ticker
-    from dashboard.config import FEATURE_COLS
+    from dashboard.ui_config import FEATURE_COLS
 
     aapl = _make_ohlcv("AAPL")
     spy  = _make_ohlcv("SPY")

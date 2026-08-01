@@ -7,7 +7,7 @@ import pytest
 
 
 def _make_feature_df(n: int = 500) -> pl.DataFrame:
-    from dashboard.config import FEATURE_COLS
+    from dashboard.ui_config import FEATURE_COLS
     rng = np.random.default_rng(0)
     data: dict = {col: rng.random(n).tolist() for col in FEATURE_COLS}
     data["time"]   = [datetime(2005, 1, 1, tzinfo=timezone.utc)] * n
@@ -19,7 +19,7 @@ def _make_feature_df(n: int = 500) -> pl.DataFrame:
 def test_train_and_save_creates_registry_files(tmp_path):
     from scripts.train_models import train_and_save
     from src.models.zoo.random_forest import RandomForestClassifier_
-    from dashboard.config import FEATURE_COLS
+    from dashboard.ui_config import FEATURE_COLS
 
     df = _make_feature_df()
     model = RandomForestClassifier_()
@@ -34,7 +34,7 @@ def test_train_and_save_writes_valid_json(tmp_path):
     import json
     from scripts.train_models import train_and_save
     from src.models.zoo.random_forest import RandomForestClassifier_
-    from dashboard.config import FEATURE_COLS
+    from dashboard.ui_config import FEATURE_COLS
 
     df = _make_feature_df()
     model = RandomForestClassifier_()
@@ -49,7 +49,7 @@ def test_train_and_save_writes_valid_json(tmp_path):
 def test_train_and_save_raises_on_empty_df(tmp_path):
     from scripts.train_models import train_and_save
     from src.models.zoo.random_forest import RandomForestClassifier_
-    from dashboard.config import FEATURE_COLS
+    from dashboard.ui_config import FEATURE_COLS
 
     df = pl.DataFrame({col: [] for col in FEATURE_COLS + ["time", "ticker", "label"]})
     with pytest.raises(ValueError, match="No training data"):

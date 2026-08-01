@@ -1,5 +1,5 @@
 """Compute live signals for exactly ONE strategy, write to
-data/cache/signals_partial/{name}.json, then exit. Run as a fresh subprocess
+markets/us/data/cache/signals_partial/{name}.json, then exit. Run as a fresh subprocess
 per strategy (via scripts/run_signals_isolated.py) so memory is fully
 released back to the OS between strategies — isolates whether a leak
 accumulates across a long-running loop vs. is confined to one strategy.
@@ -11,12 +11,11 @@ import json
 import logging
 import sys
 from datetime import datetime, timezone
-from pathlib import Path
 
 import polars as pl
 
 from config.markets import get_market
-from dashboard.config import FEATURE_COLS, OHLCV_COLS, PARQUET_DIR
+from dashboard.ui_config import FEATURE_COLS, OHLCV_COLS, PARQUET_DIR
 from scripts.build_features import build_live_features
 from src.backtesting.strategy_runner import _is_stateless, _select_cols
 from src.features.duckdb_client import load_training_data

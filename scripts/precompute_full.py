@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from config.markets import get_market
-from dashboard.config import FEATURE_COLS, OHLCV_COLS, PARQUET_DIR
+from dashboard.ui_config import FEATURE_COLS, OHLCV_COLS, PARQUET_DIR
 from src.backtesting.grader import grade_model
 from src.backtesting.metrics import BacktestMetrics
 from src.backtesting.strategy_runner import walk_forward_backtest_strategy
@@ -127,7 +127,7 @@ def main() -> None:
     logger.info("[3/3] live signals — generating for all %d strategies", len(all_strategies))
     step_signals()
 
-    logger.info("=== Done. Run: git add data/cache/ && git commit && git push ===")
+    logger.info("=== Done. Run: git add markets/us/data/cache/ && git commit && git push ===")
 
 
 if __name__ == "__main__":
