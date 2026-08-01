@@ -109,6 +109,21 @@ def test_signal_one_strategy_and_run_signals_isolated_agree_on_cache_paths():
     assert child_train == parent_train
 
 
+def test_precompute_dashboard_market_paths_for_us():
+    from scripts.precompute_dashboard import _market_paths
+    feature_dir, cache_dir = _market_paths("us")
+    assert feature_dir == _US_ROOT / "features"
+    assert cache_dir == _US_ROOT / "cache"
+
+
+def test_precompute_dashboard_market_paths_for_china():
+    from scripts.precompute_dashboard import _market_paths
+    from config.markets import get_market
+    feature_dir, cache_dir = _market_paths("china")
+    assert feature_dir == get_market("china").data_root / "features"
+    assert cache_dir == get_market("china").data_root / "cache"
+
+
 def test_dashboard_ui_config_survives_streamlit_sys_path_shadowing():
     # Streamlit inserts the main script's own directory at sys.path[0]
     # (ahead of the repo root) before running it — for `streamlit run

@@ -1,10 +1,11 @@
 """
-Run locally to pre-compute all dashboard data and write JSON to markets/us/data/cache/.
-Commit markets/us/data/cache/ and push — Render reads from these files instead of
+Run locally to pre-compute all dashboard data and write JSON to the given
+market's markets/<market>/data/cache/ (default: us).
+Commit markets/<market>/data/cache/ and push — Render reads from these files instead of
 recomputing on every cold start.
 
 Usage:
-    python scripts/precompute_dashboard.py
+    python scripts/precompute_dashboard.py [--market us|china]
 """
 from __future__ import annotations
 import json
@@ -14,7 +15,7 @@ from pathlib import Path
 
 import polars as pl
 
-from config.markets import get_market
+from config.markets import MARKETS, get_market
 from dashboard.ui_config import CONFIDENCE_THRESHOLD, FEATURE_COLS, OHLCV_COLS, PARQUET_DIR
 from scripts.build_features import build_live_features
 from src.backtesting.grader import grade_model
@@ -27,6 +28,11 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 logger = logging.getLogger(__name__)
 
 CACHE_DIR = get_market("us").data_root / "cache"
+
+
+def _market_paths(market: str) -> tuple[Path, Path]:
+    market_cfg = get_market(market)
+    return market_cfg.data_root / "features", market_cfg.data_root / "cache"
 
 
 def _now() -> str:
@@ -60,10 +66,10 @@ def _safe(name: str) -> str:
 
 # ---------------------------------------------------------------------------
 
-def step_data_summary() -> None:
+def step_data_summary(feature_dir: Path = PARQUET_DIR, cache_dir: Path = CACHE_DIR) -> None:
     logger.info("[1/4] data summary")
     # Read directly from parquets — never read from cache here, that defeats the purpose.
-    df = load_training_data(PARQUET_DIR)
+    df = load_training_data(feature_dir)
     tickers = sorted(df["ticker"].unique().to_list()) if "ticker" in df.columns else []
     summary = {
         "n_tickers": len(tickers),
@@ -73,16 +79,16 @@ def step_data_summary() -> None:
         "date_range_end":   str(df["time"].max()) if "time" in df.columns else "N/A",
         "generated_at": _now(),
     }
-    _write(CACHE_DIR / "data_summary.json", summary)
+    _write(cache_dir / "data_summary.json", summary)
 
 
-def step_leaderboard() -> None:
+def step_leaderboard(cache_dir: Path = CACHE_DIR) -> None:
     logger.info("[3/4] leaderboard — aggregating from per-strategy backtest caches")
     # Build the leaderboard from the individual backtest files written in step_backtests().
     # Never call get_leaderboard() here — it reads the old leaderboard.json and writes it back.
     grades: list[dict] = []
     for name in list_strategies():
-        cache_path = CACHE_DIR / f"backtest_{_safe(name)}.json"
+        cache_path = cache_dir / f"backtest_{_safe(name)}.json"
         if cache_path.exists():
             d = json.loads(cache_path.read_text())
             grades.append(d["grade"])
@@ -90,16 +96,21 @@ def step_leaderboard() -> None:
             logger.warning("  no backtest cache for %s — skipping from leaderboard", name)
 
     grades.sort(key=lambda g: g["composite_score"], reverse=True)
-    _write(CACHE_DIR / "leaderboard.json", {
+    _write(cache_dir / "leaderboard.json", {
         "generated_at": _now(),
         "grades": grades,
     })
 
 
-def step_backtests(names: list[str] | None = None, step_days: int = 21) -> None:
+def step_backtests(
+    names: list[str] | None = None,
+    step_days: int = 21,
+    feature_dir: Path = PARQUET_DIR,
+    cache_dir: Path = CACHE_DIR,
+) -> None:
     logger.info("[2/4] per-strategy backtests — running walk-forward fresh (no cache read)")
     # Load data once; reuse across all strategies.
-    df = load_training_data(PARQUET_DIR)
+    df = load_training_data(feature_dir)
     for name in (names if names is not None else list_strategies()):
         logger.info("  strategy: %s", name)
         try:
@@ -123,7 +134,7 @@ def step_backtests(names: list[str] | None = None, step_days: int = 21) -> None:
                 accuracy=0.0,
             )
             g = grade_model(name, avg_metrics)
-            _write(CACHE_DIR / f"backtest_{_safe(name)}.json", {
+            _write(cache_dir / f"backtest_{_safe(name)}.json", {
                 "generated_at": _now(),
                 "strategy_name": name,
                 "mean_sharpe": wf.mean_sharpe,
@@ -155,17 +166,22 @@ def step_backtests(names: list[str] | None = None, step_days: int = 21) -> None:
             logger.error("  FAILED %s: %s", name, exc)
 
 
-def step_signals(exclude: list[str] | None = None) -> None:
+def step_signals(
+    exclude: list[str] | None = None,
+    market: str = "us",
+    feature_dir: Path = PARQUET_DIR,
+    cache_dir: Path = CACHE_DIR,
+) -> None:
     logger.info("[4/4] live signals — computing fresh from all strategies (no cache read)")
     # Fit on the labeled/trimmed training data — unchanged, since fit() needs
     # a real label and this keeps training/backtesting behavior untouched.
-    df = load_training_data(PARQUET_DIR)
+    df = load_training_data(feature_dir)
 
     # Predict on a separately-built, un-trimmed feature snapshot so "today's"
     # signal actually reflects the latest raw trading day instead of trailing
     # by forward_days (the labeled parquet can't have a label for those rows,
     # so it drops them — but predict() never needs a label at all).
-    live_df = build_live_features()
+    live_df = build_live_features(market=market)
     has_ticker = "ticker" in live_df.columns
     tickers: list[str] = sorted(live_df["ticker"].unique().to_list()) if has_ticker else ["__all__"]
 
@@ -230,7 +246,7 @@ def step_signals(exclude: list[str] | None = None) -> None:
 
     buy_count = sum(1 for s in all_signals if s["signal"] == "Buy")
     logger.info("  total signals: %d  buy: %d", len(all_signals), buy_count)
-    _write(CACHE_DIR / "signals.json", {
+    _write(cache_dir / "signals.json", {
         "generated_at": _now(),
         "signals": all_signals,
     })
@@ -238,14 +254,19 @@ def step_signals(exclude: list[str] | None = None) -> None:
 
 # ---------------------------------------------------------------------------
 
-def main() -> None:
-    logger.info("=== Precomputing dashboard cache → %s ===", CACHE_DIR)
-    step_data_summary()   # [1/4] parquet → data_summary.json
-    step_backtests()      # [2/4] per-strategy walk-forward → backtest_*.json
-    step_leaderboard()    # [3/4] aggregate backtest_*.json → leaderboard.json
-    step_signals()        # [4/4] live signals → signals.json
-    logger.info("=== Done. Run: git add markets/us/data/cache/ && git commit && git push ===")
+def main(market: str = "us") -> None:
+    feature_dir, cache_dir = _market_paths(market)
+    logger.info("=== Precomputing dashboard cache (%s) → %s ===", market, cache_dir)
+    step_data_summary(feature_dir, cache_dir)                                   # [1/4]
+    step_backtests(feature_dir=feature_dir, cache_dir=cache_dir)                # [2/4]
+    step_leaderboard(cache_dir)                                                 # [3/4]
+    step_signals(market=market, feature_dir=feature_dir, cache_dir=cache_dir)   # [4/4]
+    logger.info("=== Done. Run: git add %s/ && git commit && git push ===", cache_dir)
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--market", default="us", choices=sorted(MARKETS))
+    args = parser.parse_args()
+    main(args.market)
