@@ -88,3 +88,17 @@ def test_tickers_by_market_has_expected_markets():
     assert len(_STOCK_TICKERS_CHINA) == 500
     assert all(t.endswith(".SS") or t.endswith(".SZ") for t in _STOCK_TICKERS_CHINA)
     assert len(set(_STOCK_TICKERS_CHINA)) == 500  # no duplicates
+
+
+def test_build_live_features_default_market_is_us():
+    import inspect
+    from scripts.build_features import build_live_features
+    sig = inspect.signature(build_live_features)
+    assert sig.parameters["market"].default == "us"
+
+
+def test_build_live_features_china_reads_from_china_raw_dir_and_tickers():
+    from scripts.build_features import build_live_features, _STOCK_TICKERS_CHINA
+    df = build_live_features(market="china")
+    assert len(df) > 0
+    assert set(df["ticker"].unique().to_list()).issubset(set(_STOCK_TICKERS_CHINA))

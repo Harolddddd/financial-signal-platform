@@ -238,22 +238,29 @@ def build_features_for_ticker(
     return df
 
 
-def build_live_features(raw_dir: Path = _RAW_DIR) -> pl.DataFrame:
+def build_live_features(market: str = "us") -> pl.DataFrame:
     """Full per-ticker feature history through the latest raw trading day,
     with no label-driven trim on the tail. Used only for live signals —
-    training/backtesting must keep using the labeled markets/us/data/features/*.parquet
+    training/backtesting must keep using the labeled markets/<market>/data/features/*.parquet
     (via load_training_data) so their results stay unaffected."""
-    spy_df = pl.read_parquet(raw_dir / "SPY.parquet")
-    vix_df = pl.read_parquet(raw_dir / "^VIX.parquet")
+    market_cfg = get_market(market)
+    raw_dir = market_cfg.data_root / "raw" / "ohlcv"
+    tickers = _TICKERS_BY_MARKET[market]
+
+    benchmark_df = pl.read_parquet(raw_dir / f"{market_cfg.benchmark_ticker}.parquet")
+    if market_cfg.vol_index_ticker:
+        vix_df = pl.read_parquet(raw_dir / f"{market_cfg.vol_index_ticker}.parquet")
+    else:
+        vix_df = synthetic_vol_index(benchmark_df)
 
     frames: list[pl.DataFrame] = []
-    for ticker in _STOCK_TICKERS:
+    for ticker in tickers:
         raw_path = raw_dir / f"{ticker}.parquet"
         if not raw_path.exists():
             continue
         try:
             frames.append(build_features_for_ticker(
-                ticker, raw_dir, spy_df, vix_df, drop_label_nulls=False,
+                ticker, raw_dir, benchmark_df, vix_df, drop_label_nulls=False,
             ))
         except Exception as exc:
             logger.warning("  live features FAILED %s: %s", ticker, exc)
