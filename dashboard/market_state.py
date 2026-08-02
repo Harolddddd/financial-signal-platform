@@ -30,7 +30,13 @@ def render_market_selector() -> str:
 def get_selected_market() -> str:
     """Read the market chosen on app.py. Defaults to "us" if no selection
     has been made yet in this session (e.g. a page reached directly)."""
-    return st.session_state.get(_SESSION_KEY, _DEFAULT_MARKET)
+    market = st.session_state.get(_SESSION_KEY, _DEFAULT_MARKET)
+    st.session_state[_SESSION_KEY] = market  # re-write: Streamlit GCs widget-keyed
+                                              # session_state once that widget stops
+                                              # rendering (i.e. the instant the user
+                                              # navigates off app.py) — writing it back
+                                              # here on every page's read keeps it alive.
+    return market
 
 
 def format_price(value: float, market: str) -> str:

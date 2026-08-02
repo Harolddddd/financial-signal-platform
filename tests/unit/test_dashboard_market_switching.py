@@ -1,3 +1,8 @@
+from pathlib import Path
+
+from streamlit.testing.v1 import AppTest
+
+
 def test_get_selected_market_defaults_to_us(monkeypatch):
     from dashboard import market_state
     monkeypatch.setattr(market_state.st, "session_state", {})
@@ -87,9 +92,6 @@ def test_get_combined_ratings_routes_to_china_cache():
     assert isinstance(detail_by_ticker, dict)
 
 
-from pathlib import Path
-
-
 def test_app_py_renders_market_selector():
     # app.py runs Streamlit calls at module level, so it can't be imported
     # directly in a test — verify the source text instead, same approach
@@ -132,3 +134,60 @@ def test_combined_signal_page_is_market_aware():
     assert "get_selected_market" in source
     assert "get_combined_ratings(market=market)" in source
     assert "format_price" in source
+
+
+def test_market_selection_persists_across_page_navigation():
+    # Regression test for a Critical whole-branch-review finding: the market
+    # selector widget on app.py is rendered with key="market", and Streamlit
+    # garbage-collects a widget-keyed session_state entry the instant that
+    # widget stops being rendered (i.e. the moment the user navigates off
+    # app.py to any other page). A get_selected_market() that merely *reads*
+    # session_state without writing it back will silently see the key gone
+    # on the very next page load and fall back to the "us" default — even
+    # though the dropdown was switched to "china". Per-page AppTest checks in
+    # isolation (see the *_is_market_aware tests above) cannot catch this,
+    # because they pre-seed session_state directly rather than navigating
+    # through app.py's widget — this test exercises one continuous session
+    # that actually switches the dropdown and then navigates, which is the
+    # only way to reproduce the bug.
+    at = AppTest.from_file("dashboard/app.py", default_timeout=60)
+    at.run()
+    assert not at.exception
+
+    at.selectbox(key="market").select("china").run()
+    assert not at.exception
+    assert any("China" in c.value for c in at.caption)
+
+    pages = [
+        "pages/1_Data_Overview.py",
+        "pages/2_Model_Leaderboard.py",
+        "pages/3_Backtest_Results.py",
+        "pages/4_Live_Signals.py",
+        "pages/5_Combined_Signal.py",
+    ]
+    for page in pages:
+        at.switch_page(page)
+        at.run()
+        assert not at.exception, (page, at.exception)
+        captions = [c.value for c in at.caption]
+        assert any("China" in c for c in captions), (page, captions)
+
+    # Revisiting the home page itself must also still show China — the
+    # dropdown's own session_state must not have been reset either.
+    at.switch_page("app.py")
+    at.run()
+    assert not at.exception
+    assert any("China" in c.value for c in at.caption)
+
+    # An in-page rerun (triggered by a widget other than the market
+    # selector, e.g. the confidence-threshold slider on Live Signals) must
+    # not lose the market selection either.
+    at.switch_page("pages/4_Live_Signals.py")
+    at.run()
+    assert not at.exception
+    sliders = at.slider
+    assert len(sliders) > 0
+    sliders[0].set_value(0.9).run()
+    assert not at.exception
+    captions = [c.value for c in at.caption]
+    assert any("China" in c for c in captions), captions
