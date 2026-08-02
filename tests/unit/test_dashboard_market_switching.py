@@ -117,3 +117,11 @@ def test_backtest_results_page_is_market_aware():
     assert "get_selected_market" in source
     assert "get_paths(" in source
     assert "from dashboard.ui_config import PARQUET_DIR" not in source
+
+
+def test_live_signals_page_is_market_aware():
+    source = Path("dashboard/pages/4_Live_Signals.py").read_text()
+    assert "get_selected_market" in source
+    assert "get_paths(" in source
+    assert 'CACHE_DIR = get_market("us")' not in source
+    assert "format_price" in source

@@ -1,17 +1,19 @@
-# dashboard/pages/4_Live_Signals.py
 import json
 
 import pandas as pd
 import streamlit as st
 
 from config.markets import get_market
-from dashboard.ui_config import CONFIDENCE_THRESHOLD, PARQUET_DIR, OHLCV_COLS, FEATURE_COLS
-from dashboard.data_loader import get_live_signals
-
-CACHE_DIR = get_market("us").data_root / "cache"
+from dashboard.market_state import get_selected_market, format_price
+from dashboard.ui_config import CONFIDENCE_THRESHOLD, get_paths, OHLCV_COLS, FEATURE_COLS
+from dashboard.data_loader import get_cache_dir, get_live_signals
 
 st.set_page_config(page_title="Live Signals", layout="wide")
 st.header("Live Buy Signals")
+
+market = get_selected_market()
+st.caption(f"Market: {get_market(market).label}")
+parquet_dir, _ = get_paths(market)
 
 threshold = st.slider(
     "Confidence threshold", min_value=0.5, max_value=1.0,
@@ -20,7 +22,7 @@ threshold = st.slider(
 
 # Load raw cache so we can surface the strategy field.
 _raw = None
-_cache_path = CACHE_DIR / "signals.json"
+_cache_path = get_cache_dir(market) / "signals.json"
 if _cache_path.exists():
     _raw = json.loads(_cache_path.read_text())
 
@@ -32,7 +34,7 @@ if _raw:
     generated_at = _raw.get("generated_at", "unknown")
 else:
     with st.spinner("Generating signals..."):
-        live = get_live_signals(PARQUET_DIR, OHLCV_COLS, FEATURE_COLS, threshold)
+        live = get_live_signals(parquet_dir, OHLCV_COLS, FEATURE_COLS, threshold, market=market)
     raw_signals = [
         {
             "ticker": s.ticker,
@@ -59,7 +61,7 @@ st.success(f"Found **{len(raw_signals)}** Buy signal(s) across all strategies")
 df = pd.DataFrame(raw_signals)[["ticker", "strategy", "confidence", "entry_price", "date"]]
 df = df.sort_values(["ticker", "confidence"], ascending=[True, False])
 df["confidence"] = df["confidence"].map(lambda x: f"{x:.1%}")
-df["entry_price"] = df["entry_price"].map(lambda x: f"${x:.2f}")
+df["entry_price"] = df["entry_price"].map(lambda x: format_price(x, market))
 df.columns = ["Ticker", "Strategy", "Confidence", "Entry Price", "Date"]
 
 # Summary: tickers with the most strategy agreement
