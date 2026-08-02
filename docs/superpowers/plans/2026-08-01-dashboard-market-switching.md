@@ -10,7 +10,7 @@
 
 ## Global Constraints
 
-- `dashboard/ui_config.py`'s `PARQUET_DIR` and `REGISTRY_DIR` constants (currently resolving `get_market("us")`) **must not change** — `scripts/train_models.py`, `scripts/precompute_dashboard.py`, `scripts/precompute_full.py`, `scripts/precompute_new_strategies.py`, `scripts/run_signals_isolated.py`, `scripts/signal_one_strategy.py`, `scripts/train_new_models.py`, and `scripts/train_lstm_only.py` all import them directly and are out of scope for this plan.
+- `dashboard/ui_config.py`'s `PARQUET_DIR` and `REGISTRY_DIR` constants (currently resolving `get_market("us")`) **must not change** — `scripts/train_models.py`, `scripts/precompute_dashboard.py`, `scripts/precompute_full.py`, `scripts/precompute_new_strategies.py`, `scripts/run_signals_isolated.py`, `scripts/signal_one_strategy.py`, `scripts/train_new_models.py`, `scripts/train_lstm_only.py`, and `scripts/incremental_train.py` all import them directly and are out of scope for this plan.
 - `dashboard/data_loader.py`'s `CACHE_DIR` constant has no consumers outside this file and one direct test — it is removed and replaced by `get_cache_dir(market)`, not kept alongside.
 - No changes to `scripts/*.py`, `config/markets.py`, or any data-generation code — this plan is dashboard-read-side only.
 - `config.markets.MARKETS` (currently `{"us": ..., "china": ...}`) is the sole source of truth for which markets the selector offers — do not hardcode a market list anywhere in `dashboard/`.
