@@ -103,3 +103,17 @@ def test_data_overview_page_is_market_aware():
     assert "get_selected_market" in source
     assert "get_paths(" in source
     assert "from dashboard.ui_config import PARQUET_DIR" not in source
+
+
+def test_leaderboard_page_is_market_aware():
+    source = Path("dashboard/pages/2_Model_Leaderboard.py").read_text()
+    assert "get_selected_market" in source
+    assert "get_paths(" in source
+    assert "from dashboard.ui_config import PARQUET_DIR" not in source
+
+
+def test_backtest_results_page_is_market_aware():
+    source = Path("dashboard/pages/3_Backtest_Results.py").read_text()
+    assert "get_selected_market" in source
+    assert "get_paths(" in source
+    assert "from dashboard.ui_config import PARQUET_DIR" not in source

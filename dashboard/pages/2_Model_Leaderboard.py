@@ -2,20 +2,26 @@
 import streamlit as st
 import plotly.graph_objects as go
 import polars as pl
-from dashboard.ui_config import PARQUET_DIR, OHLCV_COLS, FEATURE_COLS, GRADE_COLORS
+from config.markets import get_market
+from dashboard.market_state import get_selected_market
+from dashboard.ui_config import get_paths, OHLCV_COLS, FEATURE_COLS, GRADE_COLORS
 from dashboard.data_loader import get_leaderboard
 
 st.set_page_config(page_title="Strategy Leaderboard", layout="wide")
 st.header("Strategy Leaderboard")
 
+market = get_selected_market()
+st.caption(f"Market: {get_market(market).label}")
+parquet_dir, _ = get_paths(market)
+
 
 @st.cache_data(ttl=1800)
-def _leaderboard():
-    return get_leaderboard(PARQUET_DIR, OHLCV_COLS, FEATURE_COLS)
+def _leaderboard(market: str):
+    return get_leaderboard(parquet_dir, OHLCV_COLS, FEATURE_COLS, market=market)
 
 
 with st.spinner("Computing grades..."):
-    leaderboard = _leaderboard()
+    leaderboard = _leaderboard(market)
 
 if not leaderboard:
     st.warning("No strategies found. Check src/strategies/strategies.yaml.")

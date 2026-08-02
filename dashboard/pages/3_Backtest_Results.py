@@ -1,12 +1,18 @@
 # dashboard/pages/3_Backtest_Results.py
 import streamlit as st
 import plotly.graph_objects as go
-from dashboard.ui_config import PARQUET_DIR, OHLCV_COLS, FEATURE_COLS, GRADE_COLORS
+from config.markets import get_market
+from dashboard.market_state import get_selected_market
+from dashboard.ui_config import get_paths, OHLCV_COLS, FEATURE_COLS, GRADE_COLORS
 from dashboard.data_loader import get_backtest_result
 from src.strategies.registry import list_strategies
 
 st.set_page_config(page_title="Backtest Results", layout="wide")
 st.header("Backtest Results")
+
+market = get_selected_market()
+st.caption(f"Market: {get_market(market).label}")
+parquet_dir, _ = get_paths(market)
 
 strategy_names = list_strategies()
 if not strategy_names:
@@ -17,12 +23,12 @@ selected = st.selectbox("Select strategy", strategy_names)
 
 
 @st.cache_data(ttl=1800)
-def _backtest(strategy_name: str):
-    return get_backtest_result(strategy_name, PARQUET_DIR, OHLCV_COLS, FEATURE_COLS)
+def _backtest(strategy_name: str, market: str):
+    return get_backtest_result(strategy_name, parquet_dir, OHLCV_COLS, FEATURE_COLS, market=market)
 
 
 with st.spinner(f"Running walk-forward backtest for {selected}..."):
-    wf_result, grade = _backtest(selected)
+    wf_result, grade = _backtest(selected, market)
 
 color = GRADE_COLORS[grade.grade.value]
 st.markdown(f"### Grade: <span style='color:{color};font-size:2em'>{grade.grade.value}</span> "
