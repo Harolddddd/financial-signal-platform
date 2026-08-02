@@ -85,3 +85,14 @@ def test_get_combined_ratings_routes_to_china_cache():
     summary_rows, detail_by_ticker = get_combined_ratings(market="china")
     assert len(summary_rows) > 0
     assert isinstance(detail_by_ticker, dict)
+
+
+from pathlib import Path
+
+
+def test_app_py_renders_market_selector():
+    # app.py runs Streamlit calls at module level, so it can't be imported
+    # directly in a test — verify the source text instead, same approach
+    # already used for dashboard/pages/4_Live_Signals.py in test_data_paths.py.
+    source = Path("dashboard/app.py").read_text()
+    assert "render_market_selector" in source

@@ -1,5 +1,8 @@
 import streamlit as st
 
+from config.markets import get_market
+from dashboard.market_state import render_market_selector
+
 st.set_page_config(
     page_title="Financial Signal Platform",
     page_icon="📈",
@@ -8,6 +11,10 @@ st.set_page_config(
 )
 
 st.title("Financial Signal Platform")
+
+market = render_market_selector()
+st.caption(f"Active market: {get_market(market).label}")
+
 st.markdown("""
 Navigate using the sidebar:
 
