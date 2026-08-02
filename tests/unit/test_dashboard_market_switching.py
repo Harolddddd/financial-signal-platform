@@ -43,3 +43,45 @@ def test_ui_config_paths_still_exported_for_other_scripts():
     from config.markets import get_market
     assert PARQUET_DIR == get_market("us").data_root / "features"
     assert REGISTRY_DIR == get_market("us").data_root / "registry"
+
+
+def test_data_loader_get_cache_dir_for_us():
+    from dashboard.data_loader import get_cache_dir
+    from config.markets import get_market
+    assert get_cache_dir("us") == get_market("us").data_root / "cache"
+
+
+def test_data_loader_get_cache_dir_for_china():
+    from dashboard.data_loader import get_cache_dir
+    from config.markets import get_market
+    assert get_cache_dir("china") == get_market("china").data_root / "cache"
+
+
+def test_get_data_summary_routes_to_china_cache():
+    from dashboard.data_loader import get_data_summary
+    from dashboard.ui_config import get_paths
+    parquet_dir, _ = get_paths("china")
+    summary = get_data_summary(parquet_dir, market="china")
+    assert summary["n_tickers"] == 500
+
+
+def test_get_data_summary_routes_to_us_cache_by_default():
+    from dashboard.data_loader import get_data_summary
+    from dashboard.ui_config import PARQUET_DIR
+    summary = get_data_summary(PARQUET_DIR)
+    assert summary["n_tickers"] == 492
+
+
+def test_get_leaderboard_routes_to_china_cache():
+    from dashboard.data_loader import get_leaderboard
+    from dashboard.ui_config import get_paths, OHLCV_COLS, FEATURE_COLS
+    parquet_dir, _ = get_paths("china")
+    leaderboard = get_leaderboard(parquet_dir, OHLCV_COLS, FEATURE_COLS, market="china")
+    assert len(leaderboard) == 32
+
+
+def test_get_combined_ratings_routes_to_china_cache():
+    from dashboard.data_loader import get_combined_ratings
+    summary_rows, detail_by_ticker = get_combined_ratings(market="china")
+    assert len(summary_rows) > 0
+    assert isinstance(detail_by_ticker, dict)

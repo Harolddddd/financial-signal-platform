@@ -17,7 +17,8 @@ from src.strategies.registry import list_strategies, load_strategy
 
 logger = logging.getLogger(__name__)
 
-CACHE_DIR = get_market("us").data_root / "cache"
+def get_cache_dir(market: str) -> Path:
+    return get_market(market).data_root / "cache"
 
 
 # ---------------------------------------------------------------------------
@@ -65,8 +66,8 @@ def _safe(name: str) -> str:
 # Public API — each function tries the cache first, falls back to live compute
 # ---------------------------------------------------------------------------
 
-def get_data_summary(parquet_dir: Path) -> dict:
-    cached = _load_cache(CACHE_DIR / "data_summary.json")
+def get_data_summary(parquet_dir: Path, market: str = "us") -> dict:
+    cached = _load_cache(get_cache_dir(market) / "data_summary.json")
     if cached:
         return cached
 
@@ -87,8 +88,9 @@ def get_leaderboard(
     parquet_dir: Path,
     ohlcv_cols: list[str],
     feature_cols: list[str],
+    market: str = "us",
 ) -> list[ModelGrade]:
-    cached = _load_cache(CACHE_DIR / "leaderboard.json")
+    cached = _load_cache(get_cache_dir(market) / "leaderboard.json")
     if cached:
         return [_grade_from_dict(g) for g in cached["grades"]]
 
@@ -129,8 +131,9 @@ def get_backtest_result(
     parquet_dir: Path,
     ohlcv_cols: list[str],
     feature_cols: list[str],
+    market: str = "us",
 ) -> tuple[WalkForwardBacktestResult, ModelGrade]:
-    cached = _load_cache(CACHE_DIR / f"backtest_{_safe(strategy_name)}.json")
+    cached = _load_cache(get_cache_dir(market) / f"backtest_{_safe(strategy_name)}.json")
     if cached:
         folds = [
             FoldBacktestResult(
@@ -180,8 +183,9 @@ def get_live_signals(
     ohlcv_cols: list[str],
     feature_cols: list[str],
     confidence_threshold: float = 0.75,
+    market: str = "us",
 ) -> list[LiveSignal]:
-    cached = _load_cache(CACHE_DIR / "signals.json")
+    cached = _load_cache(get_cache_dir(market) / "signals.json")
     if cached:
         # Cache stores all signals at threshold=0; filter here so the slider works.
         return [
@@ -231,7 +235,7 @@ def get_live_signals(
     return live_signals
 
 
-def get_combined_ratings() -> tuple[list[dict], dict[str, list[dict]]]:
+def get_combined_ratings(market: str = "us") -> tuple[list[dict], dict[str, list[dict]]]:
     """Aggregate every strategy's live signal for each ticker into one
     overall Buy Rating, weighted by that strategy's leaderboard composite
     score — stronger track-record strategies count for more. Cache-only
@@ -246,8 +250,8 @@ def get_combined_ratings() -> tuple[list[dict], dict[str, list[dict]]]:
         its own date/entry_price too), sorted by contribution descending,
         for the drill-down view.
     """
-    leaderboard = _load_cache(CACHE_DIR / "leaderboard.json")
-    signals = _load_cache(CACHE_DIR / "signals.json")
+    leaderboard = _load_cache(get_cache_dir(market) / "leaderboard.json")
+    signals = _load_cache(get_cache_dir(market) / "signals.json")
     if not leaderboard or not signals:
         return [], {}
 

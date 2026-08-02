@@ -14,9 +14,9 @@ def test_dashboard_ui_config_paths_resolve_under_markets_us_data():
 
 
 def test_dashboard_data_loader_cache_dir_resolves_under_markets_us_data():
-    from dashboard.data_loader import CACHE_DIR
-    assert CACHE_DIR == _US_ROOT / "cache"
-    assert CACHE_DIR.exists()
+    from dashboard.data_loader import get_cache_dir
+    assert get_cache_dir("us") == _US_ROOT / "cache"
+    assert get_cache_dir("us").exists()
 
 
 def test_live_signals_page_no_longer_hardcodes_old_data_path():
