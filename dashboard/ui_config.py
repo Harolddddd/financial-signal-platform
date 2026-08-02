@@ -1,8 +1,15 @@
 # dashboard/ui_config.py
+from pathlib import Path
+
 from config.markets import get_market
 
 PARQUET_DIR  = get_market("us").data_root / "features"
 REGISTRY_DIR = get_market("us").data_root / "registry"
+
+
+def get_paths(market: str) -> tuple[Path, Path]:
+    market_cfg = get_market(market)
+    return market_cfg.data_root / "features", market_cfg.data_root / "registry"
 
 OHLCV_COLS = ["open", "high", "low", "close", "volume"]
 
