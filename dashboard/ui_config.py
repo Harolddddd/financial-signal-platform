@@ -11,6 +11,7 @@ def get_paths(market: str) -> tuple[Path, Path]:
     market_cfg = get_market(market)
     return market_cfg.data_root / "features", market_cfg.data_root / "registry"
 
+
 OHLCV_COLS = ["open", "high", "low", "close", "volume"]
 
 FEATURE_COLS = [

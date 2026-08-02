@@ -2,7 +2,7 @@ import streamlit as st
 import plotly.graph_objects as go
 from config.markets import get_market
 from dashboard.market_state import get_selected_market
-from dashboard.ui_config import get_paths, FEATURE_COLS
+from dashboard.ui_config import get_paths
 from dashboard.data_loader import get_data_summary
 from src.features.duckdb_client import load_training_data
 

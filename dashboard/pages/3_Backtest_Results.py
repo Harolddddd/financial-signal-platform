@@ -1,4 +1,3 @@
-# dashboard/pages/3_Backtest_Results.py
 import streamlit as st
 import plotly.graph_objects as go
 from config.markets import get_market

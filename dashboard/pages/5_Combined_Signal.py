@@ -7,6 +7,10 @@ from dashboard.data_loader import get_combined_ratings
 
 st.set_page_config(page_title="Combined Signal", layout="wide")
 st.header("Combined Signal — Overall Rating by Stock")
+
+market = get_selected_market()
+st.caption(f"Market: {get_market(market).label}")
+
 st.caption(
     "Overall Rating = weighted average of every strategy's live Buy confidence "
     "for that ticker, weighted by the strategy's leaderboard composite score "
@@ -14,9 +18,6 @@ st.caption(
     "signal for a ticker isn't counted. Hold signals count as zero but still "
     "dilute the average, since \"no edge\" is itself an opinion."
 )
-
-market = get_selected_market()
-st.caption(f"Market: {get_market(market).label}")
 
 
 def _label(rating: float) -> str:
