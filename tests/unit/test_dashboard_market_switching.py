@@ -96,3 +96,10 @@ def test_app_py_renders_market_selector():
     # already used for dashboard/pages/4_Live_Signals.py in test_data_paths.py.
     source = Path("dashboard/app.py").read_text()
     assert "render_market_selector" in source
+
+
+def test_data_overview_page_is_market_aware():
+    source = Path("dashboard/pages/1_Data_Overview.py").read_text()
+    assert "get_selected_market" in source
+    assert "get_paths(" in source
+    assert "from dashboard.ui_config import PARQUET_DIR" not in source
