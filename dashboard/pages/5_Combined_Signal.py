@@ -1,7 +1,8 @@
-# dashboard/pages/5_Combined_Signal.py
 import pandas as pd
 import streamlit as st
 
+from config.markets import get_market
+from dashboard.market_state import get_selected_market, format_price
 from dashboard.data_loader import get_combined_ratings
 
 st.set_page_config(page_title="Combined Signal", layout="wide")
@@ -14,6 +15,9 @@ st.caption(
     "dilute the average, since \"no edge\" is itself an opinion."
 )
 
+market = get_selected_market()
+st.caption(f"Market: {get_market(market).label}")
+
 
 def _label(rating: float) -> str:
     if rating >= 12:
@@ -25,12 +29,12 @@ def _label(rating: float) -> str:
     return "Avoid"
 
 
-summary_rows, detail_by_ticker = get_combined_ratings()
+summary_rows, detail_by_ticker = get_combined_ratings(market=market)
 
 if not summary_rows:
     st.warning(
         "No cached signals/leaderboard found. Run "
-        "`python scripts/precompute_dashboard.py` first."
+        f"`python scripts/precompute_dashboard.py --market {market}` first."
     )
     st.stop()
 
@@ -38,7 +42,7 @@ df = pd.DataFrame(summary_rows)
 df["Rating"] = df["overall_rating"].round(1)
 df["Signal"] = df["Rating"].map(_label)
 df["Date"] = pd.to_datetime(df["date"]).dt.strftime("%Y-%m-%d")
-df["Entry Price"] = df["entry_price"].map(lambda x: f"${x:.2f}")
+df["Entry Price"] = df["entry_price"].map(lambda x: format_price(x, market))
 df = df.rename(columns={"ticker": "Ticker", "n_buy": "# Buy", "n_strategies": "# Strategies"})
 df = df[["Ticker", "Signal", "Rating", "Entry Price", "Date", "# Buy", "# Strategies"]]
 
@@ -72,7 +76,7 @@ if selected_rows:
     ddf["weight"] = ddf["weight"].round(3)
     ddf["contribution"] = ddf["contribution"].round(3)
     ddf["date"] = pd.to_datetime(ddf["date"]).dt.strftime("%Y-%m-%d")
-    ddf["entry_price"] = ddf["entry_price"].map(lambda x: f"${x:.2f}")
+    ddf["entry_price"] = ddf["entry_price"].map(lambda x: format_price(x, market))
     ddf = ddf[["strategy", "weight", "signal", "confidence", "contribution", "entry_price", "date"]]
     ddf.columns = ["Strategy", "Weight (composite score)", "Signal", "Confidence",
                    "Contribution", "Entry Price", "Date"]

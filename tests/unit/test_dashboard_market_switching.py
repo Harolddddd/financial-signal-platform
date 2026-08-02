@@ -125,3 +125,10 @@ def test_live_signals_page_is_market_aware():
     assert "get_paths(" in source
     assert 'CACHE_DIR = get_market("us")' not in source
     assert "format_price" in source
+
+
+def test_combined_signal_page_is_market_aware():
+    source = Path("dashboard/pages/5_Combined_Signal.py").read_text()
+    assert "get_selected_market" in source
+    assert "get_combined_ratings(market=market)" in source
+    assert "format_price" in source
