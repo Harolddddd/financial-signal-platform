@@ -238,11 +238,17 @@ def build_features_for_ticker(
     return df
 
 
-def build_live_features(market: str = "us") -> pl.DataFrame:
-    """Full per-ticker feature history through the latest raw trading day,
-    with no label-driven trim on the tail. Used only for live signals —
-    training/backtesting must keep using the labeled markets/<market>/data/features/*.parquet
-    (via load_training_data) so their results stay unaffected."""
+def iter_live_features(market: str = "us"):
+    """Yield (ticker, feature_df) one ticker at a time instead of building the
+    whole universe's live features in memory at once. Same feature computation
+    and skip-on-missing/skip-on-error behavior as build_live_features() — this
+    is the streaming form consumers should use when they process each ticker's
+    result independently (e.g. computing a signal and discarding), so peak
+    memory stays O(1 ticker) instead of O(universe size). At 500-ticker scale
+    (China CSI 500), materializing every ticker's frame simultaneously plus a
+    second per-ticker-partitioned copy was the reproducible cause of a Polars
+    allocator crash (`memory allocation of 15803824 bytes failed`) — this
+    generator is how step_signals() avoids that."""
     market_cfg = get_market(market)
     raw_dir = market_cfg.data_root / "raw" / "ohlcv"
     tickers = _TICKERS_BY_MARKET[market]
@@ -253,17 +259,28 @@ def build_live_features(market: str = "us") -> pl.DataFrame:
     else:
         vix_df = synthetic_vol_index(benchmark_df)
 
-    frames: list[pl.DataFrame] = []
     for ticker in tickers:
         raw_path = raw_dir / f"{ticker}.parquet"
         if not raw_path.exists():
             continue
         try:
-            frames.append(build_features_for_ticker(
+            yield ticker, build_features_for_ticker(
                 ticker, raw_dir, benchmark_df, vix_df, drop_label_nulls=False,
-            ))
+            )
         except Exception as exc:
             logger.warning("  live features FAILED %s: %s", ticker, exc)
+
+
+def build_live_features(market: str = "us") -> pl.DataFrame:
+    """Full per-ticker feature history through the latest raw trading day,
+    with no label-driven trim on the tail. Used only for live signals —
+    training/backtesting must keep using the labeled markets/<market>/data/features/*.parquet
+    (via load_training_data) so their results stay unaffected.
+
+    Materializes the whole universe at once — fine at US scale (measured
+    ~694MB peak RSS) but do not add new callers at 500+-ticker scale; use
+    iter_live_features() instead (see step_signals() in precompute_dashboard.py)."""
+    frames = [df for _, df in iter_live_features(market)]
     return pl.concat(frames, how="vertical_relaxed")
 
 

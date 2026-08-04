@@ -14,8 +14,8 @@ from pathlib import Path
 from datetime import datetime
 import logging
 
-from config.markets import get_market
-from dashboard.ui_config import FEATURE_COLS, REGISTRY_DIR
+from config.markets import MARKETS, get_market
+from dashboard.ui_config import FEATURE_COLS
 from src.features.duckdb_client import load_training_data
 from src.models.evaluator import evaluate
 from src.models.registry import list_models, load_model, save_model
@@ -28,6 +28,11 @@ _TRAIN_RATIO = 0.8
 _MODEL_NAMES = ["random_forest", "xgboost", "lightgbm"]
 
 
+def _market_paths(market: str) -> tuple[Path, Path]:
+    market_cfg = get_market(market)
+    return market_cfg.data_root / "features", market_cfg.data_root / "registry"
+
+
 def _latest_trained_at(model_name: str, registry_dir: Path) -> datetime | None:
     records = [r for r in list_models(registry_dir) if r.model_name == model_name]
     if not records:
@@ -36,14 +41,15 @@ def _latest_trained_at(model_name: str, registry_dir: Path) -> datetime | None:
     return datetime.fromisoformat(latest.trained_at)
 
 
-def incremental_train_one(model_name: str) -> None:
-    cutoff = _latest_trained_at(model_name, REGISTRY_DIR)
+def incremental_train_one(model_name: str, market: str = "us") -> None:
+    feature_dir, registry_dir = _market_paths(market)
+    cutoff = _latest_trained_at(model_name, registry_dir)
     if cutoff is None:
         logger.warning("No existing version for %s — skipping (run scripts/train_models.py first)", model_name)
         return
 
     logger.info("%s — last trained %s, loading rows after that ...", model_name, cutoff.isoformat())
-    new_df = load_training_data(_FEATURE_DIR, start=cutoff)
+    new_df = load_training_data(feature_dir, start=cutoff)
     new_df = new_df.drop_nulls(subset=FEATURE_COLS + ["label"]).sort("time")
 
     if len(new_df) == 0:
@@ -65,7 +71,7 @@ def incremental_train_one(model_name: str) -> None:
     X_test = test_df.select(FEATURE_COLS).to_numpy()
     y_test = test_df["label"].to_numpy()
 
-    model = load_model(model_name, REGISTRY_DIR)
+    model = load_model(model_name, registry_dir)
     logger.info("%s — incremental fit on %d new rows (holding out %d for eval)", model_name, len(train_df), len(test_df))
     model.fit_incremental(X_train, y_train)
 
@@ -77,7 +83,7 @@ def incremental_train_one(model_name: str) -> None:
         evaluation=evaluation,
         params=model.default_params,
         feature_cols=FEATURE_COLS,
-        registry_dir=REGISTRY_DIR,
+        registry_dir=registry_dir,
     )
     logger.info(
         "%s — saved incremental update — acc=%.3f prec_buy=%.3f f1_macro=%.3f -> %s",
@@ -85,17 +91,22 @@ def incremental_train_one(model_name: str) -> None:
     )
 
 
-def main() -> None:
+def main(market: str = "us") -> None:
+    _, registry_dir = _market_paths(market)
     for model_name in _MODEL_NAMES:
         try:
-            incremental_train_one(model_name)
+            incremental_train_one(model_name, market=market)
         except Exception:
             logger.exception("FAILED incremental update for %s", model_name)
 
     print("\nIncremental training complete. Registry contents:")
-    for p in sorted(REGISTRY_DIR.rglob("*.json")):
+    for p in sorted(registry_dir.rglob("*.json")):
         print(f"  {p}")
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--market", default="us", choices=sorted(MARKETS))
+    args = parser.parse_args()
+    main(args.market)
