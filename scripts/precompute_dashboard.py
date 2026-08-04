@@ -17,7 +17,7 @@ import polars as pl
 
 from config.markets import MARKETS, get_market
 from dashboard.ui_config import CONFIDENCE_THRESHOLD, FEATURE_COLS, OHLCV_COLS, PARQUET_DIR
-from scripts.build_features import build_live_features
+from scripts.build_features import iter_live_features
 from src.backtesting.grader import grade_model
 from src.backtesting.metrics import BacktestMetrics
 from src.backtesting.strategy_runner import _is_stateless, _select_cols, walk_forward_backtest_strategy
@@ -177,34 +177,19 @@ def step_signals(
     # a real label and this keeps training/backtesting behavior untouched.
     df = load_training_data(feature_dir)
 
-    # Predict on a separately-built, un-trimmed feature snapshot so "today's"
-    # signal actually reflects the latest raw trading day instead of trailing
-    # by forward_days (the labeled parquet can't have a label for those rows,
-    # so it drops them — but predict() never needs a label at all).
-    live_df = build_live_features(market=market)
-    has_ticker = "ticker" in live_df.columns
-    tickers: list[str] = sorted(live_df["ticker"].unique().to_list()) if has_ticker else ["__all__"]
-
-    # Pre-partition by ticker once. Raw data is written sorted by time, and
-    # the feature/indicator pipeline preserves row order, so each ticker's
-    # last row is genuinely its latest available trading day.
-    ticker_pdfs: dict[str, dict] = {}
-    for ticker in tickers:
-        t_pl = live_df.filter(pl.col("ticker") == ticker) if has_ticker else live_df
-        ticker_pdfs[ticker] = t_pl  # keep as Polars for per-strategy column selection
-
+    # Fit every stateful strategy once, up front, on the full historical df —
+    # fitting is a per-strategy cost, not a per-ticker one. Doing this before
+    # touching any live feature data lets `df` be dropped before the ticker
+    # loop below, instead of staying resident for the whole signals step.
     exclude_set = set(exclude or [])
-    all_signals: list[dict] = []
+    fitted_strategies: dict[str, "Strategy"] = {}
     for name in list_strategies():
         if name in exclude_set:
             logger.info("  signals: %s — skipped", name)
             continue
-        logger.info("  signals: %s", name)
         try:
             strategy = load_strategy(name)
-
             if not _is_stateless(strategy):
-                # Fit on all data for a live signal (no train/test split needed).
                 train_pd = _select_cols(df, strategy, OHLCV_COLS, FEATURE_COLS).to_pandas()
                 if not getattr(strategy, "handles_nan", False):
                     train_pd = train_pd.dropna()
@@ -212,37 +197,53 @@ def step_signals(
                     logger.warning("  %s: too few rows after dropna, skipping", name)
                     continue
                 strategy.fit(train_pd)
-
-            for ticker in tickers:
-                t_pd = _select_cols(ticker_pdfs[ticker], strategy, OHLCV_COLS, FEATURE_COLS).to_pandas()
-                if len(t_pd) == 0 or "time" not in t_pd.columns:
-                    continue
-                try:
-                    result = strategy.predict(t_pd)
-                except Exception as exc:
-                    logger.debug("  %s %s predict failed: %s", name, ticker, exc)
-                    continue
-
-                # Last row = this ticker's own latest available trading day.
-                pos = len(t_pd) - 1
-                if pos >= len(result.signal):
-                    continue
-
-                sig = str(result.signal.iloc[pos])
-                conf = float(result.confidence.iloc[pos])
-                close = float(t_pd["close"].iloc[pos]) if "close" in t_pd.columns else 0.0
-                ticker_date = t_pd["time"].iloc[pos]
-                all_signals.append({
-                    "ticker": ticker if ticker != "__all__" else "ALL",
-                    "date": str(ticker_date),
-                    "signal": sig,
-                    "confidence": conf,
-                    "entry_price": close,
-                    "position_size": conf,
-                    "strategy": name,
-                })
+            fitted_strategies[name] = strategy
         except Exception as exc:
-            logger.error("  signals FAILED %s: %s", name, exc)
+            logger.error("  signals FAILED to fit %s: %s", name, exc)
+    del df
+
+    # Stream live features one ticker at a time (iter_live_features), instead
+    # of materializing the whole universe plus a per-ticker-partitioned copy
+    # of it. At 500-ticker scale (China CSI 500) that combination was the
+    # reproducible cause of a Polars allocator crash
+    # (`memory allocation of 15803824 bytes failed`) — see the Deviations
+    # section of docs/superpowers/plans/2026-07-31-china-full-universe-training.md.
+    # Peak memory here is bounded by a single ticker's feature frame.
+    all_signals: list[dict] = []
+    n_tickers = 0
+    for ticker, t_pl in iter_live_features(market):
+        n_tickers += 1
+        if n_tickers % 50 == 0:
+            logger.info("  signals: processed %d tickers so far", n_tickers)
+        for name, strategy in fitted_strategies.items():
+            t_pd = _select_cols(t_pl, strategy, OHLCV_COLS, FEATURE_COLS).to_pandas()
+            if len(t_pd) == 0 or "time" not in t_pd.columns:
+                continue
+            try:
+                result = strategy.predict(t_pd)
+            except Exception as exc:
+                logger.debug("  %s %s predict failed: %s", name, ticker, exc)
+                continue
+
+            # Last row = this ticker's own latest available trading day.
+            pos = len(t_pd) - 1
+            if pos >= len(result.signal):
+                continue
+
+            sig = str(result.signal.iloc[pos])
+            conf = float(result.confidence.iloc[pos])
+            close = float(t_pd["close"].iloc[pos]) if "close" in t_pd.columns else 0.0
+            ticker_date = t_pd["time"].iloc[pos]
+            all_signals.append({
+                "ticker": ticker,
+                "date": str(ticker_date),
+                "signal": sig,
+                "confidence": conf,
+                "entry_price": close,
+                "position_size": conf,
+                "strategy": name,
+            })
+    logger.info("  signals: done, %d tickers processed", n_tickers)
 
     buy_count = sum(1 for s in all_signals if s["signal"] == "Buy")
     logger.info("  total signals: %d  buy: %d", len(all_signals), buy_count)
@@ -254,13 +255,24 @@ def step_signals(
 
 # ---------------------------------------------------------------------------
 
-def main(market: str = "us") -> None:
+def _pipeline_steps(signals_only: bool = False) -> list[str]:
+    if signals_only:
+        return ["data_summary", "signals"]
+    return ["data_summary", "backtests", "leaderboard", "signals"]
+
+
+def main(market: str = "us", signals_only: bool = False) -> None:
     feature_dir, cache_dir = _market_paths(market)
-    logger.info("=== Precomputing dashboard cache (%s) → %s ===", market, cache_dir)
-    step_data_summary(feature_dir, cache_dir)                                   # [1/4]
-    step_backtests(feature_dir=feature_dir, cache_dir=cache_dir)                # [2/4]
-    step_leaderboard(cache_dir)                                                 # [3/4]
-    step_signals(market=market, feature_dir=feature_dir, cache_dir=cache_dir)   # [4/4]
+    steps = _pipeline_steps(signals_only)
+    logger.info("=== Precomputing dashboard cache (%s) → %s  steps=%s ===", market, cache_dir, steps)
+    if "data_summary" in steps:
+        step_data_summary(feature_dir, cache_dir)
+    if "backtests" in steps:
+        step_backtests(feature_dir=feature_dir, cache_dir=cache_dir)
+    if "leaderboard" in steps:
+        step_leaderboard(cache_dir)
+    if "signals" in steps:
+        step_signals(market=market, feature_dir=feature_dir, cache_dir=cache_dir)
     logger.info("=== Done. Run: git add %s/ && git commit && git push ===", cache_dir)
 
 
@@ -268,5 +280,11 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("--market", default="us", choices=sorted(MARKETS))
+    parser.add_argument(
+        "--signals-only", action="store_true",
+        help="Skip the expensive full walk-forward backtests/leaderboard steps; "
+             "only refresh data summary + live signals (for frequent/daily runs "
+             "against models kept current via scripts/incremental_train.py).",
+    )
     args = parser.parse_args()
-    main(args.market)
+    main(args.market, signals_only=args.signals_only)

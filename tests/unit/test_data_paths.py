@@ -124,6 +124,16 @@ def test_precompute_dashboard_market_paths_for_china():
     assert cache_dir == get_market("china").data_root / "cache"
 
 
+def test_pipeline_steps_default_runs_all_four():
+    from scripts.precompute_dashboard import _pipeline_steps
+    assert _pipeline_steps() == ["data_summary", "backtests", "leaderboard", "signals"]
+
+
+def test_pipeline_steps_signals_only_skips_backtests_and_leaderboard():
+    from scripts.precompute_dashboard import _pipeline_steps
+    assert _pipeline_steps(signals_only=True) == ["data_summary", "signals"]
+
+
 def test_dashboard_ui_config_survives_streamlit_sys_path_shadowing():
     # Streamlit inserts the main script's own directory at sys.path[0]
     # (ahead of the repo root) before running it — for `streamlit run
