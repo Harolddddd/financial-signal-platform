@@ -64,6 +64,40 @@ def _safe(name: str) -> str:
     return name.replace(" ", "_").replace("/", "_")
 
 
+def _at(seq, i: int):
+    # Positional access that works for plain lists and pandas Series alike
+    # (a Series' `[]` is label-based and would misbehave on a non-default index).
+    return seq.iloc[i] if hasattr(seq, "iloc") else seq[i]
+
+
+def _trade_window(signals, dates, pos: int) -> dict:
+    """Trade lifecycle for a signal series ending at `pos` (inclusive).
+
+    "open" — currently in a Buy run; open_date is where that run started.
+    "closed" — most recent Buy run has ended; close_date is the first
+      non-Buy date after it (i.e. when the position would have been exited).
+    "none" — no Buy signal anywhere at or before `pos`.
+    """
+    current = str(_at(signals, pos))
+    if current == "Buy":
+        start = pos
+        while start > 0 and str(_at(signals, start - 1)) == "Buy":
+            start -= 1
+        return {"status": "open", "open_date": str(_at(dates, start)), "close_date": None}
+
+    end = pos - 1
+    while end >= 0 and str(_at(signals, end)) != "Buy":
+        end -= 1
+    if end < 0:
+        return {"status": "none", "open_date": None, "close_date": None}
+
+    start = end
+    while start > 0 and str(_at(signals, start - 1)) == "Buy":
+        start -= 1
+    close_idx = end + 1
+    return {"status": "closed", "open_date": str(_at(dates, start)), "close_date": str(_at(dates, close_idx))}
+
+
 # ---------------------------------------------------------------------------
 
 def step_data_summary(feature_dir: Path = PARQUET_DIR, cache_dir: Path = CACHE_DIR) -> None:
@@ -234,6 +268,7 @@ def step_signals(
             conf = float(result.confidence.iloc[pos])
             close = float(t_pd["close"].iloc[pos]) if "close" in t_pd.columns else 0.0
             ticker_date = t_pd["time"].iloc[pos]
+            trade = _trade_window(result.signal, t_pd["time"], pos)
             all_signals.append({
                 "ticker": ticker,
                 "date": str(ticker_date),
@@ -242,6 +277,9 @@ def step_signals(
                 "entry_price": close,
                 "position_size": conf,
                 "strategy": name,
+                "trade_status": trade["status"],
+                "trade_open_date": trade["open_date"],
+                "trade_close_date": trade["close_date"],
             })
     logger.info("  signals: done, %d tickers processed", n_tickers)
 

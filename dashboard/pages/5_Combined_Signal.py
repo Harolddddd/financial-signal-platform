@@ -78,9 +78,15 @@ if selected_rows:
     ddf["contribution"] = ddf["contribution"].round(3)
     ddf["date"] = pd.to_datetime(ddf["date"]).dt.strftime("%Y-%m-%d")
     ddf["entry_price"] = ddf["entry_price"].map(lambda x: format_price(x, market))
-    ddf = ddf[["strategy", "weight", "signal", "confidence", "contribution", "entry_price", "date"]]
+    for c in ("trade_status", "trade_open_date", "trade_close_date"):
+        if c not in ddf.columns:
+            ddf[c] = None
+    ddf["trade_close_date"] = ddf["trade_close_date"].fillna("still open")
+    ddf = ddf[["strategy", "weight", "signal", "confidence", "contribution", "entry_price", "date",
+               "trade_status", "trade_open_date", "trade_close_date"]]
     ddf.columns = ["Strategy", "Weight (composite score)", "Signal", "Confidence",
-                   "Contribution", "Entry Price", "Date"]
+                   "Contribution", "Entry Price", "Date",
+                   "Trade Status", "Trade Opened", "Trade Closed"]
 
     chart_col, table_col = st.columns([2, 3])
     with chart_col:

@@ -44,6 +44,9 @@ else:
             "entry_price": s.entry_price,
             "position_size": s.position_size,
             "strategy": "—",
+            "trade_status": "open",
+            "trade_open_date": s.date,
+            "trade_close_date": None,
         }
         for s in live
     ]
@@ -58,11 +61,15 @@ if not raw_signals:
 st.success(f"Found **{len(raw_signals)}** Buy signal(s) across all strategies")
 
 # Build a tidy DataFrame grouped by ticker.
-df = pd.DataFrame(raw_signals)[["ticker", "strategy", "confidence", "entry_price", "date"]]
+cols = ["ticker", "strategy", "confidence", "entry_price", "date", "trade_open_date"]
+df = pd.DataFrame(raw_signals)
+if "trade_open_date" not in df.columns:
+    df["trade_open_date"] = df["date"]
+df = df[cols]
 df = df.sort_values(["ticker", "confidence"], ascending=[True, False])
 df["confidence"] = df["confidence"].map(lambda x: f"{x:.1%}")
 df["entry_price"] = df["entry_price"].map(lambda x: format_price(x, market))
-df.columns = ["Ticker", "Strategy", "Confidence", "Entry Price", "Date"]
+df.columns = ["Ticker", "Strategy", "Confidence", "Entry Price", "Date", "Trade Opened"]
 
 # Summary: tickers with the most strategy agreement
 ticker_counts = df.groupby("Ticker").size().sort_values(ascending=False)
@@ -77,3 +84,22 @@ with col1:
 with col2:
     st.subheader("All signals")
     st.dataframe(df, use_container_width=True, hide_index=True)
+
+st.divider()
+st.subheader("Recently closed trades")
+st.caption("Positions that were open (Buy) and have since flipped to Hold/Sell.")
+
+if _raw:
+    closed = [s for s in _raw["signals"] if s.get("trade_status") == "closed"]
+    if closed:
+        cdf = pd.DataFrame(closed)[
+            ["ticker", "strategy", "signal", "trade_open_date", "trade_close_date", "entry_price"]
+        ]
+        cdf = cdf.sort_values("trade_close_date", ascending=False).head(200)
+        cdf["entry_price"] = cdf["entry_price"].map(lambda x: format_price(x, market))
+        cdf.columns = ["Ticker", "Strategy", "Current Signal", "Trade Opened", "Trade Closed", "Entry Price"]
+        st.dataframe(cdf, use_container_width=True, hide_index=True)
+    else:
+        st.info("No closed trades found in the current cache.")
+else:
+    st.info("Closed-trade history requires the precomputed cache — run precompute_dashboard.py.")
