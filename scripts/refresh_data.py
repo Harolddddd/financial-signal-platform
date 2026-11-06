@@ -64,6 +64,26 @@ def _refresh_raw(ticker: str, today: datetime, raw_dir: Path) -> None:
         logger.warning("  %s fetch failed: %s", ticker, exc)
 
 
+def _ingest_us_news(tickers: list[str], benchmark_df: pl.DataFrame, news_dir: Path) -> None:
+    """Best-effort news ingest; must never break the data refresh."""
+    try:
+        from src.ingestion.news_ingest import ingest_news
+        from src.ingestion.news_store import load_daily
+
+        today = datetime.now(timezone.utc).date()
+        daily = load_daily(news_dir)
+        last = daily["time"].max() if daily.height else None
+        start = (last if last is not None else today) - timedelta(days=3)
+        trading_days = benchmark_df["time"].cast(pl.Date).unique().sort()
+        res = ingest_news(list(tickers), start, today, news_dir, trading_days)
+        logger.info(
+            "News ingest: ok=%d failed=%s new=%d",
+            len(res["tickers_ok"]), res["tickers_failed"], res["articles_new"],
+        )
+    except Exception as exc:
+        logger.warning("News ingest skipped: %s", exc)
+
+
 def main(market: str = "us") -> None:
     market_cfg = get_market(market)
     raw_dir = market_cfg.data_root / "raw" / "ohlcv"
@@ -94,6 +114,9 @@ def main(market: str = "us") -> None:
         vix_df = pl.read_parquet(raw_dir / f"{market_cfg.vol_index_ticker}.parquet")
     else:
         vix_df = synthetic_vol_index(benchmark_df)
+
+    if market == "us":
+        _ingest_us_news(tickers, benchmark_df, market_cfg.data_root / "news")
 
     logger.info("[2/2] Rebuilding features for %d tickers", len(tickers))
     feature_dir.mkdir(parents=True, exist_ok=True)

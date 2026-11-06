@@ -51,3 +51,31 @@ def test_score_headline_falls_back_to_vader_on_short_text():
     result = score_headline("up")
     assert isinstance(result, SentimentResult)
     assert result.label in {"positive", "negative", "neutral"}
+
+
+@patch("src.ingestion.sentiment_processor._get_finbert_pipeline")
+def test_score_texts_batches(mock_fn):
+    from src.ingestion.sentiment_processor import score_texts
+
+    def fake(batch, **kwargs):
+        return [[
+            {"label": "positive", "score": 0.7},
+            {"label": "neutral", "score": 0.2},
+            {"label": "negative", "score": 0.1},
+        ] for _ in batch]
+
+    mock_pipeline = MagicMock(side_effect=fake)
+    mock_fn.return_value = mock_pipeline
+    out = score_texts([f"Company reports strong quarterly result {i}" for i in range(70)])
+    assert mock_pipeline.call_count == 3
+    assert len(out) == 70
+    assert all(r.scorer == "finbert" and r.label == "positive" for r in out)
+
+
+@patch("src.ingestion.sentiment_processor._get_finbert_pipeline")
+def test_score_texts_vader_fallback_on_error(mock_fn):
+    from src.ingestion.sentiment_processor import score_texts
+
+    mock_fn.return_value = MagicMock(side_effect=RuntimeError("boom"))
+    out = score_texts(["Company reports strong quarterly result", "tiny"])
+    assert [r.scorer for r in out] == ["vader", "vader"]

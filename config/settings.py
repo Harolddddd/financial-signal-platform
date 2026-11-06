@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     FMP_KEY: str = ""
     NEWSAPI_KEY: str = ""
     FINNHUB_KEY: str = ""
+    FRED_KEY: str = ""
 
     STOCK_UNIVERSE: str = "sp500"
     HISTORICAL_DAYS: int = 3650
