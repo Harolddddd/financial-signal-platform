@@ -51,7 +51,7 @@ def test_write_scores_dedupes(tmp_path):
     df = _scores([("AAPL", _ts(2026, 10, 30, 10, 0), i, 0.5) for i in range(3)])
     assert ns.write_scores(tmp_path, df) == 3
     assert ns.write_scores(tmp_path, df) == 0
-    files = list(tmp_path.glob("scores_*.parquet"))
+    files = list(tmp_path.glob("articles_scores_*.parquet"))
     assert len(files) == 1
     assert pl.read_parquet(files[0]).height == 3
 
@@ -94,8 +94,8 @@ def test_prune_keeps_recent_months(tmp_path):
     ns.write_scores(tmp_path, _scores([("AAPL", _ts(2026, 6, 10, 10, 0), 1, 0.5)]))
     ns.write_scores(tmp_path, _scores([("AAPL", _ts(2026, 10, 10, 10, 0), 2, 0.5)]))
     ns.prune(tmp_path, date(2026, 11, 6), keep_days=60)
-    names = sorted(p.name for p in tmp_path.glob("scores_*.parquet"))
-    assert names == ["scores_2026-10.parquet"]
+    names = sorted(p.name for p in tmp_path.glob("articles_scores_*.parquet"))
+    assert names == ["articles_scores_2026-10.parquet"]
 
 
 def test_headlines_rolls_off_after_14_days(tmp_path):
@@ -111,12 +111,12 @@ def test_headlines_rolls_off_after_14_days(tmp_path):
 
     ns.write_headlines(tmp_path, rows(1, 1), date(2026, 11, 5))
     ns.write_headlines(tmp_path, rows(2, 20), date(2026, 11, 20))
-    out = pl.read_parquet(tmp_path / "headlines.parquet")
+    out = pl.read_parquet(tmp_path / "headlines_recent.parquet")
     assert out["url_hash"].to_list() == [2]
 
 
 def test_files_use_zstd(tmp_path):
     ns.write_scores(tmp_path, _scores([("AAPL", _ts(2026, 10, 30, 10, 0), 1, 0.5)]))
     ns.rebuild_daily(tmp_path, _days(date(2026, 10, 30)), date(2026, 10, 1))
-    for p in (tmp_path / "scores_2026-10.parquet", tmp_path / "sentiment_daily.parquet"):
+    for p in (tmp_path / "articles_scores_2026-10.parquet", tmp_path / "sentiment_daily.parquet"):
         assert pq.ParquetFile(p).metadata.row_group(0).column(0).compression == "ZSTD"

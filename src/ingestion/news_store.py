@@ -1,8 +1,8 @@
 """Tiered compact news store.
 
 Layout under ``news_dir``:
-  scores_YYYY-MM.parquet   per-article sentiment scores (no text, only url_hash)
-  headlines.parquet        short rolling window of raw headlines
+  articles_scores_YYYY-MM.parquet   per-article sentiment scores (no text, only url_hash)
+  headlines_recent.parquet        short rolling window of raw headlines
   sentiment_daily.parquet  per (ticker, trading day) aggregates
 """
 
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 NY = ZoneInfo("America/New_York")
 CUTOFF = time(16, 0)
 DAILY_FILE = "sentiment_daily.parquet"
-HEADLINES_FILE = "headlines.parquet"
+HEADLINES_FILE = "headlines_recent.parquet"
 
 _DAILY_SCHEMA = {
     "ticker": pl.Categorical,
@@ -65,7 +65,7 @@ def assign_trading_day(published_at: pl.Series, trading_days: pl.Series) -> pl.S
 
 
 def _month_path(news_dir: Path, year: int, month: int) -> Path:
-    return news_dir / f"scores_{year:04d}-{month:02d}.parquet"
+    return news_dir / f"articles_scores_{year:04d}-{month:02d}.parquet"
 
 
 def _read_plain(path: Path) -> pl.DataFrame:
@@ -145,7 +145,7 @@ def load_daily(news_dir: Path) -> pl.DataFrame:
 
 def rebuild_daily(news_dir: Path, trading_days: pl.Series, since: date) -> None:
     news_dir.mkdir(parents=True, exist_ok=True)
-    files = sorted(news_dir.glob("scores_*.parquet"))
+    files = sorted(news_dir.glob("articles_scores_*.parquet"))
     old = load_daily(news_dir).with_columns(pl.col("ticker").cast(pl.Utf8))
     old = old.filter(pl.col("time") < since)
 
@@ -182,9 +182,9 @@ def rebuild_daily(news_dir: Path, trading_days: pl.Series, since: date) -> None:
 
 def prune(news_dir: Path, today: date, keep_days: int = 60) -> None:
     cutoff = today - timedelta(days=keep_days)
-    for path in news_dir.glob("scores_*.parquet"):
+    for path in news_dir.glob("articles_scores_*.parquet"):
         try:
-            year, month = (int(x) for x in path.stem.removeprefix("scores_").split("-"))
+            year, month = (int(x) for x in path.stem.removeprefix("articles_scores_").split("-"))
         except ValueError:
             continue
         last_day = date(year, month, calendar.monthrange(year, month)[1])
