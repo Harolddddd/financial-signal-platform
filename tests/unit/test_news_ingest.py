@@ -142,3 +142,22 @@ def test_ingest_missing_key_returns_empty(tmp_path, monkeypatch, caplog):
         )
     assert res == {"tickers_ok": [], "tickers_failed": [], "articles_new": 0}
     assert "FINNHUB_KEY" in caplog.text
+
+
+def test_interrupted_ingest_keeps_daily_rows_from_checkpoint(tmp_path, monkeypatch):
+    # A long backfill killed mid-run must not lose the tickers it already finished.
+    monkeypatch.setattr(news_ingest, "score_texts", _fake_score)
+    monkeypatch.setattr(news_ingest, "_REBUILD_EVERY", 2)
+
+    def fetch(ticker, f, t):
+        if ticker == "CCC":
+            raise KeyboardInterrupt  # stands in for the job being killed
+        return [_art(ticker, 1)]
+
+    with pytest.raises(KeyboardInterrupt):
+        news_ingest.ingest_news(
+            ["AAA", "BBB", "CCC"], date(2026, 10, 20), date(2026, 10, 22), tmp_path, _days(),
+            fetch=fetch, sleep=lambda s: None,
+        )
+    daily = pl.read_parquet(tmp_path / "sentiment_daily.parquet")
+    assert set(daily["ticker"].cast(pl.Utf8)) == {"AAA", "BBB"}

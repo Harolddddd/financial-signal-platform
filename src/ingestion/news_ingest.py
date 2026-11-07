@@ -20,6 +20,9 @@ logger = logging.getLogger(__name__)
 _MAX_CALLS_PER_MIN = 55
 _PACE_SECONDS = 60 / _MAX_CALLS_PER_MIN
 _RETRY_SLEEP = 60
+# Rebuild the permanent daily file every N tickers, so a long backfill that is
+# killed mid-run keeps what it finished (score files may be pruned later).
+_REBUILD_EVERY = 25
 
 
 def _month_chunks(start: date, end: date) -> list[tuple[date, date]]:
@@ -77,7 +80,7 @@ def ingest_news(
     new_count = 0
     # One ticker at a time: only that ticker's articles are ever held in
     # memory, and its scores/headlines hit disk before the next ticker starts.
-    for ticker in tickers:
+    for i, ticker in enumerate(tickers, start=1):
         ticker_ok = True
         fresh: dict[int, object] = {}
         for d0, d1 in _month_chunks(start, end):
@@ -95,6 +98,8 @@ def ingest_news(
         if fresh:
             new_count += _score_and_write(news_dir, fresh, today)
             seen.update((a.ticker, h) for h, a in fresh.items())
+        if i % _REBUILD_EVERY == 0 and i < len(tickers):
+            news_store.rebuild_daily(news_dir, trading_days, since=start)
 
     # Rebuild before prune: rebuild needs score files covering `start`.
     news_store.rebuild_daily(news_dir, trading_days, since=start)
