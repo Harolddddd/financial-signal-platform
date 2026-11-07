@@ -21,6 +21,12 @@ logger = logging.getLogger(__name__)
 _FIRST_RUN_START = date(2010, 1, 1)
 
 
+def _empty_scores() -> pl.DataFrame:
+    return pl.DataFrame(
+        schema={"release_ts": pl.Datetime("us", "America/New_York"), "tone": pl.Float64}
+    )
+
+
 def main() -> None:
     if not settings.FRED_KEY:
         logger.warning("FRED_KEY not set, skipping macro refresh")
@@ -43,9 +49,16 @@ def main() -> None:
     since = _FIRST_RUN_START
     if cached is not None and cached.height:
         since = cached["release_ts"].dt.convert_time_zone("America/New_York").dt.date().max() + timedelta(days=1)
-    new = score_fomc_statements(fetch_fomc_statements(since))
-    scores = new if cached is None else pl.concat([cached, new]).unique("release_ts").sort("release_ts")
-    scores.write_parquet(scores_path, compression="zstd")
+    try:
+        new = score_fomc_statements(fetch_fomc_statements(since))
+    except Exception as exc:
+        # Statement fetch or the FOMC model (transformers) failed: keep the
+        # cached scores and still write the FRED columns.
+        logger.warning("FOMC step failed (%s); building macro_daily from cached FOMC scores", exc)
+        scores = cached if cached is not None else _empty_scores()
+    else:
+        scores = new if cached is None else pl.concat([cached, new]).unique("release_ts").sort("release_ts")
+        scores.write_parquet(scores_path, compression="zstd")
 
     macro = build_macro_daily(fred, scores, trading_days)
     macro.write_parquet(daily_path, compression="zstd")
