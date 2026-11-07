@@ -100,6 +100,8 @@ class OverlayStrategy(Strategy):
         self.inner = inner
         self.cfg = cfg
         self.data_source = inner.data_source
+        # strategy_runner skips dropna() for NaN-native models; mirror inner
+        self.handles_nan = getattr(inner, "handles_nan", False)
         self.last_reason: pd.Series = pd.Series(dtype=object)
         self.last_raw_confidence: pd.Series = pd.Series(dtype=float)
 

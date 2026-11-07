@@ -151,3 +151,12 @@ def test_every_changed_row_has_reason():
     changed = (sig != s) | (conf - c).abs().gt(1e-12)
     assert (reason[changed] != "").all()
     assert (reason[~changed] == "").all()
+
+
+class _NanInner(_Fake):
+    handles_nan = True
+
+
+def test_wrapper_forwards_handles_nan():
+    assert OverlayStrategy(_NanInner()).handles_nan is True
+    assert OverlayStrategy(_Fake()).handles_nan is False
