@@ -57,7 +57,10 @@ def apply_overlay(
     else:
         f_fomc = ((tone > 0) & (days <= cfg.fomc_window_days)).fillna(False)
     n_flags = f_dgs2.astype(int) + f_hy.astype(int) + f_fomc.astype(int)
-    conf = confidence.astype(float) * np.power(cfg.risk_off_mult, n_flags)
+    has_flags = n_flags > 0
+    # risk-off multiplier applies to Buy rows only (Sell/Hold untouched)
+    conf = confidence.astype(float)
+    conf = conf.where(~was_buy, conf * np.power(cfg.risk_off_mult, n_flags))
 
     # 2/3. news veto and boost
     count = _col(ctx, "news_count_3d", idx)
@@ -73,8 +76,9 @@ def apply_overlay(
 
     out = signal.copy()
     out[veto & was_buy] = "Hold"
-    # 4. low adjusted confidence on a Buy -> Hold
-    out[(out == "Buy") & (conf < cfg.buy_threshold)] = "Hold"
+    # 4. a risk-off-penalised Buy below the threshold -> Hold (only when at
+    # least one flag fired; an unflagged Buy keeps its signal unchanged)
+    out[(out == "Buy") & has_flags & (conf < cfg.buy_threshold)] = "Hold"
 
     # reasons (Buy rows only)
     parts = [

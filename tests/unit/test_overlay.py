@@ -110,3 +110,44 @@ def test_boost_only_applies_to_buy_rows(sig):
     s, c = _sc(sig=sig, conf=0.7)
     out, conf, reason = apply_overlay(s, c, _ctx(news_count_3d=5, news_net_z60=2.0), CFG)
     assert out.iloc[0] == sig and conf.iloc[0] == 0.7 and reason.iloc[0] == ""
+
+
+def test_low_conf_buy_without_flags_is_untouched():
+    s, c = _sc(conf=0.55)
+    for ctx in (pd.DataFrame(index=s.index), _ctx()):
+        sig, conf, reason = apply_overlay(s, c, ctx, CFG)
+        assert sig.iloc[0] == "Buy"
+        assert conf.iloc[0] == pytest.approx(0.55)
+        assert reason.iloc[0] == ""
+
+
+def test_risk_off_multiplier_skips_sell_rows():
+    s, c = _sc(sig="Sell", conf=0.8)
+    ctx = _ctx(macro_dgs2_chg_5d=0.5, macro_hy_spread_z20=3.0)
+    sig, conf, reason = apply_overlay(s, c, ctx, CFG)
+    assert sig.iloc[0] == "Sell"
+    assert conf.iloc[0] == pytest.approx(0.8)
+    assert reason.iloc[0] == ""
+
+
+def test_one_flag_demotes_buy_below_threshold_with_reason():
+    s, c = _sc(conf=0.65)
+    sig, conf, reason = apply_overlay(s, c, _ctx(macro_dgs2_chg_5d=0.5), CFG)
+    assert conf.iloc[0] == pytest.approx(0.65 * 0.85)
+    assert sig.iloc[0] == "Hold"
+    assert reason.iloc[0] == "risk-off: 2y yield jump"
+
+
+def test_every_changed_row_has_reason():
+    idx = range(4)
+    s = pd.Series(["Buy", "Sell", "Hold", "Buy"], index=idx)
+    c = pd.Series([0.55, 0.8, 0.5, 0.9], index=idx)
+    ctx = pd.DataFrame(
+        {"macro_dgs2_chg_5d": [0.0, 0.5, 0.5, 0.5], "news_count_3d": [5, 5, 5, 0],
+         "news_net_z60": [0.0, -3.0, 2.0, 0.0]},
+        index=idx,
+    )
+    sig, conf, reason = apply_overlay(s, c, ctx, CFG)
+    changed = (sig != s) | (conf - c).abs().gt(1e-12)
+    assert (reason[changed] != "").all()
+    assert (reason[~changed] == "").all()
