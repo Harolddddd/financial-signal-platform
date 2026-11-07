@@ -7,6 +7,7 @@ from config.markets import MARKETS, get_market
 from src.features.technical_indicators import add_technical_indicators
 from src.features.cross_asset_features import add_cross_asset_features, synthetic_vol_index
 from src.features.label_generator import add_labels
+from src.features.news_macro_features import add_macro_features, add_news_features, load_us_news_macro
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
@@ -223,11 +224,17 @@ def build_features_for_ticker(
     spy_df: pl.DataFrame,
     vix_df: pl.DataFrame,
     drop_label_nulls: bool = True,
+    news_daily: pl.DataFrame | None = None,
+    macro_daily: pl.DataFrame | None = None,
 ) -> pl.DataFrame:
     df = pl.read_parquet(raw_dir / f"{ticker}.parquet")
     df = add_technical_indicators(df)
     df = add_cross_asset_features(df, spy_df, vix_df)
     df = add_neutral_sentiment(df)
+    if news_daily is not None or macro_daily is not None:
+        # US only: China callers pass neither, so its feature set is unchanged.
+        df = add_news_features(df, news_daily)
+        df = add_macro_features(df, macro_daily)
     df = add_labels(df)
     if drop_label_nulls:
         # Training/backtesting need a real label — the last forward_days
@@ -260,6 +267,8 @@ def iter_live_features(market: str = "us"):
     else:
         vix_df = synthetic_vol_index(benchmark_df)
 
+    news_daily, macro_daily = load_us_news_macro() if market == "us" else (None, None)
+
     for ticker in tickers:
         raw_path = raw_dir / f"{ticker}.parquet"
         if not raw_path.exists():
@@ -267,6 +276,7 @@ def iter_live_features(market: str = "us"):
         try:
             yield ticker, build_features_for_ticker(
                 ticker, raw_dir, benchmark_df, vix_df, drop_label_nulls=False,
+                news_daily=news_daily, macro_daily=macro_daily,
             )
         except Exception as exc:
             logger.warning("  live features FAILED %s: %s", ticker, exc)
@@ -314,6 +324,8 @@ def main(market: str = "us") -> None:
 
     feature_dir.mkdir(parents=True, exist_ok=True)
 
+    news_daily, macro_daily = load_us_news_macro() if market == "us" else (None, None)
+
     successes: list[tuple[str, int]] = []
     failures:  list[tuple[str, str]] = []
 
@@ -324,7 +336,10 @@ def main(market: str = "us") -> None:
             failures.append((ticker, "raw parquet not found"))
             continue
         try:
-            df = build_features_for_ticker(ticker, raw_dir, benchmark_df, vix_df)
+            df = build_features_for_ticker(
+                ticker, raw_dir, benchmark_df, vix_df,
+                news_daily=news_daily, macro_daily=macro_daily,
+            )
             out_path = feature_dir / f"{ticker}.parquet"
             df.write_parquet(out_path)
             logger.info("OK    %s — %d rows → %s", ticker, len(df), out_path)

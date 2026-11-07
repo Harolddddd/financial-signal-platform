@@ -136,3 +136,46 @@ def test_build_live_features_china_reads_from_china_raw_dir_and_tickers(tmp_path
     df = build_live_features(market="china")
     assert len(df) > 0
     assert set(df["ticker"].unique().to_list()).issubset(set(_STOCK_TICKERS_CHINA))
+
+
+def _write_raw(tmp_path):
+    raw_dir = tmp_path / "raw"
+    raw_dir.mkdir()
+    _make_ohlcv("AAPL").write_parquet(raw_dir / "AAPL.parquet")
+    return raw_dir
+
+
+def test_us_features_contain_overlay_cols(tmp_path):
+    from scripts.build_features import build_features_for_ticker
+    from src.features.news_macro_features import OVERLAY_COLS
+
+    raw_dir = _write_raw(tmp_path)
+    spy, vix = _make_ohlcv("SPY"), _make_ohlcv("^VIX")
+    plain = build_features_for_ticker("AAPL", raw_dir, spy, vix)
+    us = build_features_for_ticker(
+        "AAPL", raw_dir, spy, vix, news_daily=pl.DataFrame(), macro_daily=pl.DataFrame(),
+    )
+    for c in OVERLAY_COLS:
+        assert c in us.columns
+    assert us.height == plain.height
+    assert us.select(OVERLAY_COLS).null_count().sum_horizontal().item() == 0
+
+
+def test_china_output_unchanged(tmp_path):
+    from scripts.build_features import build_features_for_ticker
+    from src.features.news_macro_features import OVERLAY_COLS
+
+    raw_dir = _write_raw(tmp_path)
+    df = build_features_for_ticker("AAPL", raw_dir, _make_ohlcv("SPY"), _make_ohlcv("^VIX"))
+    assert not any(c in df.columns for c in OVERLAY_COLS)
+
+
+def test_feature_cols_unchanged():
+    from dashboard.ui_config import FEATURE_COLS
+    assert FEATURE_COLS == [
+        "sma_10", "sma_20", "sma_50", "sma_200", "ema_12", "ema_26",
+        "rsi_14", "macd", "macd_signal", "macd_hist",
+        "bb_upper", "bb_lower", "bb_width", "atr_14", "hist_vol_21",
+        "sent_pos_avg_3d", "sent_pos_avg_5d", "sent_pos_avg_10d",
+        "sent_pos_mom_3d", "news_vol_spike", "rel_strength_spy", "vix_level",
+    ]

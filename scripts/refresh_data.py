@@ -8,6 +8,7 @@ import polars as pl
 
 from config.markets import MARKETS, get_market
 from scripts.build_features import _TICKERS_BY_MARKET, build_features_for_ticker
+from src.features.news_macro_features import load_us_news_macro
 from src.features.cross_asset_features import synthetic_vol_index
 from src.ingestion.historical_collector import fetch_ohlcv
 
@@ -128,6 +129,9 @@ def main(market: str = "us") -> None:
     if market == "us":
         _ingest_us_news(tickers, benchmark_df, market_cfg.data_root / "news")
         _refresh_us_macro()
+        news_daily, macro_daily = load_us_news_macro()
+    else:
+        news_daily, macro_daily = None, None
 
     logger.info("[2/2] Rebuilding features for %d tickers", len(tickers))
     feature_dir.mkdir(parents=True, exist_ok=True)
@@ -136,7 +140,10 @@ def main(market: str = "us") -> None:
         if not (raw_dir / f"{ticker}.parquet").exists():
             continue
         try:
-            df = build_features_for_ticker(ticker, raw_dir, benchmark_df, vix_df)
+            df = build_features_for_ticker(
+                ticker, raw_dir, benchmark_df, vix_df,
+                news_daily=news_daily, macro_daily=macro_daily,
+            )
             df.write_parquet(feature_dir / f"{ticker}.parquet")
             ok += 1
         except Exception as exc:
