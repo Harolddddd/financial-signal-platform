@@ -1,6 +1,7 @@
 from datetime import date, datetime, timezone
 
 import polars as pl
+import pytest
 
 from src.ingestion import news_ingest
 from src.ingestion.news_collector import NewsArticle
@@ -54,6 +55,83 @@ def test_ingest_never_writes_body_text(tmp_path, monkeypatch):
         cols = set(pl.read_parquet(f).columns)
         assert not cols & {"body", "summary", "url"}
     assert (tmp_path / "sentiment_daily.parquet").exists()
+
+
+def test_reingest_never_rescores(tmp_path, monkeypatch):
+    calls = []
+
+    def counting_score(texts, batch_size=32):
+        calls.append(len(texts))
+        return _fake_score(texts)
+
+    monkeypatch.setattr(news_ingest, "score_texts", counting_score)
+    kw = dict(fetch=lambda t, f, to: [_art(t, 1), _art(t, 2)], sleep=lambda s: None)
+    args = (["AAPL", "MSFT"], date(2026, 10, 20), date(2026, 10, 22), tmp_path, _days())
+    first = news_ingest.ingest_news(*args, **kw)
+    assert first["articles_new"] == 4
+    assert sum(calls) == 4
+    calls.clear()
+    second = news_ingest.ingest_news(*args, **kw)
+    assert calls == []
+    assert second["articles_new"] == 0
+    assert second["tickers_ok"] == ["AAPL", "MSFT"]
+
+
+def test_ingest_dedupes_same_url_across_chunks(tmp_path, monkeypatch):
+    calls = []
+    monkeypatch.setattr(
+        news_ingest, "score_texts", lambda texts, batch_size=32: calls.append(len(texts)) or _fake_score(texts)
+    )
+    # range spans two month chunks; fetch returns the same article for each
+    res = news_ingest.ingest_news(
+        ["AAPL"], date(2026, 9, 29), date(2026, 10, 22), tmp_path, _days(),
+        fetch=lambda t, f, to: [_art(t, 1)], sleep=lambda s: None,
+    )
+    assert calls == [1]
+    assert res["articles_new"] == 1
+
+
+def test_ingest_writes_per_ticker(tmp_path, monkeypatch):
+    def score(texts, batch_size=32):
+        if any(t.startswith("MSFT") for t in texts):
+            raise RuntimeError("boom")
+        return _fake_score(texts)
+
+    monkeypatch.setattr(news_ingest, "score_texts", score)
+    with pytest.raises(RuntimeError):
+        news_ingest.ingest_news(
+            ["AAPL", "MSFT"], date(2026, 10, 20), date(2026, 10, 22), tmp_path, _days(),
+            fetch=lambda t, f, to: [_art(t, 1)], sleep=lambda s: None,
+            today=date(2026, 10, 23),
+        )
+    files = list(tmp_path.glob("articles_scores_*.parquet"))
+    assert files
+    stored = pl.concat([pl.read_parquet(f) for f in files])
+    assert stored["ticker"].cast(pl.Utf8).to_list() == ["AAPL"]
+    heads = pl.read_parquet(tmp_path / "headlines_recent.parquet")
+    assert heads["ticker"].cast(pl.Utf8).to_list() == ["AAPL"]
+
+
+def test_ingest_uses_given_today_for_headlines_and_prune(tmp_path, monkeypatch):
+    monkeypatch.setattr(news_ingest, "score_texts", _fake_score)
+    seen = {}
+    real_wh, real_prune = news_ingest.news_store.write_headlines, news_ingest.news_store.prune
+
+    def wh(news_dir, rows, today, keep_days=14):
+        seen["headlines"] = today
+        return real_wh(news_dir, rows, today=today, keep_days=keep_days)
+
+    def pr(news_dir, today, keep_days=60):
+        seen["prune"] = today
+        return real_prune(news_dir, today=today, keep_days=keep_days)
+
+    monkeypatch.setattr(news_ingest.news_store, "write_headlines", wh)
+    monkeypatch.setattr(news_ingest.news_store, "prune", pr)
+    news_ingest.ingest_news(
+        ["AAPL"], date(2026, 10, 20), date(2026, 10, 22), tmp_path, _days(),
+        fetch=lambda t, f, to: [_art(t, 1)], sleep=lambda s: None, today=date(2026, 10, 23),
+    )
+    assert seen == {"headlines": date(2026, 10, 23), "prune": date(2026, 10, 23)}
 
 
 def test_ingest_missing_key_returns_empty(tmp_path, monkeypatch, caplog):
