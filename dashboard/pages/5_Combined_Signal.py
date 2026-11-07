@@ -81,12 +81,14 @@ if selected_rows:
     for c in ("trade_status", "trade_open_date", "trade_close_date"):
         if c not in ddf.columns:
             ddf[c] = None
+    if "overlay_reason" not in ddf.columns:
+        ddf["overlay_reason"] = ""
     ddf["trade_close_date"] = ddf["trade_close_date"].fillna("still open")
     ddf = ddf[["strategy", "weight", "signal", "confidence", "contribution", "entry_price", "date",
-               "trade_status", "trade_open_date", "trade_close_date"]]
+               "trade_status", "trade_open_date", "trade_close_date", "overlay_reason"]]
     ddf.columns = ["Strategy", "Weight (composite score)", "Signal", "Confidence",
                    "Contribution", "Entry Price", "Date",
-                   "Trade Status", "Trade Opened", "Trade Closed"]
+                   "Trade Status", "Trade Opened", "Trade Closed", "Overlay"]
 
     chart_col, table_col = st.columns([2, 3])
     with chart_col:

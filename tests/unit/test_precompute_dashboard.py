@@ -78,3 +78,117 @@ def test_load_fitted_returns_none_when_any_strategy_missing(tmp_path):
     from scripts.precompute_dashboard import _load_fitted, _save_fitted
     _save_fitted({"momentum": {"w": 1}}, tmp_path)
     assert _load_fitted(tmp_path, ["momentum", "knn_classifier"]) is None
+
+
+# --- Task 6: US default strategies, overlaid live signals ------------------
+
+import json
+from datetime import date, timedelta
+from unittest.mock import patch
+
+import pandas as pd
+import polars as pl
+
+import scripts.precompute_dashboard as pc
+from src.strategies.base import PredictionResult, Strategy
+
+US_DEFAULTS = ["extra_trees", "lda_strategy", "random_forest", "conformal_lgbm"]
+
+
+def test_us_default_strategies_used():
+    with patch.object(pc, "step_data_summary"), patch.object(pc, "step_leaderboard"), \
+            patch.object(pc, "step_signals"), patch.object(pc, "step_backtests") as bt:
+        pc.main("us", signals_only=False)
+    assert list(bt.call_args.kwargs["names"]) == US_DEFAULTS
+
+
+def test_us_default_strategies_passed_to_signals():
+    with patch.object(pc, "step_data_summary"), patch.object(pc, "step_leaderboard"), \
+            patch.object(pc, "step_signals") as sg:
+        pc.main("us", signals_only=True)
+    assert list(sg.call_args.kwargs["names"]) == US_DEFAULTS
+
+
+def test_china_runs_all_strategies():
+    with patch.object(pc, "step_data_summary"), patch.object(pc, "step_leaderboard"), \
+            patch.object(pc, "step_signals"), patch.object(pc, "step_backtests") as bt, \
+            patch.object(pc, "list_strategies", return_value=["a", "b"]):
+        pc.main("china", signals_only=False)
+    assert list(bt.call_args.kwargs["names"]) == ["a", "b"]
+
+
+class _AlwaysBuy(Strategy):
+    data_source = "features"
+
+    def fit(self, df):
+        self.cols = list(df.columns)
+
+    def predict(self, df):
+        n = len(df)
+        return PredictionResult(
+            confidence=pd.Series([0.9] * n, index=df.index),
+            signal=pd.Series(["Buy"] * n, index=df.index),
+        )
+
+
+def _frame(ticker: str, n: int, z: float, count: int) -> pl.DataFrame:
+    d0 = date(2026, 1, 1)
+    return pl.DataFrame({
+        "time": [d0 + timedelta(days=i) for i in range(n)],
+        "ticker": [ticker] * n,
+        "close": [10.0] * n,
+        "news_count_3d": [count] * n,
+        "news_net_z60": [z] * n,
+    })
+
+
+def _run_signals(market: str, tmp_path):
+    train = _frame("AAA", 150, 0.0, 0)
+    live = [("NEG", _frame("NEG", 5, -3.0, 5)), ("OK", _frame("OK", 5, 0.0, 0))]
+    with patch.object(pc, "load_training_data", return_value=train), \
+            patch.object(pc, "list_strategies", return_value=["fake"]), \
+            patch.object(pc, "load_strategy", side_effect=lambda n: _AlwaysBuy()), \
+            patch.object(pc, "iter_live_features", return_value=iter(live)):
+        pc.step_signals(market=market, cache_dir=tmp_path)
+    return {s["ticker"]: s for s in json.loads((tmp_path / "signals.json").read_text())["signals"]}
+
+
+def test_us_signals_include_overlay_reason(tmp_path):
+    sigs = _run_signals("us", tmp_path)
+    assert sigs["NEG"]["signal"] == "Hold"
+    assert sigs["NEG"]["overlay_reason"] == "BUY suppressed: negative news"
+    assert sigs["NEG"]["raw_confidence"] == 0.9
+    assert sigs["OK"]["signal"] == "Buy"
+    assert sigs["OK"]["overlay_reason"] == ""
+
+
+def test_loader_defaults_missing_overlay_reason(tmp_path, monkeypatch):
+    # Lives here because test_dashboard_data_loader.py is module-skipped.
+    import dashboard.data_loader as dl
+    (tmp_path / "leaderboard.json").write_text(json.dumps(
+        {"grades": [{"model_name": "s1", "composite_score": 1.0}]}))
+    (tmp_path / "signals.json").write_text(json.dumps({"signals": [
+        {"ticker": "AAA", "date": "2026-01-02", "signal": "Buy", "confidence": 0.8,
+         "entry_price": 10.0, "strategy": "s1"},
+        {"ticker": "BBB", "date": "2026-01-02", "signal": "Hold", "confidence": 0.7,
+         "entry_price": 10.0, "strategy": "s1", "overlay_reason": "risk-off: credit spread"},
+    ]}))
+    monkeypatch.setattr(dl, "get_cache_dir", lambda market="us": tmp_path)
+    _, detail = dl.get_combined_ratings("us")
+    assert detail["AAA"][0]["overlay_reason"] == ""
+    assert detail["BBB"][0]["overlay_reason"] == "risk-off: credit spread"
+
+
+def test_china_signals_have_uniform_schema(tmp_path):
+    sigs = _run_signals("china", tmp_path)
+    assert sigs["NEG"]["signal"] == "Buy"
+    assert sigs["NEG"]["overlay_reason"] == ""
+    assert sigs["NEG"]["raw_confidence"] == sigs["NEG"]["confidence"]
+
+
+def test_strategies_arg_overrides_backtest_names_not_signal_names():
+    with patch.object(pc, "step_data_summary"), patch.object(pc, "step_leaderboard"), \
+            patch.object(pc, "step_signals") as sg, patch.object(pc, "step_backtests") as bt:
+        pc.main("us", strategies=["extra_trees"])
+    assert list(bt.call_args.kwargs["names"]) == ["extra_trees"]
+    assert list(sg.call_args.kwargs["names"]) == US_DEFAULTS

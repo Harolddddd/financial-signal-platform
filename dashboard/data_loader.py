@@ -290,6 +290,7 @@ def get_combined_ratings(market: str = "us") -> tuple[list[dict], dict[str, list
                 "trade_status": r.get("trade_status"),
                 "trade_open_date": r.get("trade_open_date"),
                 "trade_close_date": r.get("trade_close_date"),
+                "overlay_reason": r.get("overlay_reason") or "",
             })
         if total_weight <= 0:
             continue

@@ -23,6 +23,8 @@ from src.backtesting.grader import grade_model
 from src.backtesting.metrics import BacktestMetrics
 from src.backtesting.strategy_runner import _is_stateless, _select_cols, walk_forward_backtest_strategy
 from src.features.duckdb_client import load_training_data
+from src.features.news_macro_features import OVERLAY_COLS
+from src.signals.overlay import OverlayStrategy
 from src.strategies.registry import list_strategies, load_strategy
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -233,6 +235,7 @@ def step_backtests(
 
 
 def step_signals(
+    names: list[str] | None = None,
     exclude: list[str] | None = None,
     market: str = "us",
     feature_dir: Path = PARQUET_DIR,
@@ -249,15 +252,22 @@ def step_signals(
     # loop below, instead of staying resident for the whole signals step.
     exclude_set = set(exclude or [])
     fitted_strategies: dict[str, "Strategy"] = {}
-    for name in list_strategies():
+    overlay = market == "us"
+    # US: the overlay columns ride along so OverlayStrategy.predict can see them
+    # (the wrapper strips them before the inner model).
+    feature_cols = FEATURE_COLS + OVERLAY_COLS if overlay else FEATURE_COLS
+    for name in (names if names is not None else list_strategies()):
         if name in exclude_set:
             logger.info("  signals: %s — skipped", name)
             continue
         try:
             strategy = load_strategy(name)
-            if not _is_stateless(strategy):
-                train_pd = _select_cols(df, strategy, OHLCV_COLS, FEATURE_COLS).to_pandas()
-                if not getattr(strategy, "handles_nan", False):
+            if overlay:
+                strategy = OverlayStrategy(strategy)
+            inner = strategy.inner if overlay else strategy
+            if not _is_stateless(inner):
+                train_pd = _select_cols(df, strategy, OHLCV_COLS, feature_cols).to_pandas()
+                if not getattr(inner, "handles_nan", False):
                     train_pd = train_pd.dropna()
                 if len(train_pd) < 100:
                     logger.warning("  %s: too few rows after dropna, skipping", name)
@@ -283,7 +293,7 @@ def step_signals(
         if n_tickers % 25 == 0:
             logger.info("  signals: processed %d/%d tickers", n_tickers, n_total)
         for name, strategy in fitted_strategies.items():
-            t_pd = _select_cols(t_pl, strategy, OHLCV_COLS, FEATURE_COLS).to_pandas()
+            t_pd = _select_cols(t_pl, strategy, OHLCV_COLS, feature_cols).to_pandas()
             if len(t_pd) == 0 or "time" not in t_pd.columns:
                 continue
             try:
@@ -299,6 +309,11 @@ def step_signals(
 
             sig = str(result.signal.iloc[pos])
             conf = float(result.confidence.iloc[pos])
+            if overlay:
+                reason = str(strategy.last_reason.iloc[pos])
+                raw_conf = float(strategy.last_raw_confidence.iloc[pos])
+            else:
+                reason, raw_conf = "", conf
             close = float(t_pd["close"].iloc[pos]) if "close" in t_pd.columns else 0.0
             ticker_date = t_pd["time"].iloc[pos]
             trade = _trade_window(result.signal, t_pd["time"], pos)
@@ -313,6 +328,8 @@ def step_signals(
                 "trade_status": trade["status"],
                 "trade_open_date": trade["open_date"],
                 "trade_close_date": trade["close_date"],
+                "overlay_reason": reason,
+                "raw_confidence": raw_conf,
             })
     logger.info("  signals: done, %d tickers processed", n_tickers)
 
@@ -340,16 +357,20 @@ def main(
     no_signals: bool = False,
 ) -> None:
     feature_dir, cache_dir = _market_paths(market)
+    default_names = get_market(market).default_strategies or list_strategies()
+    # --strategies restricts backtests only; live signals use the market's default set.
+    backtest_names = list(strategies or default_names)
+    signal_names = list(default_names)
     steps = _pipeline_steps(signals_only, no_signals)
     logger.info("=== Precomputing dashboard cache (%s) → %s  steps=%s ===", market, cache_dir, steps)
     if "data_summary" in steps:
         step_data_summary(feature_dir, cache_dir)
     if "backtests" in steps:
-        step_backtests(names=strategies, feature_dir=feature_dir, cache_dir=cache_dir)
+        step_backtests(names=backtest_names, feature_dir=feature_dir, cache_dir=cache_dir)
     if "leaderboard" in steps:
         step_leaderboard(cache_dir)
     if "signals" in steps:
-        step_signals(market=market, feature_dir=feature_dir, cache_dir=cache_dir)
+        step_signals(names=signal_names, market=market, feature_dir=feature_dir, cache_dir=cache_dir)
     logger.info("=== Done. Run: git add %s/ && git commit && git push ===", cache_dir)
 
 
@@ -366,7 +387,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--strategies", type=lambda s: [n.strip() for n in s.split(",") if n.strip()],
         help="Comma-separated strategy names to backtest; the rest keep their cached "
-             "backtests. Leaderboard and signals still cover every registered strategy.",
+             "backtests. Leaderboard still covers every registered strategy; signals use "
+             "the market's default strategy set.",
     )
     parser.add_argument(
         "--no-signals", action="store_true",

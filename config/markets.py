@@ -14,6 +14,7 @@ class MarketConfig:
     benchmark_ticker: str
     vol_index_ticker: str | None
     currency: str
+    default_strategies: tuple[str, ...] | None = None
 
 
 MARKETS: dict[str, MarketConfig] = {
@@ -25,6 +26,7 @@ MARKETS: dict[str, MarketConfig] = {
         benchmark_ticker="SPY",
         vol_index_ticker="^VIX",
         currency="USD",
+        default_strategies=("extra_trees", "lda_strategy", "random_forest", "conformal_lgbm"),
     ),
     "china": MarketConfig(
         name="china",

@@ -34,3 +34,9 @@ def test_markets_have_distinct_data_roots():
 def test_get_market_unknown_raises_keyerror():
     with pytest.raises(KeyError, match="Unknown market 'atlantis'"):
         get_market("atlantis")
+
+
+def test_default_strategies():
+    assert get_market("us").default_strategies == (
+        "extra_trees", "lda_strategy", "random_forest", "conformal_lgbm")
+    assert get_market("china").default_strategies is None
