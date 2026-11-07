@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
 import polars as pl
@@ -138,3 +138,52 @@ def test_fetch_fomc_statements_canned_html():
     ts, text = out[0]
     assert ts == datetime(2024, 1, 31, 14, 0, tzinfo=NY)
     assert "Inflation remains elevated" in text
+
+
+def test_derived_columns_values_and_shift():
+    n = 30
+    days = pl.Series([date(2024, 1, 1) + timedelta(days=i) for i in range(n)])
+    vals = [float(i * i) for i in range(n)]  # x_i = i^2
+    s = _series([(d, v) for d, v in zip(days.to_list(), vals)])
+    fred = {k: s for k in macro_ingest.FRED_SERIES}
+    out = build_macro_daily(fred, _empty_fomc(), days)
+
+    # row r holds the derived value of row r-1 (1-trading-day shift)
+    r = 27
+    assert out["macro_dgs10_chg_5d"][r] == vals[r - 1] - vals[r - 6]
+    assert out["macro_hy_spread_chg_5d"][r] == vals[r - 1] - vals[r - 6]
+    window = vals[r - 20:r]  # x_{r-20}..x_{r-1}
+    mean = sum(window) / 20
+    std = (sum((v - mean) ** 2 for v in window) / 19) ** 0.5
+    assert abs(out["macro_hy_spread_z20"][r] - (vals[r - 1] - mean) / std) < 1e-9
+    # chg_5d undefined for first 5 rows (+1 shift): rows 0..5 null; z20 undefined -> 0.0, shifted
+    assert out["macro_dgs10_chg_5d"].head(6).to_list() == [None] * 6
+    assert out["macro_hy_spread_z20"][0] is None
+    assert out["macro_hy_spread_z20"][1] == 0.0
+    assert out["macro_hy_spread_z20"][19] == 0.0
+    assert out["macro_hy_spread_z20"][20] != 0.0
+
+
+def test_fomc_scoring_skips_short_sentences_and_empty_statements():
+    seen = []
+
+    def classify(sentences):
+        seen.append(list(sentences))
+        return ["hawkish"] * len(sentences)
+
+    ts1 = datetime(2024, 1, 31, 14, tzinfo=NY)
+    ts2 = datetime(2024, 3, 20, 14, tzinfo=NY)
+    text = "Too short. This sentence is long enough to count here."
+    out = score_fomc_statements([(ts1, text), (ts2, "")], classify=classify)
+    assert seen == [["This sentence is long enough to count here."]]
+    assert out["tone"].to_list() == [1.0]
+    assert out.height == 1
+
+
+def test_fomc_calendar_page_failure_warns(caplog):
+    def get(url, **kw):
+        return _Resp(text="", status=500)
+
+    with caplog.at_level("WARNING"):
+        assert fetch_fomc_statements(date(2024, 1, 1), get=get) == []
+    assert any("fomccalendars" in r.message for r in caplog.records if r.levelname == "WARNING")

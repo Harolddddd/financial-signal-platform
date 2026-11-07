@@ -110,7 +110,9 @@ def fetch_fomc_statements(since: date, get=requests.get) -> list[tuple[datetime,
             resp = get(url, timeout=30)
             resp.raise_for_status()
         except Exception as exc:
-            logger.debug("FOMC index page unavailable %s: %s", url, exc)
+            # A historical-year page that does not exist (404) is normal; anything else is not.
+            quiet = url != _CALENDAR_URL and "404" in str(exc)
+            logger.log(logging.DEBUG if quiet else logging.WARNING, "FOMC index page unavailable %s: %s", url, exc)
             continue
         for stamp in _STATEMENT_RE.findall(resp.text):
             d = datetime.strptime(stamp, "%Y%m%d").date()
