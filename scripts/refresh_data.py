@@ -84,6 +84,16 @@ def _ingest_us_news(tickers: list[str], benchmark_df: pl.DataFrame, news_dir: Pa
         logger.warning("News ingest skipped: %s", exc)
 
 
+def _refresh_us_macro() -> None:
+    """Best-effort macro (FRED + FOMC) refresh; must never break the data refresh."""
+    try:
+        from scripts.refresh_macro import main as refresh_macro
+
+        refresh_macro()
+    except Exception as exc:
+        logger.warning("Macro refresh skipped: %s", exc)
+
+
 def main(market: str = "us") -> None:
     market_cfg = get_market(market)
     raw_dir = market_cfg.data_root / "raw" / "ohlcv"
@@ -117,6 +127,7 @@ def main(market: str = "us") -> None:
 
     if market == "us":
         _ingest_us_news(tickers, benchmark_df, market_cfg.data_root / "news")
+        _refresh_us_macro()
 
     logger.info("[2/2] Rebuilding features for %d tickers", len(tickers))
     feature_dir.mkdir(parents=True, exist_ok=True)
