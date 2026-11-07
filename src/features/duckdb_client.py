@@ -24,7 +24,13 @@ def load_training_data(
         conditions.append(f"time <= TIMESTAMPTZ '{end.isoformat()}'")
 
     where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
-    sql = f"SELECT * FROM read_parquet('{pattern}') {where} ORDER BY ticker, time"
+    # union_by_name: feature files may differ in columns (e.g. some US files
+    # carry the news/macro overlay columns, stale ones don't); missing
+    # columns come back as NULL instead of a schema-mismatch error.
+    sql = (
+        f"SELECT * FROM read_parquet('{pattern}', union_by_name=true) "
+        f"{where} ORDER BY ticker, time"
+    )
 
     conn = duckdb.connect()
     # DuckDB auto-detects memory_limit as ~80% of system RAM (25GB on a
