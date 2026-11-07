@@ -110,3 +110,20 @@ def test_macro_fills_null_first_row():
 def test_overlay_cols_is_news_plus_macro():
     assert OVERLAY_COLS == NEWS_COLS + MACRO_COLS
     assert len(MACRO_COLS) == 12
+
+
+def test_load_us_news_macro_warns_when_files_missing(tmp_path, monkeypatch, caplog):
+    from types import SimpleNamespace
+
+    from src.features import news_macro_features as nmf
+
+    monkeypatch.setattr(nmf, "get_market", lambda m: SimpleNamespace(data_root=tmp_path))
+    with caplog.at_level("WARNING"):
+        news, macro = nmf.load_us_news_macro()
+    assert news.height == 0 and macro.height == 0
+    assert "macro_daily.parquet" in caplog.text
+    assert "sentiment_daily.parquet" in caplog.text
+    # neutral columns are still produced
+    out = add_macro_features(add_news_features(_frame(), news), macro)
+    assert set(OVERLAY_COLS) <= set(out.columns)
+    assert out.select(OVERLAY_COLS).null_count().sum_horizontal().item() == 0

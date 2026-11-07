@@ -3,9 +3,13 @@
 Every column produced here is null-free: missing news/macro days get neutral values so
 downstream null-dropping never deletes history.
 """
+import logging
+
 import polars as pl
 
 from config.markets import get_market
+
+logger = logging.getLogger(__name__)
 
 NEWS_COLS = [
     "news_count_1d", "news_count_3d", "news_has_3d",
@@ -89,10 +93,17 @@ def load_us_news_macro() -> tuple[pl.DataFrame, pl.DataFrame]:
     A missing file yields an empty frame (never None) so that US feature builds still
     attach neutral columns, while None stays the China "no overlay" signal.
     """
-    from src.ingestion.news_store import load_daily
+    from src.ingestion.news_store import DAILY_FILE, load_daily
 
     root = get_market("us").data_root
+    news_path = root / "news" / DAILY_FILE
+    if not news_path.exists():
+        logger.warning("US news daily file missing (%s); news columns will be neutral", news_path)
     news = load_daily(root / "news")
     path = root / "macro" / "macro_daily.parquet"
-    macro = pl.read_parquet(path) if path.exists() else pl.DataFrame()
+    if path.exists():
+        macro = pl.read_parquet(path)
+    else:
+        logger.warning("US macro file missing (%s); macro columns will be neutral", path)
+        macro = pl.DataFrame()
     return news, macro
