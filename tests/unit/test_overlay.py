@@ -103,3 +103,10 @@ def test_wrapper_inner_never_sees_overlay_cols():
     assert (w.last_raw_confidence == 0.8).all()
     assert (w.last_reason == "BUY suppressed: negative news").all()
     assert list(w.last_reason.index) == [10, 11, 12]
+
+
+@pytest.mark.parametrize("sig", ["Sell", "Hold"])
+def test_boost_only_applies_to_buy_rows(sig):
+    s, c = _sc(sig=sig, conf=0.7)
+    out, conf, reason = apply_overlay(s, c, _ctx(news_count_3d=5, news_net_z60=2.0), CFG)
+    assert out.iloc[0] == sig and conf.iloc[0] == 0.7 and reason.iloc[0] == ""

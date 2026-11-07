@@ -68,6 +68,7 @@ def apply_overlay(
         enough = count >= cfg.min_news
         veto = (enough & (z < cfg.veto_z)).fillna(False)
         boost = (enough & (z > cfg.boost_z)).fillna(False)
+    boost = boost & was_buy
     conf = conf.where(~boost, (conf * cfg.boost_mult).clip(upper=1.0))
 
     out = signal.copy()
@@ -81,7 +82,7 @@ def apply_overlay(
         ("risk-off: credit spread", f_hy),
         ("risk-off: hawkish FOMC", f_fomc),
         ("BUY suppressed: negative news", veto),
-        ("confidence boosted: positive news", boost & ~veto),
+        ("confidence boosted: positive news", boost),
     ]
     reason = pd.Series("", index=idx, dtype=object)
     for text, mask in parts:
