@@ -12,7 +12,7 @@ def test_list_strategies_returns_list():
 def test_list_strategies_contains_expected():
     names = list_strategies()
     assert "ma_crossover" in names
-    assert "rsi_threshold" in names
+    assert "meta_labeling" in names
     assert "macd_signal" in names
     assert "bollinger_bounce" in names
     assert "logistic_regression" in names

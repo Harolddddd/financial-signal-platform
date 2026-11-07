@@ -10,6 +10,7 @@ Usage:
 from __future__ import annotations
 import json
 import logging
+import warnings
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -17,7 +18,7 @@ import polars as pl
 
 from config.markets import MARKETS, get_market
 from dashboard.ui_config import CONFIDENCE_THRESHOLD, FEATURE_COLS, OHLCV_COLS, PARQUET_DIR
-from scripts.build_features import iter_live_features
+from scripts.build_features import _TICKERS_BY_MARKET, iter_live_features
 from src.backtesting.grader import grade_model
 from src.backtesting.metrics import BacktestMetrics
 from src.backtesting.strategy_runner import _is_stateless, _select_cols, walk_forward_backtest_strategy
@@ -25,6 +26,9 @@ from src.features.duckdb_client import load_training_data
 from src.strategies.registry import list_strategies, load_strategy
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+# sklearn emits this once per tree-ensemble predict call when joblib runs
+# outside sklearn's Parallel wrapper — harmless, but ~1M lines per backtest.
+warnings.filterwarnings("ignore", message=r"`sklearn\.utils\.parallel\.delayed` should be used")
 logger = logging.getLogger(__name__)
 
 CACHE_DIR = get_market("us").data_root / "cache"
@@ -116,6 +120,19 @@ def step_data_summary(feature_dir: Path = PARQUET_DIR, cache_dir: Path = CACHE_D
     _write(cache_dir / "data_summary.json", summary)
 
 
+def _pooled_precision(folds: list[dict]) -> float:
+    """Buy-signal hit rate over all folds (trade-weighted). Each fold's
+    precision_buy is hits / n_trades, so this is exact, not an estimate."""
+    n = sum(f["n_trades"] for f in folds)
+    if n == 0:
+        return 0.0
+    return sum(f["metrics"]["precision_buy"] * f["n_trades"] for f in folds) / n
+
+
+def _metrics_from_dict(d: dict) -> BacktestMetrics:
+    return BacktestMetrics(**{k: d[k] for k in BacktestMetrics.__dataclass_fields__})
+
+
 def step_leaderboard(cache_dir: Path = CACHE_DIR) -> None:
     logger.info("[3/4] leaderboard — aggregating from per-strategy backtest caches")
     # Build the leaderboard from the individual backtest files written in step_backtests().
@@ -125,7 +142,17 @@ def step_leaderboard(cache_dir: Path = CACHE_DIR) -> None:
         cache_path = cache_dir / f"backtest_{_safe(name)}.json"
         if cache_path.exists():
             d = json.loads(cache_path.read_text())
-            grades.append(d["grade"])
+            # Re-grade on pooled precision so caches written before the
+            # fold-mean fix are ranked on the same footing as new ones.
+            m = _metrics_from_dict(d["grade"]["metrics"])
+            m.precision_buy = _pooled_precision(d["folds"])
+            g = grade_model(name, m)
+            grades.append({
+                "model_name": g.model_name,
+                "grade": g.grade.value,
+                "composite_score": g.composite_score,
+                "metrics": _metrics_dict(g.metrics),
+            })
         else:
             logger.warning("  no backtest cache for %s — skipping from leaderboard", name)
 
@@ -162,7 +189,7 @@ def step_backtests(
                 total_return_pct=0.0,
                 sharpe_ratio=wf.mean_sharpe,
                 max_drawdown_pct=wf.worst_drawdown,
-                precision_buy=wf.mean_precision_buy,
+                precision_buy=wf.weighted_precision_buy,
                 recall_buy=0.0,
                 f1_buy=0.0,
                 accuracy=0.0,
@@ -174,6 +201,8 @@ def step_backtests(
                 "mean_sharpe": wf.mean_sharpe,
                 "mean_win_rate": wf.mean_win_rate,
                 "mean_precision_buy": wf.mean_precision_buy,
+                "weighted_precision_buy": wf.weighted_precision_buy,
+                "calibration": wf.calibration,
                 "worst_drawdown": wf.worst_drawdown,
                 "grade": {
                     "model_name": g.model_name,
@@ -195,7 +224,10 @@ def step_backtests(
                 ],
             })
             logger.info("    trades=%d  sharpe=%.3f  prec_buy=%.3f  grade=%s",
-                        total_trades, wf.mean_sharpe, wf.mean_precision_buy, g.grade.value)
+                        total_trades, wf.mean_sharpe, wf.weighted_precision_buy, g.grade.value)
+            for b in wf.calibration:
+                if b["n"]:
+                    logger.info("    conf %.1f-%.1f: n=%d  hit=%.3f", b["lo"], b["hi"], b["n"], b["precision"])
         except Exception as exc:
             logger.error("  FAILED %s: %s", name, exc)
 
@@ -245,10 +277,11 @@ def step_signals(
     # Peak memory here is bounded by a single ticker's feature frame.
     all_signals: list[dict] = []
     n_tickers = 0
+    n_total = len(_TICKERS_BY_MARKET[market])
     for ticker, t_pl in iter_live_features(market):
         n_tickers += 1
-        if n_tickers % 50 == 0:
-            logger.info("  signals: processed %d tickers so far", n_tickers)
+        if n_tickers % 25 == 0:
+            logger.info("  signals: processed %d/%d tickers", n_tickers, n_total)
         for name, strategy in fitted_strategies.items():
             t_pd = _select_cols(t_pl, strategy, OHLCV_COLS, FEATURE_COLS).to_pandas()
             if len(t_pd) == 0 or "time" not in t_pd.columns:
@@ -293,20 +326,26 @@ def step_signals(
 
 # ---------------------------------------------------------------------------
 
-def _pipeline_steps(signals_only: bool = False) -> list[str]:
+def _pipeline_steps(signals_only: bool = False, no_signals: bool = False) -> list[str]:
     if signals_only:
         return ["data_summary", "signals"]
-    return ["data_summary", "backtests", "leaderboard", "signals"]
+    steps = ["data_summary", "backtests", "leaderboard", "signals"]
+    return [s for s in steps if s != "signals"] if no_signals else steps
 
 
-def main(market: str = "us", signals_only: bool = False) -> None:
+def main(
+    market: str = "us",
+    signals_only: bool = False,
+    strategies: list[str] | None = None,
+    no_signals: bool = False,
+) -> None:
     feature_dir, cache_dir = _market_paths(market)
-    steps = _pipeline_steps(signals_only)
+    steps = _pipeline_steps(signals_only, no_signals)
     logger.info("=== Precomputing dashboard cache (%s) → %s  steps=%s ===", market, cache_dir, steps)
     if "data_summary" in steps:
         step_data_summary(feature_dir, cache_dir)
     if "backtests" in steps:
-        step_backtests(feature_dir=feature_dir, cache_dir=cache_dir)
+        step_backtests(names=strategies, feature_dir=feature_dir, cache_dir=cache_dir)
     if "leaderboard" in steps:
         step_leaderboard(cache_dir)
     if "signals" in steps:
@@ -324,5 +363,15 @@ if __name__ == "__main__":
              "only refresh data summary + live signals (for frequent/daily runs "
              "against models kept current via scripts/incremental_train.py).",
     )
+    parser.add_argument(
+        "--strategies", type=lambda s: [n.strip() for n in s.split(",") if n.strip()],
+        help="Comma-separated strategy names to backtest; the rest keep their cached "
+             "backtests. Leaderboard and signals still cover every registered strategy.",
+    )
+    parser.add_argument(
+        "--no-signals", action="store_true",
+        help="Stop after the leaderboard — review backtests before refitting live signals.",
+    )
     args = parser.parse_args()
-    main(args.market, signals_only=args.signals_only)
+    main(args.market, signals_only=args.signals_only, strategies=args.strategies,
+         no_signals=args.no_signals)

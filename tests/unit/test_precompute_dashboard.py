@@ -41,3 +41,40 @@ def test_trade_window_none_when_no_buy_ever_occurred():
     dates = ["2026-01-01", "2026-01-02"]
     result = _trade_window(signals, dates, pos=1)
     assert result == {"status": "none", "open_date": None, "close_date": None}
+
+
+def test_merge_signals_replaces_recomputed_tickers_and_keeps_others():
+    from scripts.precompute_dashboard import _merge_signals
+    existing = [
+        {"ticker": "AAPL", "strategy": "momentum", "signal": "Hold"},
+        {"ticker": "MSFT", "strategy": "momentum", "signal": "Buy"},
+    ]
+    fresh = [{"ticker": "MSFT", "strategy": "momentum", "signal": "Sell"}]
+    merged = _merge_signals(existing, fresh, universe=["AAPL", "MSFT"])
+    assert merged == [
+        {"ticker": "AAPL", "strategy": "momentum", "signal": "Hold"},
+        {"ticker": "MSFT", "strategy": "momentum", "signal": "Sell"},
+    ]
+
+
+def test_merge_signals_drops_tickers_removed_from_universe():
+    from scripts.precompute_dashboard import _merge_signals
+    existing = [
+        {"ticker": "AAPL", "strategy": "momentum", "signal": "Hold"},
+        {"ticker": "QRVO", "strategy": "momentum", "signal": "Buy"},
+    ]
+    fresh = [{"ticker": "HOOD", "strategy": "momentum", "signal": "Buy"}]
+    merged = _merge_signals(existing, fresh, universe=["AAPL", "HOOD"])
+    assert [s["ticker"] for s in merged] == ["AAPL", "HOOD"]
+
+
+def test_fitted_strategy_cache_round_trip(tmp_path):
+    from scripts.precompute_dashboard import _load_fitted, _save_fitted
+    _save_fitted({"momentum": {"w": 1}}, tmp_path)
+    assert _load_fitted(tmp_path, ["momentum"]) == {"momentum": {"w": 1}}
+
+
+def test_load_fitted_returns_none_when_any_strategy_missing(tmp_path):
+    from scripts.precompute_dashboard import _load_fitted, _save_fitted
+    _save_fitted({"momentum": {"w": 1}}, tmp_path)
+    assert _load_fitted(tmp_path, ["momentum", "knn_classifier"]) is None

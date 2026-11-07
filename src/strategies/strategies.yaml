@@ -1,11 +1,4 @@
 strategies:
-  - name: rsi_threshold
-    class: src.strategies.rule_based.rsi.RSIThreshold
-    params:
-      period: 14
-      oversold: 30
-      overbought: 70
-
   - name: bollinger_bounce
     class: src.strategies.rule_based.bollinger.BollingerBounce
     params:
@@ -54,28 +47,12 @@ strategies:
       period: 20
       threshold: 0.03
 
-  - name: triple_ma
-    class: src.strategies.rule_based.triple_ma.TripleMAFilter
-    params:
-      short: 10
-      mid: 50
-      long: 200
-
   - name: gradient_boosting
     class: src.strategies.statistical.gradient_boosting.GradientBoostingStrategy
     params:
       max_iter: 100
       max_depth: 3
       learning_rate: 0.1
-
-  - name: rsi_macd_combo
-    class: src.strategies.rule_based.rsi_macd_combo.RSIMACDCombo
-    params:
-      rsi_period: 14
-      rsi_oversold: 35.0
-      macd_fast: 12
-      macd_slow: 26
-      macd_signal: 9
 
   - name: bollinger_rsi_combo
     class: src.strategies.rule_based.bollinger_rsi_combo.BollingerRSICombo
@@ -143,26 +120,12 @@ strategies:
     params:
       n_neighbors: 10
 
-  - name: ichimoku_cloud
-    class: src.strategies.rule_based.ichimoku_cloud.IchimokuCloud
-
-  - name: chaikin_money_flow
-    class: src.strategies.rule_based.chaikin_money_flow.ChaikinMoneyFlow
-    params:
-      period: 20
-
   - name: catboost_strategy
     class: src.strategies.statistical.catboost_strategy.CatBoostStrategy
     params:
       iterations: 200
       depth: 6
       learning_rate: 0.1
-
-  - name: supertrend
-    class: src.strategies.rule_based.supertrend.SuperTrend
-    params:
-      atr_period: 10
-      multiplier: 3.0
 
   - name: money_flow_index
     class: src.strategies.rule_based.money_flow_index.MoneyFlowIndex
@@ -198,3 +161,30 @@ strategies:
       n_estimators: 100
       contamination: 0.05
       rsi_oversold: 40.0
+
+  - name: meta_labeling
+    class: src.strategies.statistical.meta_labeling.MetaLabelingStrategy
+    params:
+      primary_threshold: 0.4
+      meta_fraction: 0.3
+      buy_threshold: 0.5
+
+  - name: conformal_lgbm
+    class: src.strategies.statistical.conformal_lgbm.ConformalLGBMStrategy
+    params:
+      alpha: 0.3
+      calib_fraction: 0.25
+      buy_threshold: 0.5
+
+  - name: cross_sectional_ranker
+    class: src.strategies.statistical.cross_sectional_ranker.CrossSectionalRankerStrategy
+    params:
+      calib_fraction: 0.25
+      buy_threshold: 0.5
+
+  - name: regime_consensus
+    class: src.strategies.statistical.regime_consensus.RegimeConsensusStrategy
+    params:
+      holdout_fraction: 0.3
+      buy_threshold: 0.5
+      n_regimes: 3

@@ -6,3 +6,4 @@ data/raw/
 markets/*/data/raw/
 .superpowers/
 catboost_info/
+logs/

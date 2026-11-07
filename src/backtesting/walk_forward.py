@@ -1,5 +1,5 @@
 from __future__ import annotations
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import timedelta
 import logging
 
@@ -30,6 +30,13 @@ class WalkForwardBacktestResult:
     mean_win_rate: float
     mean_precision_buy: float
     worst_drawdown: float
+    # Precision over every Buy signal pooled across folds. mean_precision_buy
+    # averages per-fold precision and counts zero-trade folds as 0.0, which
+    # punishes selective strategies; this is the hit rate a user actually sees.
+    weighted_precision_buy: float = 0.0
+    # Hit rate per confidence bucket: [{"lo", "hi", "n", "precision"}, ...].
+    # Exposes over-confidence — a calibrated model's 0.8–0.9 bucket hits ~85%.
+    calibration: list[dict] = field(default_factory=list)
 
 
 def walk_forward_backtest(

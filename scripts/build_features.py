@@ -103,9 +103,9 @@ _STOCK_TICKERS: list[str] = [
     "IR", "JCI", "KNX", "LII", "LSTR", "MAS", "MHK", "MLM",
     "NUE", "OC", "ODFL", "OTIS", "PCAR", "PPG", "PWR",
     "ROK", "RSG", "SNA", "TER", "TXT", "UBER", "URI",
-    "VRSK", "WAB", "XYL", "ALB", "ALK",
+    "VRSK", "WAB", "XYL", "ALB", "ALK", "VRT",
     # REITs
-    "AVB", "BXP", "CPT", "EQR", "ESS", "EXR", "FRT", "HST",
+    "BXP", "CPT", "ESS", "EXR", "FRT", "HST",
     "IRM", "KIM", "MAA", "NNN", "O", "REG", "UDR", "VTR", "WY",
     # Utilities
     "AEE", "AES", "ATO", "CNP", "D", "ETR", "EXC", "FE",
@@ -114,17 +114,18 @@ _STOCK_TICKERS: list[str] = [
     "APD", "CE", "CF", "CTVA", "DD", "FCX", "IP", "IFF",
     "LYB", "MOS", "NEM", "PKG", "RS", "STLD",
     # Communication Services
-    "CHTR", "EA", "MTCH", "PARA", "PINS", "SNAP", "TTWO", "WBD",
+    "CHTR", "MTCH", "PARA", "PINS", "SNAP", "TTWO", "DASH",
     # ── Russell 1000 mid-caps ──────────────────────────────────────────────
     "AGCO", "AOS", "APO", "ARCC", "AWK", "AXS", "BAH", "BALL",
     "BBWI", "BG", "BURL", "CPB", "CSL", "CUBE", "EFX",
     "EQT", "EXPE", "FMC", "GLOB", "HIG", "INGR", "ITT",
     "JBHT", "K", "LAMR", "LEA", "LEN", "LPX", "LW", "MANH",
     "MELI", "MORN", "MTH", "MTZ", "NLY", "NTRA", "NVT", "NXST",
-    "OKE", "POOL", "PRI", "QRVO", "REXR", "RMD", "RPRX", "RRX",
+    "OKE", "POOL", "PRI", "REXR", "RMD", "RPRX", "RRX",
     "SBAC", "SEE", "SFM", "SKY", "SLGN", "SM", "SMAR",
     "SNX", "THC", "TOST", "TPL", "TPX", "TREX", "TRNO",
-    "TWO", "USFD", "UTHR", "VICI", "VMI", "WING", "WPC",
+    "USFD", "UTHR", "VICI", "VMI", "WING", "WPC",
+    "HOOD", "COIN", "IBKR", "KKR",
     "CLX", "CMS", "CW", "DT", "ELAN", "ESAB", "EVR",
     "EXPD", "FWONA", "GGG", "JEF",
     "LAZ", "LEVI", "MMS", "ORI",

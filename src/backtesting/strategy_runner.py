@@ -99,14 +99,19 @@ def walk_forward_backtest_strategy(
         tk = row.get("ticker", "__all__")
         lookup[(tk, row["time"])] = (row["close"], row["forward_return_5d"], row["label"])
 
+    # (confidence, hit) for every Buy signal across all folds — feeds the
+    # pooled precision and the per-confidence-bucket calibration table.
+    buy_hits: list[tuple[float, bool]] = []
     if _is_stateless(strategy):
         folds = _run_stateless(
             ticker_pdfs, strategy, fold_windows, time_to_fold, lookup, confidence_threshold,
+            buy_hits,
         )
     else:
         folds = _run_stateful(
             df_clean, ticker_pdfs, strategy, ohlcv_cols, feature_cols,
             fold_windows, time_to_fold, lookup, min_train_samples, confidence_threshold,
+            buy_hits,
         )
 
     if not folds:
@@ -130,7 +135,28 @@ def walk_forward_backtest_strategy(
         mean_win_rate=sum(f.metrics.win_rate for f in folds) / n,
         mean_precision_buy=sum(f.metrics.precision_buy for f in folds) / n,
         worst_drawdown=mean_drawdown,
+        weighted_precision_buy=(
+            sum(hit for _, hit in buy_hits) / len(buy_hits) if buy_hits else 0.0
+        ),
+        calibration=calibration_table(buy_hits),
     )
+
+
+_CALIBRATION_EDGES = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+
+
+def calibration_table(buy_hits: list[tuple[float, bool]]) -> list[dict]:
+    """Bucket Buy signals by confidence; report count and hit rate per bucket.
+    The top bucket is closed on the right so confidence == 1.0 is counted."""
+    table: list[dict] = []
+    for i, (lo, hi) in enumerate(zip(_CALIBRATION_EDGES, _CALIBRATION_EDGES[1:])):
+        last = i == len(_CALIBRATION_EDGES) - 2
+        hits = [h for c, h in buy_hits if lo <= c < hi or (last and c == hi)]
+        table.append({
+            "lo": lo, "hi": hi, "n": len(hits),
+            "precision": sum(hits) / len(hits) if hits else None,
+        })
+    return table
 
 
 # ---------------------------------------------------------------------------
@@ -144,6 +170,7 @@ def _run_stateless(
     time_to_fold: dict,
     lookup: dict,
     confidence_threshold: float,
+    buy_hits: list[tuple[float, bool]],
 ) -> list[FoldBacktestResult]:
     """
     Predict ONCE per ticker on its full price history, then assign each signal
@@ -179,6 +206,7 @@ def _run_stateless(
             if key not in lookup:
                 continue
             entry, ret, actual = lookup[key]
+            buy_hits.append((conf, str(actual) == "Buy"))
             fold_trades[fi].append(Trade(
                 entry_date=str(t), exit_date=str(t),
                 entry_price=float(entry),
@@ -219,6 +247,7 @@ def _run_stateful(
     lookup: dict,
     min_train_samples: int,
     confidence_threshold: float,
+    buy_hits: list[tuple[float, bool]],
 ) -> list[FoldBacktestResult]:
     """
     Fit once per fold on combined training data (good for cross-ticker generalisation).
@@ -235,7 +264,9 @@ def _run_stateful(
     folds: list[FoldBacktestResult] = []
     fold_idx = 0
 
-    for train_start, train_end, test_start, test_end in fold_windows:
+    for wi, (train_start, train_end, test_start, test_end) in enumerate(fold_windows):
+        if wi % 25 == 0:
+            logger.info("    fold %d/%d (test %s)", wi, len(fold_windows), str(test_start)[:10])
         train_all = df_clean.filter(
             (pl.col("time") >= train_start) & (pl.col("time") <= train_end)
         )
@@ -294,6 +325,7 @@ def _run_stateful(
                 if key not in lookup:
                     continue
                 entry, ret, actual = lookup[key]
+                buy_hits.append((conf, str(actual) == "Buy"))
                 fold_trades.append(Trade(
                     entry_date=str(t), exit_date=str(t),
                     entry_price=float(entry),
