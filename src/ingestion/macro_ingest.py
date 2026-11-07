@@ -94,6 +94,13 @@ def score_fomc_statements(
 
 
 def _statement_text(page_html: str) -> str:
+    # Only the statement body: the page header/footer boilerplate would dilute the tone.
+    start = page_html.find('id="article"')
+    if start >= 0:
+        page_html = page_html[start:]
+        end = page_html.find("footer")
+        if end > 0:
+            page_html = page_html[:end]
     paragraphs = re.findall(r"<p[^>]*>(.*?)</p>", page_html, flags=re.S | re.I)
     cleaned = (html.unescape(re.sub(r"<[^>]+>", "", p)).strip() for p in paragraphs)
     return " ".join(c for c in cleaned if c)

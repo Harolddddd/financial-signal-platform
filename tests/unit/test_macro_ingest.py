@@ -187,3 +187,16 @@ def test_fomc_calendar_page_failure_warns(caplog):
     with caplog.at_level("WARNING"):
         assert fetch_fomc_statements(date(2024, 1, 1), get=get) == []
     assert any("fomccalendars" in r.message for r in caplog.records if r.levelname == "WARNING")
+
+
+def test_statement_text_keeps_only_article_body():
+    page = (
+        "<p>An official website of the United States Government</p>"
+        '<div id="article"><p>The Committee decided to maintain the target range.</p></div>'
+        '<div class="footer__footer"><p>Last Update: today</p></div>'
+    )
+    assert macro_ingest._statement_text(page) == "The Committee decided to maintain the target range."
+
+
+def test_statement_text_falls_back_to_whole_page_without_article_div():
+    assert macro_ingest._statement_text("<p>First.</p><p>Second.</p>") == "First. Second."
