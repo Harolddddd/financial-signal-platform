@@ -161,3 +161,30 @@ def test_interrupted_ingest_keeps_daily_rows_from_checkpoint(tmp_path, monkeypat
         )
     daily = pl.read_parquet(tmp_path / "sentiment_daily.parquet")
     assert set(daily["ticker"].cast(pl.Utf8)) == {"AAA", "BBB"}
+
+
+def test_truncated_responses_are_split_until_complete(tmp_path, monkeypatch):
+    # Finnhub caps each response (~250, newest first); busy tickers must be re-fetched in smaller ranges.
+    from datetime import timedelta
+    monkeypatch.setattr(news_ingest, "score_texts", _fake_score)
+    monkeypatch.setattr(news_ingest, "_TRUNCATED_AT", 5)
+    per_day = 3
+    start, end = date(2026, 10, 1), date(2026, 10, 10)
+    calls = []
+
+    def fetch(ticker, f, t):
+        calls.append((f.date(), t.date()))
+        out = []
+        d = f.date()
+        while d <= t.date():
+            for n in range(per_day):
+                a = _art(ticker, f"{d}-{n}")
+                a.published_at = datetime(d.year, d.month, d.day, 15, tzinfo=timezone.utc)
+                out.append(a)
+            d += timedelta(days=1)
+        return sorted(out, key=lambda a: a.published_at, reverse=True)[:5]  # the cap
+
+    days = pl.Series("t", [date(2026, 10, d) for d in range(1, 15)])
+    res = news_ingest.ingest_news(["AAPL"], start, end, tmp_path, days, fetch=fetch, sleep=lambda s: None)
+    assert res["articles_new"] == 10 * per_day
+    assert all(f == t for f, t in calls if (t - f).days == 0) and len(calls) > 1

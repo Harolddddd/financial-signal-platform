@@ -23,6 +23,9 @@ _RETRY_SLEEP = 60
 # Rebuild the permanent daily file every N tickers, so a long backfill that is
 # killed mid-run keeps what it finished (score files may be pruned later).
 _REBUILD_EVERY = 25
+# Finnhub returns at most ~250 articles per request, newest first. A response
+# this large is assumed truncated and its range is re-fetched in halves.
+_TRUNCATED_AT = 240
 
 
 def _month_chunks(start: date, end: date) -> list[tuple[date, date]]:
@@ -57,6 +60,19 @@ def _fetch_with_retry(fetch, ticker: str, d0: date, d1: date, sleep) -> list | N
     return None
 
 
+def _fetch_range(fetch, ticker: str, d0: date, d1: date, sleep) -> list | None:
+    """All articles in [d0, d1]: split the range while responses look truncated."""
+    got = _fetch_with_retry(fetch, ticker, d0, d1, sleep)
+    if got is None or len(got) < _TRUNCATED_AT or d0 == d1:
+        return got
+    mid = d0 + (d1 - d0) // 2
+    left = _fetch_range(fetch, ticker, d0, mid, sleep)
+    right = _fetch_range(fetch, ticker, mid + timedelta(days=1), d1, sleep)
+    if left is None or right is None:
+        return None
+    return left + right
+
+
 def ingest_news(
     tickers: list[str],
     start: date,
@@ -84,7 +100,7 @@ def ingest_news(
         ticker_ok = True
         fresh: dict[int, object] = {}
         for d0, d1 in _month_chunks(start, end):
-            got = _fetch_with_retry(fetch, ticker, d0, d1, sleep)
+            got = _fetch_range(fetch, ticker, d0, d1, sleep)
             if got is None:
                 ticker_ok = False
                 break
