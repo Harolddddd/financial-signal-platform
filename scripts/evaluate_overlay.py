@@ -21,6 +21,7 @@ from src.features.duckdb_client import load_training_data
 from src.features.news_macro_features import OVERLAY_COLS
 from src.signals.overlay import OverlayConfig, OverlayStrategy
 from src.strategies.registry import load_strategy
+from src.strategies.statistical.pooled_lgbm import PooledLGBMStrategy
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
@@ -76,6 +77,32 @@ def evaluate(
     return rows
 
 
+def evaluate_pooled(df: pl.DataFrame, **wf_kwargs) -> list[dict]:
+    """Phase B: the pooled LightGBM price-only vs. with news/macro features, same window."""
+    wf_kwargs.setdefault("train_window_days", 400)
+    wf_kwargs.setdefault("test_window_days", 21)
+    wf_kwargs.setdefault("step_days", 21)
+    rows: list[dict] = []
+    logger.info("  strategy: pooled_lgbm_news")
+    for variant, use_news in (("price_only", False), ("news_macro", True)):
+        try:
+            wf = walk_forward_backtest_strategy(
+                df, PooledLGBMStrategy(use_news_macro=use_news), OHLCV_COLS, FEATURE_COLS,
+                **wf_kwargs,
+            )
+        except Exception as exc:
+            logger.error("  FAILED pooled_lgbm_news %s: %s", variant, exc)
+            continue
+        rows.append({
+            "strategy": "pooled_lgbm_news",
+            "variant": variant,
+            "n_trades": sum(f.n_trades for f in wf.folds),
+            "sharpe": wf.mean_sharpe,
+            "precision_buy": wf.weighted_precision_buy,
+        })
+    return rows
+
+
 def _log_table(rows: list[dict]) -> None:
     logger.info("%-28s %-8s %8s %8s %8s", "strategy", "variant", "trades", "sharpe", "prec_buy")
     for r in rows:
@@ -94,6 +121,7 @@ def main() -> None:
     df = load_training_data(market.data_root / "features")
     df = df.filter(pl.col("time") >= since - timedelta(days=LOOKBACK_DAYS))
     rows = evaluate(df, list(market.default_strategies), cfg)
+    rows += evaluate_pooled(df)
     _log_table(rows)
     _write(market.data_root / "cache" / "overlay_eval.json", {
         "generated_at": datetime.now(timezone.utc).isoformat(),

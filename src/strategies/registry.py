@@ -9,9 +9,16 @@ from src.strategies.base import Strategy
 _CONFIG_PATH = Path(__file__).parent / "strategies.yaml"
 
 
-def list_strategies() -> list[str]:
+def list_strategies(market: str | None = None) -> list[str]:
+    """All strategy names, or only those enabled for `market`.
+
+    An entry may set `markets: [us]` to restrict itself; entries without it run everywhere.
+    """
     config = yaml.safe_load(_CONFIG_PATH.read_text())
-    return [s["name"] for s in config["strategies"]]
+    return [
+        s["name"] for s in config["strategies"]
+        if market is None or market in s.get("markets", [market])
+    ]
 
 
 def load_strategy(name: str) -> Strategy:

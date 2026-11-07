@@ -67,3 +67,16 @@ def test_evaluate_skips_failing_strategy(monkeypatch):
     rows = evaluate(_df(), ["bad", "good"], OverlayConfig(), **_SMALL)
     assert {r["strategy"] for r in rows} == {"good"}
     assert len(rows) == 2
+
+
+def test_evaluate_pooled_returns_price_only_and_news_macro_rows():
+    df = _df().with_columns(
+        rsi_14=pl.col("close") + pl.int_range(pl.len()) % 7,
+        news_net_3d=pl.lit(None, dtype=pl.Float64),
+    )
+    rows = evaluate_overlay.evaluate_pooled(df, **_SMALL)
+    assert [(r["strategy"], r["variant"]) for r in rows] == [
+        ("pooled_lgbm_news", "price_only"), ("pooled_lgbm_news", "news_macro"),
+    ]
+    for r in rows:
+        assert set(r) == {"strategy", "variant", "n_trades", "sharpe", "precision_buy"}

@@ -176,6 +176,12 @@ strategies:
       calib_fraction: 0.25
       buy_threshold: 0.5
 
+  - name: pooled_lgbm_news
+    class: src.strategies.statistical.pooled_lgbm.PooledLGBMStrategy
+    markets: [us]  # needs the US news/macro feature columns
+    params:
+      use_news_macro: true
+
   - name: cross_sectional_ranker
     class: src.strategies.statistical.cross_sectional_ranker.CrossSectionalRankerStrategy
     params:

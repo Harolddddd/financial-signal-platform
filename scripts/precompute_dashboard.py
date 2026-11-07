@@ -252,6 +252,7 @@ def step_signals(
     # loop below, instead of staying resident for the whole signals step.
     exclude_set = set(exclude or [])
     fitted_strategies: dict[str, "Strategy"] = {}
+    wrapped: dict[str, bool] = {}
     overlay = market == "us"
     # US: the overlay columns ride along so OverlayStrategy.predict can see them
     # (the wrapper strips them before the inner model).
@@ -262,9 +263,12 @@ def step_signals(
             continue
         try:
             strategy = load_strategy(name)
-            if overlay:
+            # A model that already learns from news/macro (extra_feature_cols) is not
+            # wrapped: the wrapper would strip those columns and count the news twice.
+            wrap = overlay and not getattr(strategy, "extra_feature_cols", ())
+            if wrap:
                 strategy = OverlayStrategy(strategy)
-            inner = strategy.inner if overlay else strategy
+            inner = strategy.inner if wrap else strategy
             if not _is_stateless(inner):
                 train_pd = _select_cols(df, strategy, OHLCV_COLS, feature_cols).to_pandas()
                 if not getattr(inner, "handles_nan", False):
@@ -274,6 +278,7 @@ def step_signals(
                     continue
                 strategy.fit(train_pd)
             fitted_strategies[name] = strategy
+            wrapped[name] = wrap
         except Exception as exc:
             logger.error("  signals FAILED to fit %s: %s", name, exc)
     del df
@@ -309,7 +314,7 @@ def step_signals(
 
             sig = str(result.signal.iloc[pos])
             conf = float(result.confidence.iloc[pos])
-            if overlay:
+            if wrapped[name]:
                 reason = str(strategy.last_reason.iloc[pos])
                 raw_conf = float(strategy.last_raw_confidence.iloc[pos])
             else:
@@ -357,7 +362,7 @@ def main(
     no_signals: bool = False,
 ) -> None:
     feature_dir, cache_dir = _market_paths(market)
-    default_names = get_market(market).default_strategies or list_strategies()
+    default_names = get_market(market).default_strategies or list_strategies(market)
     # --strategies restricts backtests only; live signals use the market's default set.
     backtest_names = list(strategies or default_names)
     signal_names = list(default_names)

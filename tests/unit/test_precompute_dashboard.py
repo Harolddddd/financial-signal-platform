@@ -162,6 +162,28 @@ def test_us_signals_include_overlay_reason(tmp_path):
     assert sigs["OK"]["overlay_reason"] == ""
 
 
+class _NewsAwareBuy(_AlwaysBuy):
+    extra_feature_cols = ("news_count_3d", "news_net_z60")
+
+
+def test_us_news_aware_strategy_is_not_overlay_wrapped(tmp_path):
+    train = _frame("AAA", 150, 0.0, 0)
+    live = [("NEG", _frame("NEG", 5, -3.0, 5))]
+    made = []
+
+    def _load(name):
+        made.append(_NewsAwareBuy())
+        return made[-1]
+
+    with patch.object(pc, "load_training_data", return_value=train),             patch.object(pc, "list_strategies", return_value=["fake"]),             patch.object(pc, "load_strategy", side_effect=_load),             patch.object(pc, "iter_live_features", return_value=iter(live)):
+        pc.step_signals(market="us", cache_dir=tmp_path)
+    sig = json.loads((tmp_path / "signals.json").read_text())["signals"][0]
+    # No veto: the model itself sees the news columns, and the overlay does not apply.
+    assert sig["signal"] == "Buy"
+    assert sig["overlay_reason"] == ""
+    assert {"news_count_3d", "news_net_z60"} <= set(made[0].cols)
+
+
 def test_loader_defaults_missing_overlay_reason(tmp_path, monkeypatch):
     # Lives here because test_dashboard_data_loader.py is module-skipped.
     import dashboard.data_loader as dl

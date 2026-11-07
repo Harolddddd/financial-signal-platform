@@ -34,6 +34,6 @@ def test_china_cache_has_leaderboard_and_signals():
 
 
 def test_china_cache_has_backtest_file_per_strategy():
-    for name in list_strategies():
+    for name in list_strategies("china"):
         backtest_path = _CHINA_CACHE_DIR / f"backtest_{_safe(name)}.json"
         assert backtest_path.exists(), f"missing backtest cache for {name}"

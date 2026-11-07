@@ -26,7 +26,10 @@ def _select_cols(
     if strategy.data_source == "ohlcv":
         keep = list(_REQUIRED_PASS_COLS | set(ohlcv_cols))
     else:
-        keep = list(_REQUIRED_PASS_COLS | set(feature_cols))
+        # A strategy may declare extra feature columns (e.g. news/macro) beyond the shared list.
+        keep = list(
+            _REQUIRED_PASS_COLS | set(feature_cols) | set(getattr(strategy, "extra_feature_cols", ()))
+        )
     available = [c for c in keep if c in df.columns]
     return df.select(available)
 
