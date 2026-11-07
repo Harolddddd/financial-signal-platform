@@ -84,6 +84,51 @@ def test_rebuild_daily_aggregates_and_keeps_old(tmp_path):
     assert row["time"] == date(2026, 10, 30)
 
 
+def _old_daily(tmp_path, rows):
+    pl.DataFrame(
+        {
+            "ticker": [r[0] for r in rows],
+            "time": [r[1] for r in rows],
+            "avg_pos": [r[2] for r in rows],
+            "avg_neg": [0.0] * len(rows),
+            "avg_neu": [0.1] * len(rows),
+            "article_count": [7] * len(rows),
+        }
+    ).write_parquet(tmp_path / "sentiment_daily.parquet", compression="zstd")
+
+
+def test_rebuild_with_early_since_keeps_rows_outside_score_coverage(tmp_path):
+    # permanent-tier rows from months whose score files were pruned long ago
+    _old_daily(
+        tmp_path,
+        [
+            ("AAPL", date(2026, 3, 2), 0.9),
+            ("AAPL", date(2026, 10, 30), 0.99),  # recomputed below -> replaced
+            ("MSFT", date(2026, 6, 1), 0.8),  # ticker absent from scores
+        ],
+    )
+    ns.write_scores(tmp_path, _scores([("AAPL", _ts(2026, 10, 30, 9, 0), 1, 0.2)]))
+    ns.rebuild_daily(tmp_path, _days(date(2026, 10, 30), date(2026, 11, 2)), date(2026, 1, 1))
+    out = ns.load_daily(tmp_path).with_columns(pl.col("ticker").cast(pl.Utf8))
+    keys = {(r["ticker"], r["time"]): r for r in out.iter_rows(named=True)}
+    assert set(keys) == {
+        ("AAPL", date(2026, 3, 2)),
+        ("AAPL", date(2026, 10, 30)),
+        ("MSFT", date(2026, 6, 1)),
+    }
+    assert abs(keys[("AAPL", date(2026, 3, 2))]["avg_pos"] - 0.9) < 1e-5
+    assert abs(keys[("MSFT", date(2026, 6, 1))]["avg_pos"] - 0.8) < 1e-5
+    replaced = keys[("AAPL", date(2026, 10, 30))]
+    assert abs(replaced["avg_pos"] - 0.2) < 1e-5
+    assert replaced["article_count"] == 1
+
+
+def test_rebuild_with_no_score_files_keeps_all_rows(tmp_path):
+    _old_daily(tmp_path, [("MSFT", date(2026, 10, 30), 0.8)])
+    ns.rebuild_daily(tmp_path, _days(date(2026, 10, 30)), date(2026, 1, 1))
+    assert ns.load_daily(tmp_path).height == 1
+
+
 def test_load_daily_missing_returns_empty_schema(tmp_path):
     out = ns.load_daily(tmp_path)
     assert out.height == 0

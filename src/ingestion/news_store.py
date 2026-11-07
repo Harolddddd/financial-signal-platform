@@ -147,7 +147,6 @@ def rebuild_daily(news_dir: Path, trading_days: pl.Series, since: date) -> None:
     news_dir.mkdir(parents=True, exist_ok=True)
     files = sorted(news_dir.glob("articles_scores_*.parquet"))
     old = load_daily(news_dir).with_columns(pl.col("ticker").cast(pl.Utf8))
-    old = old.filter(pl.col("time") < since)
 
     if files:
         scores = pl.concat([_read_plain(p) for p in files], how="vertical_relaxed")
@@ -167,6 +166,11 @@ def rebuild_daily(news_dir: Path, trading_days: pl.Series, since: date) -> None:
         )
     else:
         new = _empty_daily().with_columns(pl.col("ticker").cast(pl.Utf8))
+
+    # The daily file is the permanent tier while score files roll off after
+    # 60 days, so only (ticker, day) keys actually recomputed from retained
+    # scores replace old rows; every other old row survives.
+    old = old.join(new.select("ticker", "time"), on=["ticker", "time"], how="anti")
 
     out = (
         pl.concat([old.select(list(_DAILY_SCHEMA)), new], how="vertical_relaxed")
