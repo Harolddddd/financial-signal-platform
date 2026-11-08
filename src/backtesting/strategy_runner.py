@@ -50,7 +50,16 @@ def walk_forward_backtest_strategy(
     step_days: int = 21,
     min_train_samples: int = 100,
     confidence_threshold: float = 0.5,
+    start: datetime | None = None,
+    pred_log: list | None = None,
 ) -> WalkForwardBacktestResult:
+    """Walk-forward backtest of one strategy.
+
+    start: only folds whose test window starts on/after it are run (earlier rows
+        still feed training). pred_log: when given, receives one
+        (ticker, date, buy_score) per test row; buy_score is the confidence of a
+        Buy at/above the threshold, else 0.0.
+    """
     drop_cols = [c for c in _REQUIRED if c in df.columns]
     df_clean = df.drop_nulls(subset=drop_cols).sort("time")
     times = df_clean["time"].to_list()
@@ -80,6 +89,8 @@ def walk_forward_backtest_strategy(
             cursor + timedelta(days=test_window_days - 1),
         ))
         cursor += timedelta(days=step_days)
+    if start is not None:
+        fold_windows = [w for w in fold_windows if w[2] >= start]
 
     if not fold_windows:
         raise ValueError("No fold windows — check data range and window sizes")
@@ -108,13 +119,13 @@ def walk_forward_backtest_strategy(
     if _is_stateless(strategy):
         folds = _run_stateless(
             ticker_pdfs, strategy, fold_windows, time_to_fold, lookup, confidence_threshold,
-            buy_hits,
+            buy_hits, pred_log,
         )
     else:
         folds = _run_stateful(
             df_clean, ticker_pdfs, strategy, ohlcv_cols, feature_cols,
             fold_windows, time_to_fold, lookup, min_train_samples, confidence_threshold,
-            buy_hits,
+            buy_hits, pred_log,
         )
 
     if not folds:
@@ -143,6 +154,10 @@ def walk_forward_backtest_strategy(
         ),
         calibration=calibration_table(buy_hits),
     )
+
+
+def _as_date(t):
+    return t.date() if hasattr(t, "date") else t
 
 
 _CALIBRATION_EDGES = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
@@ -174,6 +189,7 @@ def _run_stateless(
     lookup: dict,
     confidence_threshold: float,
     buy_hits: list[tuple[float, bool]],
+    pred_log: list | None = None,
 ) -> list[FoldBacktestResult]:
     """
     Predict ONCE per ticker on its full price history, then assign each signal
@@ -197,17 +213,16 @@ def _run_stateless(
         for i, t in enumerate(times_list):
             if i >= len(sig_arr):
                 break
-            if str(sig_arr[i]) != "Buy":
+            fi = time_to_fold.get(t)
+            if fi is None or (ticker, t) not in lookup:
                 continue
             conf = float(conf_arr[i])
-            if conf < confidence_threshold:
-                continue
-            fi = time_to_fold.get(t)
-            if fi is None:
+            is_buy = str(sig_arr[i]) == "Buy" and conf >= confidence_threshold
+            if pred_log is not None:
+                pred_log.append((ticker, _as_date(t), conf if is_buy else 0.0))
+            if not is_buy:
                 continue
             key = (ticker, t)
-            if key not in lookup:
-                continue
             entry, ret, actual = lookup[key]
             buy_hits.append((conf, str(actual) == "Buy"))
             fold_trades[fi].append(Trade(
@@ -251,6 +266,7 @@ def _run_stateful(
     min_train_samples: int,
     confidence_threshold: float,
     buy_hits: list[tuple[float, bool]],
+    pred_log: list | None = None,
 ) -> list[FoldBacktestResult]:
     """
     Fit once per fold on combined training data (good for cross-ticker generalisation).
@@ -319,13 +335,14 @@ def _run_stateful(
                     break
                 if t < test_start or t > test_end:
                     continue
-                if str(sig_arr[i]) != "Buy":
-                    continue
-                conf = float(conf_arr[i])
-                if conf < confidence_threshold:
-                    continue
                 key = (ticker, t)
                 if key not in lookup:
+                    continue
+                conf = float(conf_arr[i])
+                is_buy = str(sig_arr[i]) == "Buy" and conf >= confidence_threshold
+                if pred_log is not None:
+                    pred_log.append((ticker, _as_date(t), conf if is_buy else 0.0))
+                if not is_buy:
                     continue
                 entry, ret, actual = lookup[key]
                 buy_hits.append((conf, str(actual) == "Buy"))

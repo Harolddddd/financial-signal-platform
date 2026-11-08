@@ -108,3 +108,30 @@ def test_empty_df_raises():
             df, _AlwaysBuyStrategy(), _OHLCV, _FEATURES,
             train_window_days=300, test_window_days=30, step_days=30,
         )
+
+
+def test_start_limits_folds():
+    df = _make_df()
+    start = datetime(2021, 1, 4, tzinfo=timezone.utc) + timedelta(days=450)
+    full = walk_forward_backtest_strategy(df, _AlwaysBuyStrategy(), _OHLCV, _FEATURES,
+                                          train_window_days=300, test_window_days=30, step_days=30)
+    part = walk_forward_backtest_strategy(df, _AlwaysBuyStrategy(), _OHLCV, _FEATURES,
+                                          train_window_days=300, test_window_days=30, step_days=30,
+                                          start=start)
+    assert 0 < len(part.folds) < len(full.folds)
+    assert all(datetime.fromisoformat(f.test_start) >= start for f in part.folds)
+
+
+def test_pred_log_one_row_per_test_row():
+    df = _make_df()
+    log_buy, log_hold = [], []
+    r = walk_forward_backtest_strategy(df, _AlwaysBuyStrategy(), _OHLCV, _FEATURES,
+                                       train_window_days=300, test_window_days=30, step_days=30,
+                                       pred_log=log_buy)
+    walk_forward_backtest_strategy(df, _AlwaysHoldStrategy(), _OHLCV, _FEATURES,
+                                   train_window_days=300, test_window_days=30, step_days=30,
+                                   pred_log=log_hold)
+    assert len(log_buy) == sum(f.n_trades for f in r.folds) == len(log_hold)
+    assert all(score == 0.9 for _, _, score in log_buy)
+    assert all(score == 0.0 for _, _, score in log_hold)
+    assert log_buy[0][0] == "AAPL" and not isinstance(log_buy[0][1], datetime)
