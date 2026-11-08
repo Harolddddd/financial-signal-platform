@@ -16,7 +16,7 @@ STATUS_DIR="$HOME/.fsp_status"; mkdir -p "$STATUS_DIR/status"
 STARTED="$(date -u +%FT%TZ)"
 
 report() {  # report STATE
-  local last; last="$(grep -E 'news progress|News backfill' "$LOG" 2>/dev/null | tail -1 | cut -c1-200)"
+  local last; last="$( (grep -E 'news progress|News backfill' "$LOG" 2>/dev/null || true) | tail -1 | cut -c1-200)"
   {
     echo "state=$1"
     echo "days=$DAYS"
