@@ -122,6 +122,7 @@ def ingest_news(
         if fresh:
             new_count += _score_and_write(news_dir, fresh, today)
             seen.update((a.ticker, h) for h, a in fresh.items())
+        logger.info("news progress %d/%d %s new_total=%d", i, len(tickers), ticker, new_count)
         if i % _REBUILD_EVERY == 0 and i < len(tickers):
             news_store.rebuild_daily(news_dir, trading_days, since=start)
 
