@@ -252,7 +252,7 @@ def build_features_for_ticker(
     return df
 
 
-def iter_live_features(market: str = "us"):
+def iter_live_features(market: str = "us", tickers: list[str] | None = None):
     """Yield (ticker, feature_df) one ticker at a time instead of building the
     whole universe's live features in memory at once. Same feature computation
     and skip-on-missing/skip-on-error behavior as build_live_features() — this
@@ -265,7 +265,7 @@ def iter_live_features(market: str = "us"):
     generator is how step_signals() avoids that."""
     market_cfg = get_market(market)
     raw_dir = market_cfg.data_root / "raw" / "ohlcv"
-    tickers = _TICKERS_BY_MARKET[market]
+    tickers = list(tickers) if tickers is not None else _TICKERS_BY_MARKET[market]
 
     benchmark_df = pl.read_parquet(raw_dir / f"{market_cfg.benchmark_ticker}.parquet")
     if market_cfg.vol_index_ticker:

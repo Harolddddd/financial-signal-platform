@@ -13,14 +13,22 @@ st.header("Paper Account")
 
 market = get_selected_market()
 cfg = get_market(market)
-st.caption(
-    f"Market: {cfg.label}. Simulated money, no real orders. Each trading day after the close it "
-    "buys the top-rated stocks on the Combined Signal page (rating 8+, up to 5 positions, equal "
-    "size) at the next open, and sells after 5 trading days or when the rating drops below 4. "
-    f"Costs: {cfg.cost_bps:.0f} bps per side"
-    + (" (incl. stamp duty); China trades in lots of 100 shares." if market == "china"
-       else "; fractional shares allowed.")
-)
+st.caption(f"Market: {cfg.label}. Simulated money, no real orders; orders fill at the next open.")
+with st.expander("Trading rules"):
+    st.markdown(
+        "**Buy** the best-rated stocks on the Combined Signal page (rating 8+), up to 5 positions, "
+        "skipping any the sell model flags as high risk and any stopped out in the last 5 trading days. "
+        "Size grows with conviction: 0.5x-1.5x an equal slot (rating 12 = 1x), at most 30% of the account.\n\n"
+        "**Sell** at the next open when the first of these fires:\n"
+        "- **Sell model**: the stock is among the riskiest ~10% (chance of a Sell-class 5-day drop);\n"
+        "- **Stop-loss**: 2x ATR below the entry price (-8% if ATR is unknown);\n"
+        "- **Trailing stop**: once up 1x ATR, a 2x ATR drop from the peak;\n"
+        "- **Signal gone**: held 5+ days and no longer rated Buy;\n"
+        "- **Max hold**: 20 trading days.\n\n"
+        f"Costs: {cfg.cost_bps:.0f} bps per side"
+        + (" (incl. stamp duty); China trades in lots of 100 shares." if market == "china"
+           else "; fractional shares allowed.")
+    )
 
 path = get_cache_dir(market) / "paper_account.json"
 if not path.exists():
@@ -55,6 +63,16 @@ if len(eq) >= 2:
                                  name=f"{cfg.benchmark_ticker} (same start)", mode="lines"))
     fig.update_layout(title="Account value", yaxis_title=a["currency"], height=360)
     st.plotly_chart(fig, use_container_width=True)
+
+sm = a.get("sell_model") or {}
+if sm.get("error"):
+    st.warning(f"Sell model unavailable today ({sm['error']}); stops and time rules still apply.")
+elif sm.get("threshold") is not None and sm.get("checked"):
+    st.caption(
+        f"Sell model ({sm.get('trained_on', '-')}): checked {sm['checked']} stocks, flagged "
+        f"{len(sm.get('flagged', []))}. On held-out recent data, flagged stock-days fell into the Sell "
+        f"class {sm.get('holdout_precision', 0):.0%} of the time vs {sm.get('base_rate', 0):.0%} on average."
+    )
 
 st.subheader("Holdings")
 if a["positions"]:
