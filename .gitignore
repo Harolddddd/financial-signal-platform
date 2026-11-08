@@ -14,3 +14,4 @@ markets/*/data/index_compositions/names.parquet
 markets/*/data/cache/bench/
 markets/*/data/cache/retired/
 markets/*/data/cache/league.json
+markets/*/data/cache/paper_account.json

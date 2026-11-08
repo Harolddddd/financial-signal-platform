@@ -112,6 +112,7 @@ _STEP_NAMES = [
     ("precompute_dashboard.py", "Backtests + signals"),
     ("applying news upload", "Apply news from Server B"),
     ("applying china upload", "Apply China news from Server B"),
+    ("paper_trade.py", "Paper account trades"),
 ]
 
 

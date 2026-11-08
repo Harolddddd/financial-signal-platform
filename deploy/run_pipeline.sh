@@ -56,6 +56,7 @@ case "${1:-}" in
     step scripts/refresh_data.py --market us
     step scripts/incremental_train.py --market us
     step scripts/precompute_dashboard.py --market us --signals-only
+    step scripts/paper_trade.py --market us
     ;;
   weekly)
     step scripts/train_models.py --market us
@@ -69,6 +70,7 @@ case "${1:-}" in
     step scripts/refresh_data.py --market china
     step scripts/incremental_train.py --market china
     step scripts/precompute_dashboard.py --market china --signals-only
+    step scripts/paper_trade.py --market china
     ;;
   cn-weekly)
     step scripts/train_models.py --market china
