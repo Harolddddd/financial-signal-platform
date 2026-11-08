@@ -65,7 +65,22 @@ else:
         f"last update {bf.get('updated', '?')} (every 5 min), B memory {bf.get('mem', '?')}"
     )
 
-# --- Logs ---
-st.subheader("Recent log lines")
-unit = st.selectbox("Job", list(ss.SERVICES), format_func=lambda u: ss.SERVICES[u])
-st.code(ss.recent_log(unit, 30) or "(no log lines)", language="text")
+# --- Last run summary ---
+st.subheader("Last run")
+unit = st.selectbox(
+    "Job", ["fsp-daily", "fsp-weekly", "fsp-backup"], format_func=lambda u: ss.SERVICES[u]
+)
+info = ss.unit_info(unit)
+summary = ss.summarize_run(ss.last_run_lines(unit), running=info.get("ActiveState") == "activating")
+if not summary["steps"]:
+    started = info.get("ExecMainStartTimestamp") or ""
+    st.caption(f"Last run: {started}, result {info.get('Result', '-')}" if started else "No run recorded yet.")
+else:
+    st.dataframe(summary["steps"], hide_index=True, use_container_width=True)
+    if summary["errors"]:
+        st.warning(f"{summary['errors']} error lines, {summary['warnings']} warnings in this run "
+                   "(delisted tickers show up here too).")
+    else:
+        st.caption(f"No errors, {summary['warnings']} warnings.")
+with st.expander("Raw log (last 30 lines)"):
+    st.code(ss.recent_log(unit, 30) or "(no log lines)", language="text")

@@ -35,3 +35,31 @@ def test_parse_backfill_done_without_progress_line():
 
 def test_backfill_status_missing_file(tmp_path):
     assert ss.backfill_status(tmp_path / "nope.txt") is None
+
+
+def test_summarize_run_steps_and_durations():
+    from datetime import datetime
+    lines = [
+        "=== 2026-11-08T01:30:59Z scripts/refresh_data.py --market us ===",
+        "2026-11-08 01:32:18,954 ERROR $SMAR: possibly delisted; no timezone found",
+        "=== 2026-11-08T01:59:21Z scripts/incremental_train.py --market us ===",
+        "2026-11-08 01:59:25,000 WARNING something",
+        "=== 2026-11-08T01:59:30Z scripts/precompute_dashboard.py --market us --signals-only ===",
+        "=== 2026-11-08T02:17:56Z daily pipeline done ===",
+    ]
+    out = ss.summarize_run(lines, running=False)
+    assert [s["step"] for s in out["steps"]] == [
+        "Refresh data (prices, news, macro, features)", "Incremental training", "Generate signals",
+    ]
+    assert [s["duration"] for s in out["steps"]] == ["28m 22s", "0m 09s", "18m 26s"]
+    assert all(s["status"] == "done" for s in out["steps"])
+    assert (out["errors"], out["warnings"], out["finished"]) == (1, 1, True)
+
+
+def test_summarize_run_marks_last_step_running_or_failed():
+    from datetime import datetime
+    lines = ["=== 2026-11-08T02:29:41Z scripts/train_models.py --market us ==="]
+    now = datetime(2026, 11, 8, 3, 29, 41)
+    run = ss.summarize_run(lines, running=True, now=now)["steps"][0]
+    assert (run["step"], run["status"], run["duration"]) == ("Full retrain", "running", "1h 00m")
+    assert ss.summarize_run(lines, running=False, now=now)["steps"][0]["status"] == "failed"
