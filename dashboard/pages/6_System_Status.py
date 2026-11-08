@@ -5,6 +5,7 @@ from dashboard import system_status as ss
 
 st.set_page_config(page_title="System Status", layout="wide")
 st.header("System Status")
+st.caption("All times are US Eastern (New York / North Carolina).")
 
 if not ss.available():
     st.info("System status is only available on the Linux server.")
@@ -61,8 +62,8 @@ else:
         f"{bf.get('new_total', '?')} new articles"
     ))
     st.caption(
-        f"{bf.get('days', '?')}-day backfill, started {bf.get('started', '?')}, "
-        f"last update {bf.get('updated', '?')} (every 5 min), B memory {bf.get('mem', '?')}"
+        f"{bf.get('days', '?')}-day backfill, started {ss.to_et(bf.get('started', '?'))}, "
+        f"last update {ss.to_et(bf.get('updated', '?'))} (every 5 min), B memory {bf.get('mem', '?')}"
     )
 
 # --- Last run summary ---

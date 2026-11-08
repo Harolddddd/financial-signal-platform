@@ -9,7 +9,8 @@ import json
 import re
 import shutil
 import subprocess
-from datetime import datetime
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 from pathlib import Path
 
 SERVICES = {
@@ -24,6 +25,7 @@ _SHOW_PROPS = [
     "ActiveState", "SubState", "Result", "ExecMainStartTimestamp",
     "ExecMainExitTimestamp", "MemoryCurrent", "MemoryPeak",
 ]
+ET = ZoneInfo("America/New_York")
 _PROGRESS_RE = re.compile(r"news progress (\d+)/(\d+) (\S+) new_total=(\d+)")
 
 
@@ -140,7 +142,7 @@ def summarize_run(lines: list[str], running: bool, now: datetime | None = None) 
             status, end_for_dur = "done", end
         steps.append({
             "step": _step_name(raw),
-            "started (UTC)": ts.strftime("%m-%d %H:%M"),
+            "started (ET)": ts.replace(tzinfo=timezone.utc).astimezone(ET).strftime("%m-%d %H:%M %Z"),
             "duration": _fmt_duration((end_for_dur - ts).total_seconds()),
             "status": status,
         })
@@ -174,3 +176,12 @@ def last_invocation_from_journal(json_lines: str) -> str:
             continue
         inv = rec.get("_SYSTEMD_INVOCATION_ID") or rec.get("INVOCATION_ID") or inv
     return inv
+
+
+def to_et(utc_iso: str) -> str:
+    """'2026-11-08T02:47:12Z' -> '11-07 21:47 EST'; anything unparsable is returned unchanged."""
+    try:
+        ts = datetime.strptime(utc_iso, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+    except (TypeError, ValueError):
+        return utc_iso
+    return ts.astimezone(ET).strftime("%m-%d %H:%M %Z")

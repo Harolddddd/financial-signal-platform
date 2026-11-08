@@ -53,6 +53,7 @@ def test_summarize_run_steps_and_durations():
     ]
     assert [s["duration"] for s in out["steps"]] == ["28m 22s", "0m 09s", "18m 26s"]
     assert all(s["status"] == "done" for s in out["steps"])
+    assert out["steps"][0]["started (ET)"] == "11-07 20:30 EST"
     assert (out["errors"], out["warnings"], out["finished"]) == (1, 1, True)
 
 
@@ -74,3 +75,9 @@ def test_last_invocation_from_journal_takes_newest():
     ])
     assert ss.last_invocation_from_journal(lines) == "bbb"
     assert ss.last_invocation_from_journal("") == ""
+
+
+def test_to_et_handles_dst_and_bad_input():
+    assert ss.to_et("2026-11-08T02:47:12Z") == "11-07 21:47 EST"
+    assert ss.to_et("2026-07-01T16:00:00Z") == "07-01 12:00 EDT"
+    assert ss.to_et("?") == "?"
