@@ -1,0 +1,4147 @@
+{
+  "generated_at": "2026-07-28T22:16:33.393271+00:00",
+  "strategy_name": "ichimoku_cloud",
+  "mean_sharpe": 0.7863658121521666,
+  "mean_win_rate": 0.23339876635926135,
+  "mean_precision_buy": 0.1308913667979038,
+  "worst_drawdown": 0.3460972203993989,
+  "grade": {
+    "model_name": "ichimoku_cloud",
+    "grade": "D",
+    "composite_score": 0.2569,
+    "metrics": {
+      "n_trades": 167662,
+      "win_rate": 0.23339876635926135,
+      "profit_factor": 0.0,
+      "total_return_pct": 0.0,
+      "sharpe_ratio": 0.7863658121521666,
+      "max_drawdown_pct": 0.3460972203993989,
+      "precision_buy": 0.1308913667979038,
+      "recall_buy": 0.0,
+      "f1_buy": 0.0,
+      "accuracy": 0.0
+    }
+  },
+  "folds": [
+    {
+      "fold": 0,
+      "train_start": "1990-01-01T16:00:00-08:00",
+      "train_end": "1991-02-04T16:00:00-08:00",
+      "test_start": "1991-02-05T16:00:00-08:00",
+      "test_end": "1991-02-25T16:00:00-08:00",
+      "n_trades": 2561,
+      "metrics": {
+        "n_trades": 2561,
+        "win_rate": 0.5384615384615384,
+        "profit_factor": 1.8539315630736024,
+        "total_return_pct": 29.770126794562245,
+        "sharpe_ratio": 1.4628947686969491,
+        "max_drawdown_pct": 0.7525055594052111,
+        "precision_buy": 0.3795392424834049,
+        "recall_buy": 1.0,
+        "f1_buy": 0.5502405887347863,
+        "accuracy": 0.3795392424834049
+      }
+    },
+    {
+      "fold": 1,
+      "train_start": "1990-03-05T16:00:00-08:00",
+      "train_end": "1991-04-08T16:00:00-07:00",
+      "test_start": "1991-04-09T16:00:00-07:00",
+      "test_end": "1991-04-29T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 2,
+      "train_start": "1990-05-07T16:00:00-07:00",
+      "train_end": "1991-06-10T16:00:00-07:00",
+      "test_start": "1991-06-11T16:00:00-07:00",
+      "test_end": "1991-07-01T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 3,
+      "train_start": "1990-07-09T16:00:00-07:00",
+      "train_end": "1991-08-12T16:00:00-07:00",
+      "test_start": "1991-08-13T16:00:00-07:00",
+      "test_end": "1991-09-02T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 4,
+      "train_start": "1990-09-10T16:00:00-07:00",
+      "train_end": "1991-10-14T16:00:00-07:00",
+      "test_start": "1991-10-15T16:00:00-07:00",
+      "test_end": "1991-11-04T16:00:00-08:00",
+      "n_trades": 633,
+      "metrics": {
+        "n_trades": 633,
+        "win_rate": 0.6145339652448657,
+        "profit_factor": 2.6786653030165684,
+        "total_return_pct": 9.316774984218423,
+        "sharpe_ratio": 2.5439305822563107,
+        "max_drawdown_pct": 0.45696278702295356,
+        "precision_buy": 0.41390205371248023,
+        "recall_buy": 1.0,
+        "f1_buy": 0.5854748603351955,
+        "accuracy": 0.41390205371248023
+      }
+    },
+    {
+      "fold": 5,
+      "train_start": "1990-11-12T16:00:00-08:00",
+      "train_end": "1991-12-16T16:00:00-08:00",
+      "test_start": "1991-12-17T16:00:00-08:00",
+      "test_end": "1992-01-06T16:00:00-08:00",
+      "n_trades": 1350,
+      "metrics": {
+        "n_trades": 1350,
+        "win_rate": 0.6518518518518519,
+        "profit_factor": 3.874194939967323,
+        "total_return_pct": 33.987748925832264,
+        "sharpe_ratio": 3.468889691466206,
+        "max_drawdown_pct": 0.5470644269458977,
+        "precision_buy": 0.48592592592592593,
+        "recall_buy": 1.0,
+        "f1_buy": 0.6540378863409771,
+        "accuracy": 0.48592592592592593
+      }
+    },
+    {
+      "fold": 6,
+      "train_start": "1991-01-14T16:00:00-08:00",
+      "train_end": "1992-02-17T16:00:00-08:00",
+      "test_start": "1992-02-18T16:00:00-08:00",
+      "test_end": "1992-03-09T16:00:00-08:00",
+      "n_trades": 1233,
+      "metrics": {
+        "n_trades": 1233,
+        "win_rate": 0.36415247364152475,
+        "profit_factor": 0.536904370444492,
+        "total_return_pct": -10.939641209020847,
+        "sharpe_ratio": -1.6217233599292027,
+        "max_drawdown_pct": 0.9999948753459084,
+        "precision_buy": 0.19140308191403083,
+        "recall_buy": 1.0,
+        "f1_buy": 0.3213070115724983,
+        "accuracy": 0.19140308191403083
+      }
+    },
+    {
+      "fold": 7,
+      "train_start": "1991-03-18T16:00:00-08:00",
+      "train_end": "1992-04-20T16:00:00-07:00",
+      "test_start": "1992-04-21T16:00:00-07:00",
+      "test_end": "1992-05-11T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 8,
+      "train_start": "1991-05-20T16:00:00-07:00",
+      "train_end": "1992-06-22T16:00:00-07:00",
+      "test_start": "1992-06-23T16:00:00-07:00",
+      "test_end": "1992-07-13T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 9,
+      "train_start": "1991-07-22T16:00:00-07:00",
+      "train_end": "1992-08-24T16:00:00-07:00",
+      "test_start": "1992-08-25T16:00:00-07:00",
+      "test_end": "1992-09-14T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 10,
+      "train_start": "1991-09-23T16:00:00-07:00",
+      "train_end": "1992-10-26T16:00:00-08:00",
+      "test_start": "1992-10-27T16:00:00-08:00",
+      "test_end": "1992-11-16T16:00:00-08:00",
+      "n_trades": 1705,
+      "metrics": {
+        "n_trades": 1705,
+        "win_rate": 0.5630498533724341,
+        "profit_factor": 2.1074699776337122,
+        "total_return_pct": 19.35085212844199,
+        "sharpe_ratio": 1.668178727566966,
+        "max_drawdown_pct": 0.7045269080659547,
+        "precision_buy": 0.35542521994134896,
+        "recall_buy": 1.0,
+        "f1_buy": 0.5244482907832106,
+        "accuracy": 0.35542521994134896
+      }
+    },
+    {
+      "fold": 11,
+      "train_start": "1991-11-25T16:00:00-08:00",
+      "train_end": "1992-12-28T16:00:00-08:00",
+      "test_start": "1992-12-29T16:00:00-08:00",
+      "test_end": "1993-01-18T16:00:00-08:00",
+      "n_trades": 1633,
+      "metrics": {
+        "n_trades": 1633,
+        "win_rate": 0.5180649112063687,
+        "profit_factor": 1.8471354308428751,
+        "total_return_pct": 15.090905699036236,
+        "sharpe_ratio": 1.5182890849635098,
+        "max_drawdown_pct": 0.7547849492807439,
+        "precision_buy": 0.31475811390079605,
+        "recall_buy": 1.0,
+        "f1_buy": 0.4788076385654401,
+        "accuracy": 0.31475811390079605
+      }
+    },
+    {
+      "fold": 12,
+      "train_start": "1992-01-27T16:00:00-08:00",
+      "train_end": "1993-03-01T16:00:00-08:00",
+      "test_start": "1993-03-02T16:00:00-08:00",
+      "test_end": "1993-03-22T16:00:00-08:00",
+      "n_trades": 1531,
+      "metrics": {
+        "n_trades": 1531,
+        "win_rate": 0.5244937949052907,
+        "profit_factor": 1.474076399674041,
+        "total_return_pct": 7.616902600168775,
+        "sharpe_ratio": 0.9812378616568628,
+        "max_drawdown_pct": 0.7203586527864922,
+        "precision_buy": 0.2847811887655127,
+        "recall_buy": 1.0,
+        "f1_buy": 0.4433146924250127,
+        "accuracy": 0.2847811887655127
+      }
+    },
+    {
+      "fold": 13,
+      "train_start": "1992-03-30T16:00:00-08:00",
+      "train_end": "1993-05-03T16:00:00-07:00",
+      "test_start": "1993-05-04T16:00:00-07:00",
+      "test_end": "1993-05-24T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 14,
+      "train_start": "1992-06-01T16:00:00-07:00",
+      "train_end": "1993-07-05T16:00:00-07:00",
+      "test_start": "1993-07-06T16:00:00-07:00",
+      "test_end": "1993-07-26T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 15,
+      "train_start": "1992-08-03T16:00:00-07:00",
+      "train_end": "1993-09-06T16:00:00-07:00",
+      "test_start": "1993-09-07T16:00:00-07:00",
+      "test_end": "1993-09-27T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 16,
+      "train_start": "1992-10-05T16:00:00-07:00",
+      "train_end": "1993-11-08T16:00:00-08:00",
+      "test_start": "1993-11-09T16:00:00-08:00",
+      "test_end": "1993-11-29T16:00:00-08:00",
+      "n_trades": 913,
+      "metrics": {
+        "n_trades": 913,
+        "win_rate": 0.45016429353778753,
+        "profit_factor": 0.9535912857054826,
+        "total_return_pct": -0.6535320754067417,
+        "sharpe_ratio": -0.11994266360141001,
+        "max_drawdown_pct": 0.9271539975371051,
+        "precision_buy": 0.24644030668127054,
+        "recall_buy": 1.0,
+        "f1_buy": 0.3954305799648506,
+        "accuracy": 0.24644030668127054
+      }
+    },
+    {
+      "fold": 17,
+      "train_start": "1992-12-07T16:00:00-08:00",
+      "train_end": "1994-01-10T16:00:00-08:00",
+      "test_start": "1994-01-11T16:00:00-08:00",
+      "test_end": "1994-01-31T16:00:00-08:00",
+      "n_trades": 1351,
+      "metrics": {
+        "n_trades": 1351,
+        "win_rate": 0.5011102886750555,
+        "profit_factor": 1.3352566978210085,
+        "total_return_pct": 6.2317780219284264,
+        "sharpe_ratio": 0.732515488045748,
+        "max_drawdown_pct": 0.909781779964607,
+        "precision_buy": 0.3153219837157661,
+        "recall_buy": 1.0,
+        "f1_buy": 0.47945976364659537,
+        "accuracy": 0.3153219837157661
+      }
+    },
+    {
+      "fold": 18,
+      "train_start": "1993-02-08T16:00:00-08:00",
+      "train_end": "1994-03-14T16:00:00-08:00",
+      "test_start": "1994-03-15T16:00:00-08:00",
+      "test_end": "1994-04-04T16:00:00-07:00",
+      "n_trades": 762,
+      "metrics": {
+        "n_trades": 762,
+        "win_rate": 0.2178477690288714,
+        "profit_factor": 0.20577066319251178,
+        "total_return_pct": -25.652756161127236,
+        "sharpe_ratio": -4.063281129238018,
+        "max_drawdown_pct": 0.9999999999988318,
+        "precision_buy": 0.12467191601049869,
+        "recall_buy": 1.0,
+        "f1_buy": 0.2217036172695449,
+        "accuracy": 0.12467191601049869
+      }
+    },
+    {
+      "fold": 19,
+      "train_start": "1993-04-12T16:00:00-07:00",
+      "train_end": "1994-05-16T16:00:00-07:00",
+      "test_start": "1994-05-17T16:00:00-07:00",
+      "test_end": "1994-06-06T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 20,
+      "train_start": "1993-06-14T16:00:00-07:00",
+      "train_end": "1994-07-18T16:00:00-07:00",
+      "test_start": "1994-07-19T16:00:00-07:00",
+      "test_end": "1994-08-08T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 21,
+      "train_start": "1993-08-16T16:00:00-07:00",
+      "train_end": "1994-09-19T16:00:00-07:00",
+      "test_start": "1994-09-20T16:00:00-07:00",
+      "test_end": "1994-10-10T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 22,
+      "train_start": "1993-10-18T16:00:00-07:00",
+      "train_end": "1994-11-21T16:00:00-08:00",
+      "test_start": "1994-11-22T16:00:00-08:00",
+      "test_end": "1994-12-12T16:00:00-08:00",
+      "n_trades": 449,
+      "metrics": {
+        "n_trades": 449,
+        "win_rate": 0.49443207126948774,
+        "profit_factor": 0.9549897493257318,
+        "total_return_pct": -0.3498770889385553,
+        "sharpe_ratio": -0.0922158785044082,
+        "max_drawdown_pct": 0.9015243601440542,
+        "precision_buy": 0.24944320712694878,
+        "recall_buy": 1.0,
+        "f1_buy": 0.39928698752228164,
+        "accuracy": 0.24944320712694878
+      }
+    },
+    {
+      "fold": 23,
+      "train_start": "1993-12-20T16:00:00-08:00",
+      "train_end": "1995-01-23T16:00:00-08:00",
+      "test_start": "1995-01-24T16:00:00-08:00",
+      "test_end": "1995-02-13T16:00:00-08:00",
+      "n_trades": 1639,
+      "metrics": {
+        "n_trades": 1639,
+        "win_rate": 0.5759609517998779,
+        "profit_factor": 2.2677272861172257,
+        "total_return_pct": 16.722959533440964,
+        "sharpe_ratio": 1.8725958628583272,
+        "max_drawdown_pct": 0.6236105364411477,
+        "precision_buy": 0.324588163514338,
+        "recall_buy": 1.0,
+        "f1_buy": 0.4900967296176877,
+        "accuracy": 0.324588163514338
+      }
+    },
+    {
+      "fold": 24,
+      "train_start": "1994-02-21T16:00:00-08:00",
+      "train_end": "1995-03-27T16:00:00-08:00",
+      "test_start": "1995-03-28T16:00:00-08:00",
+      "test_end": "1995-04-17T16:00:00-07:00",
+      "n_trades": 422,
+      "metrics": {
+        "n_trades": 422,
+        "win_rate": 0.490521327014218,
+        "profit_factor": 1.0377921199340043,
+        "total_return_pct": 0.202788346026615,
+        "sharpe_ratio": 0.09004966445272483,
+        "max_drawdown_pct": 0.6301127204390014,
+        "precision_buy": 0.22037914691943128,
+        "recall_buy": 1.0,
+        "f1_buy": 0.36116504854368936,
+        "accuracy": 0.22037914691943128
+      }
+    },
+    {
+      "fold": 25,
+      "train_start": "1994-04-25T16:00:00-07:00",
+      "train_end": "1995-05-29T16:00:00-07:00",
+      "test_start": "1995-05-30T16:00:00-07:00",
+      "test_end": "1995-06-19T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 26,
+      "train_start": "1994-06-27T16:00:00-07:00",
+      "train_end": "1995-07-31T16:00:00-07:00",
+      "test_start": "1995-08-01T16:00:00-07:00",
+      "test_end": "1995-08-21T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 27,
+      "train_start": "1994-08-29T16:00:00-07:00",
+      "train_end": "1995-10-02T16:00:00-07:00",
+      "test_start": "1995-10-03T16:00:00-07:00",
+      "test_end": "1995-10-23T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 28,
+      "train_start": "1994-10-31T16:00:00-08:00",
+      "train_end": "1995-12-04T16:00:00-08:00",
+      "test_start": "1995-12-05T16:00:00-08:00",
+      "test_end": "1995-12-25T16:00:00-08:00",
+      "n_trades": 1798,
+      "metrics": {
+        "n_trades": 1798,
+        "win_rate": 0.5205784204671857,
+        "profit_factor": 1.3002647571609482,
+        "total_return_pct": 7.1560188282197075,
+        "sharpe_ratio": 0.5899778818634276,
+        "max_drawdown_pct": 0.9209740898810511,
+        "precision_buy": 0.289210233592881,
+        "recall_buy": 1.0,
+        "f1_buy": 0.4486626402070751,
+        "accuracy": 0.289210233592881
+      }
+    },
+    {
+      "fold": 29,
+      "train_start": "1995-01-02T16:00:00-08:00",
+      "train_end": "1996-02-05T16:00:00-08:00",
+      "test_start": "1996-02-06T16:00:00-08:00",
+      "test_end": "1996-02-26T16:00:00-08:00",
+      "n_trades": 1989,
+      "metrics": {
+        "n_trades": 1989,
+        "win_rate": 0.44595274007038715,
+        "profit_factor": 0.8796565123609289,
+        "total_return_pct": -3.5605221171449513,
+        "sharpe_ratio": -0.3328825353124286,
+        "max_drawdown_pct": 0.9967342235121834,
+        "precision_buy": 0.23629964806435394,
+        "recall_buy": 1.0,
+        "f1_buy": 0.3822692151281008,
+        "accuracy": 0.23629964806435394
+      }
+    },
+    {
+      "fold": 30,
+      "train_start": "1995-03-06T16:00:00-08:00",
+      "train_end": "1996-04-08T16:00:00-07:00",
+      "test_start": "1996-04-09T16:00:00-07:00",
+      "test_end": "1996-04-29T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 31,
+      "train_start": "1995-05-08T16:00:00-07:00",
+      "train_end": "1996-06-10T16:00:00-07:00",
+      "test_start": "1996-06-11T16:00:00-07:00",
+      "test_end": "1996-07-01T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 32,
+      "train_start": "1995-07-10T16:00:00-07:00",
+      "train_end": "1996-08-12T16:00:00-07:00",
+      "test_start": "1996-08-13T16:00:00-07:00",
+      "test_end": "1996-09-02T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 33,
+      "train_start": "1995-09-11T16:00:00-07:00",
+      "train_end": "1996-10-14T16:00:00-07:00",
+      "test_start": "1996-10-15T16:00:00-07:00",
+      "test_end": "1996-11-04T16:00:00-08:00",
+      "n_trades": 787,
+      "metrics": {
+        "n_trades": 787,
+        "win_rate": 0.7712833545108005,
+        "profit_factor": 7.545827308436273,
+        "total_return_pct": 21.60175800385279,
+        "sharpe_ratio": 5.0,
+        "max_drawdown_pct": 0.3047236977420447,
+        "precision_buy": 0.5527318932655655,
+        "recall_buy": 1.0,
+        "f1_buy": 0.7119476268412439,
+        "accuracy": 0.5527318932655655
+      }
+    },
+    {
+      "fold": 34,
+      "train_start": "1995-11-13T16:00:00-08:00",
+      "train_end": "1996-12-16T16:00:00-08:00",
+      "test_start": "1996-12-17T16:00:00-08:00",
+      "test_end": "1997-01-06T16:00:00-08:00",
+      "n_trades": 1194,
+      "metrics": {
+        "n_trades": 1194,
+        "win_rate": 0.5276381909547738,
+        "profit_factor": 1.8306955518347114,
+        "total_return_pct": 10.437849058306181,
+        "sharpe_ratio": 1.4672039238480246,
+        "max_drawdown_pct": 0.6080867839248666,
+        "precision_buy": 0.3132328308207705,
+        "recall_buy": 1.0,
+        "f1_buy": 0.4770408163265306,
+        "accuracy": 0.3132328308207705
+      }
+    },
+    {
+      "fold": 35,
+      "train_start": "1996-01-15T16:00:00-08:00",
+      "train_end": "1997-02-17T16:00:00-08:00",
+      "test_start": "1997-02-18T16:00:00-08:00",
+      "test_end": "1997-03-10T16:00:00-08:00",
+      "n_trades": 1818,
+      "metrics": {
+        "n_trades": 1818,
+        "win_rate": 0.44004400440044006,
+        "profit_factor": 0.9683205011030452,
+        "total_return_pct": -0.8483268686443164,
+        "sharpe_ratio": -0.0818667488887824,
+        "max_drawdown_pct": 0.9911449047012437,
+        "precision_buy": 0.24422442244224424,
+        "recall_buy": 1.0,
+        "f1_buy": 0.3925729442970822,
+        "accuracy": 0.24422442244224424
+      }
+    },
+    {
+      "fold": 36,
+      "train_start": "1996-03-18T16:00:00-08:00",
+      "train_end": "1997-04-21T16:00:00-07:00",
+      "test_start": "1997-04-22T16:00:00-07:00",
+      "test_end": "1997-05-12T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 37,
+      "train_start": "1996-05-20T16:00:00-07:00",
+      "train_end": "1997-06-23T16:00:00-07:00",
+      "test_start": "1997-06-24T16:00:00-07:00",
+      "test_end": "1997-07-14T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 38,
+      "train_start": "1996-07-22T16:00:00-07:00",
+      "train_end": "1997-08-25T16:00:00-07:00",
+      "test_start": "1997-08-26T16:00:00-07:00",
+      "test_end": "1997-09-15T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 39,
+      "train_start": "1996-09-23T16:00:00-07:00",
+      "train_end": "1997-10-27T16:00:00-08:00",
+      "test_start": "1997-10-28T16:00:00-08:00",
+      "test_end": "1997-11-17T16:00:00-08:00",
+      "n_trades": 670,
+      "metrics": {
+        "n_trades": 670,
+        "win_rate": 0.6208955223880597,
+        "profit_factor": 1.5583964851675285,
+        "total_return_pct": 5.0489454770258435,
+        "sharpe_ratio": 1.1397373053731414,
+        "max_drawdown_pct": 0.851458907233689,
+        "precision_buy": 0.3850746268656716,
+        "recall_buy": 1.0,
+        "f1_buy": 0.5560344827586207,
+        "accuracy": 0.3850746268656716
+      }
+    },
+    {
+      "fold": 40,
+      "train_start": "1996-11-25T16:00:00-08:00",
+      "train_end": "1997-12-29T16:00:00-08:00",
+      "test_start": "1997-12-30T16:00:00-08:00",
+      "test_end": "1998-01-19T16:00:00-08:00",
+      "n_trades": 1041,
+      "metrics": {
+        "n_trades": 1041,
+        "win_rate": 0.3688760806916426,
+        "profit_factor": 0.5453779923186894,
+        "total_return_pct": -10.326946583776795,
+        "sharpe_ratio": -1.5819235253405892,
+        "max_drawdown_pct": 0.9999950307181321,
+        "precision_buy": 0.20653218059558118,
+        "recall_buy": 1.0,
+        "f1_buy": 0.3423566878980892,
+        "accuracy": 0.20653218059558118
+      }
+    },
+    {
+      "fold": 41,
+      "train_start": "1997-01-27T16:00:00-08:00",
+      "train_end": "1998-03-02T16:00:00-08:00",
+      "test_start": "1998-03-03T16:00:00-08:00",
+      "test_end": "1998-03-23T16:00:00-08:00",
+      "n_trades": 2788,
+      "metrics": {
+        "n_trades": 2788,
+        "win_rate": 0.6018651362984218,
+        "profit_factor": 2.3394139759106247,
+        "total_return_pct": 33.87010230032946,
+        "sharpe_ratio": 2.1739690293854337,
+        "max_drawdown_pct": 0.6186411387844561,
+        "precision_buy": 0.368364418938307,
+        "recall_buy": 1.0,
+        "f1_buy": 0.5384010484927916,
+        "accuracy": 0.368364418938307
+      }
+    },
+    {
+      "fold": 42,
+      "train_start": "1997-03-31T16:00:00-08:00",
+      "train_end": "1998-05-04T16:00:00-07:00",
+      "test_start": "1998-05-05T16:00:00-07:00",
+      "test_end": "1998-05-25T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 43,
+      "train_start": "1997-06-02T16:00:00-07:00",
+      "train_end": "1998-07-06T16:00:00-07:00",
+      "test_start": "1998-07-07T16:00:00-07:00",
+      "test_end": "1998-07-27T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 44,
+      "train_start": "1997-08-04T16:00:00-07:00",
+      "train_end": "1998-09-07T16:00:00-07:00",
+      "test_start": "1998-09-08T16:00:00-07:00",
+      "test_end": "1998-09-28T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 45,
+      "train_start": "1997-10-06T16:00:00-07:00",
+      "train_end": "1998-11-09T16:00:00-08:00",
+      "test_start": "1998-11-10T16:00:00-08:00",
+      "test_end": "1998-11-30T16:00:00-08:00",
+      "n_trades": 2772,
+      "metrics": {
+        "n_trades": 2772,
+        "win_rate": 0.5634920634920635,
+        "profit_factor": 1.8591477360849802,
+        "total_return_pct": 35.04913900214622,
+        "sharpe_ratio": 1.502863354753119,
+        "max_drawdown_pct": 0.8768791855421896,
+        "precision_buy": 0.3924963924963925,
+        "recall_buy": 1.0,
+        "f1_buy": 0.5637305699481866,
+        "accuracy": 0.3924963924963925
+      }
+    },
+    {
+      "fold": 46,
+      "train_start": "1997-12-08T16:00:00-08:00",
+      "train_end": "1999-01-11T16:00:00-08:00",
+      "test_start": "1999-01-12T16:00:00-08:00",
+      "test_end": "1999-02-01T16:00:00-08:00",
+      "n_trades": 1523,
+      "metrics": {
+        "n_trades": 1523,
+        "win_rate": 0.5095206828627709,
+        "profit_factor": 1.2352127949255118,
+        "total_return_pct": 8.187352980631452,
+        "sharpe_ratio": 0.5584264219850433,
+        "max_drawdown_pct": 0.8807505514088445,
+        "precision_buy": 0.3860801050558109,
+        "recall_buy": 1.0,
+        "f1_buy": 0.5570819516816675,
+        "accuracy": 0.3860801050558109
+      }
+    },
+    {
+      "fold": 47,
+      "train_start": "1998-02-09T16:00:00-08:00",
+      "train_end": "1999-03-15T16:00:00-08:00",
+      "test_start": "1999-03-16T16:00:00-08:00",
+      "test_end": "1999-04-05T16:00:00-07:00",
+      "n_trades": 991,
+      "metrics": {
+        "n_trades": 991,
+        "win_rate": 0.5287588294651867,
+        "profit_factor": 1.760870019627724,
+        "total_return_pct": 12.67564808437297,
+        "sharpe_ratio": 1.318387620174861,
+        "max_drawdown_pct": 0.9128887159262977,
+        "precision_buy": 0.36528758829465185,
+        "recall_buy": 1.0,
+        "f1_buy": 0.5351071692535108,
+        "accuracy": 0.36528758829465185
+      }
+    },
+    {
+      "fold": 48,
+      "train_start": "1998-04-13T16:00:00-07:00",
+      "train_end": "1999-05-17T16:00:00-07:00",
+      "test_start": "1999-05-18T16:00:00-07:00",
+      "test_end": "1999-06-07T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 49,
+      "train_start": "1998-06-15T16:00:00-07:00",
+      "train_end": "1999-07-19T16:00:00-07:00",
+      "test_start": "1999-07-20T16:00:00-07:00",
+      "test_end": "1999-08-09T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 50,
+      "train_start": "1998-08-17T16:00:00-07:00",
+      "train_end": "1999-09-20T16:00:00-07:00",
+      "test_start": "1999-09-21T16:00:00-07:00",
+      "test_end": "1999-10-11T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 51,
+      "train_start": "1998-10-19T16:00:00-07:00",
+      "train_end": "1999-11-22T16:00:00-08:00",
+      "test_start": "1999-11-23T16:00:00-08:00",
+      "test_end": "1999-12-13T16:00:00-08:00",
+      "n_trades": 1300,
+      "metrics": {
+        "n_trades": 1300,
+        "win_rate": 0.5192307692307693,
+        "profit_factor": 1.590733048129062,
+        "total_return_pct": 16.228925942517648,
+        "sharpe_ratio": 1.1479168005075113,
+        "max_drawdown_pct": 0.8457998651311944,
+        "precision_buy": 0.3923076923076923,
+        "recall_buy": 1.0,
+        "f1_buy": 0.56353591160221,
+        "accuracy": 0.3923076923076923
+      }
+    },
+    {
+      "fold": 52,
+      "train_start": "1998-12-21T16:00:00-08:00",
+      "train_end": "2000-01-24T16:00:00-08:00",
+      "test_start": "2000-01-25T16:00:00-08:00",
+      "test_end": "2000-02-14T16:00:00-08:00",
+      "n_trades": 1142,
+      "metrics": {
+        "n_trades": 1142,
+        "win_rate": 0.5026269702276708,
+        "profit_factor": 2.0004740637985035,
+        "total_return_pct": 25.10126723324782,
+        "sharpe_ratio": 1.5820174428010478,
+        "max_drawdown_pct": 0.9918304515158118,
+        "precision_buy": 0.39316987740805603,
+        "recall_buy": 1.0,
+        "f1_buy": 0.5644248900062854,
+        "accuracy": 0.39316987740805603
+      }
+    },
+    {
+      "fold": 53,
+      "train_start": "1999-02-22T16:00:00-08:00",
+      "train_end": "2000-03-27T16:00:00-08:00",
+      "test_start": "2000-03-28T16:00:00-08:00",
+      "test_end": "2000-04-17T16:00:00-07:00",
+      "n_trades": 369,
+      "metrics": {
+        "n_trades": 369,
+        "win_rate": 0.5392953929539296,
+        "profit_factor": 1.5930364999651456,
+        "total_return_pct": 4.118695488144705,
+        "sharpe_ratio": 1.1667009165655964,
+        "max_drawdown_pct": 0.6379125918695708,
+        "precision_buy": 0.4010840108401084,
+        "recall_buy": 1.0,
+        "f1_buy": 0.5725338491295938,
+        "accuracy": 0.4010840108401084
+      }
+    },
+    {
+      "fold": 54,
+      "train_start": "1999-04-26T16:00:00-07:00",
+      "train_end": "2000-05-29T16:00:00-07:00",
+      "test_start": "2000-05-30T16:00:00-07:00",
+      "test_end": "2000-06-19T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 55,
+      "train_start": "1999-06-28T16:00:00-07:00",
+      "train_end": "2000-07-31T16:00:00-07:00",
+      "test_start": "2000-08-01T16:00:00-07:00",
+      "test_end": "2000-08-21T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 56,
+      "train_start": "1999-08-30T16:00:00-07:00",
+      "train_end": "2000-10-02T16:00:00-07:00",
+      "test_start": "2000-10-03T16:00:00-07:00",
+      "test_end": "2000-10-23T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 57,
+      "train_start": "1999-11-01T16:00:00-08:00",
+      "train_end": "2000-12-04T16:00:00-08:00",
+      "test_start": "2000-12-05T16:00:00-08:00",
+      "test_end": "2000-12-25T16:00:00-08:00",
+      "n_trades": 1829,
+      "metrics": {
+        "n_trades": 1829,
+        "win_rate": 0.551667577911427,
+        "profit_factor": 1.3993100242434542,
+        "total_return_pct": 14.95259701528609,
+        "sharpe_ratio": 0.8920294813955489,
+        "max_drawdown_pct": 0.9577151417780475,
+        "precision_buy": 0.40185893931109895,
+        "recall_buy": 1.0,
+        "f1_buy": 0.5733229329173167,
+        "accuracy": 0.40185893931109895
+      }
+    },
+    {
+      "fold": 58,
+      "train_start": "2000-01-03T16:00:00-08:00",
+      "train_end": "2001-02-05T16:00:00-08:00",
+      "test_start": "2001-02-06T16:00:00-08:00",
+      "test_end": "2001-02-26T16:00:00-08:00",
+      "n_trades": 1645,
+      "metrics": {
+        "n_trades": 1645,
+        "win_rate": 0.4522796352583587,
+        "profit_factor": 0.731547661391219,
+        "total_return_pct": -9.10405916435435,
+        "sharpe_ratio": -0.7940741152084431,
+        "max_drawdown_pct": 0.9999949070298403,
+        "precision_buy": 0.2613981762917933,
+        "recall_buy": 1.0,
+        "f1_buy": 0.4144578313253011,
+        "accuracy": 0.2613981762917933
+      }
+    },
+    {
+      "fold": 59,
+      "train_start": "2000-03-06T16:00:00-08:00",
+      "train_end": "2001-04-09T16:00:00-07:00",
+      "test_start": "2001-04-10T16:00:00-07:00",
+      "test_end": "2001-04-30T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 60,
+      "train_start": "2000-05-08T16:00:00-07:00",
+      "train_end": "2001-06-11T16:00:00-07:00",
+      "test_start": "2001-06-12T16:00:00-07:00",
+      "test_end": "2001-07-02T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 61,
+      "train_start": "2000-07-10T16:00:00-07:00",
+      "train_end": "2001-08-13T16:00:00-07:00",
+      "test_start": "2001-08-14T16:00:00-07:00",
+      "test_end": "2001-09-03T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 62,
+      "train_start": "2000-09-11T16:00:00-07:00",
+      "train_end": "2001-10-15T16:00:00-07:00",
+      "test_start": "2001-10-16T16:00:00-07:00",
+      "test_end": "2001-11-05T16:00:00-08:00",
+      "n_trades": 754,
+      "metrics": {
+        "n_trades": 754,
+        "win_rate": 0.6578249336870027,
+        "profit_factor": 2.6639230399073206,
+        "total_return_pct": 13.960208212497543,
+        "sharpe_ratio": 2.4777787212771734,
+        "max_drawdown_pct": 0.5368321317379374,
+        "precision_buy": 0.46286472148541113,
+        "recall_buy": 1.0,
+        "f1_buy": 0.6328195829555757,
+        "accuracy": 0.46286472148541113
+      }
+    },
+    {
+      "fold": 63,
+      "train_start": "2000-11-13T16:00:00-08:00",
+      "train_end": "2001-12-17T16:00:00-08:00",
+      "test_start": "2001-12-18T16:00:00-08:00",
+      "test_end": "2002-01-07T16:00:00-08:00",
+      "n_trades": 2304,
+      "metrics": {
+        "n_trades": 2304,
+        "win_rate": 0.4778645833333333,
+        "profit_factor": 0.9245214879789587,
+        "total_return_pct": -3.140696682100828,
+        "sharpe_ratio": -0.18454072889670625,
+        "max_drawdown_pct": 0.9999378889271578,
+        "precision_buy": 0.2608506944444444,
+        "recall_buy": 1.0,
+        "f1_buy": 0.4137693631669535,
+        "accuracy": 0.2608506944444444
+      }
+    },
+    {
+      "fold": 64,
+      "train_start": "2001-01-15T16:00:00-08:00",
+      "train_end": "2002-02-18T16:00:00-08:00",
+      "test_start": "2002-02-19T16:00:00-08:00",
+      "test_end": "2002-03-11T16:00:00-08:00",
+      "n_trades": 2505,
+      "metrics": {
+        "n_trades": 2505,
+        "win_rate": 0.6702594810379241,
+        "profit_factor": 2.9616882603400847,
+        "total_return_pct": 41.37196296808011,
+        "sharpe_ratio": 2.7623724615550835,
+        "max_drawdown_pct": 0.6263786814749439,
+        "precision_buy": 0.4279441117764471,
+        "recall_buy": 1.0,
+        "f1_buy": 0.5993849594632373,
+        "accuracy": 0.4279441117764471
+      }
+    },
+    {
+      "fold": 65,
+      "train_start": "2001-03-19T16:00:00-08:00",
+      "train_end": "2002-04-22T16:00:00-07:00",
+      "test_start": "2002-04-23T16:00:00-07:00",
+      "test_end": "2002-05-13T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 66,
+      "train_start": "2001-05-21T16:00:00-07:00",
+      "train_end": "2002-06-24T16:00:00-07:00",
+      "test_start": "2002-06-25T16:00:00-07:00",
+      "test_end": "2002-07-15T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 67,
+      "train_start": "2001-07-23T16:00:00-07:00",
+      "train_end": "2002-08-26T16:00:00-07:00",
+      "test_start": "2002-08-27T16:00:00-07:00",
+      "test_end": "2002-09-16T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 68,
+      "train_start": "2001-09-24T16:00:00-07:00",
+      "train_end": "2002-10-28T16:00:00-08:00",
+      "test_start": "2002-10-29T16:00:00-08:00",
+      "test_end": "2002-11-18T16:00:00-08:00",
+      "n_trades": 2194,
+      "metrics": {
+        "n_trades": 2194,
+        "win_rate": 0.5701914311759344,
+        "profit_factor": 1.8521646852963836,
+        "total_return_pct": 32.37426520377096,
+        "sharpe_ratio": 1.2811680589434389,
+        "max_drawdown_pct": 0.9201516035414784,
+        "precision_buy": 0.4088422971741112,
+        "recall_buy": 1.0,
+        "f1_buy": 0.5803946942736978,
+        "accuracy": 0.4088422971741112
+      }
+    },
+    {
+      "fold": 69,
+      "train_start": "2001-11-26T16:00:00-08:00",
+      "train_end": "2002-12-30T16:00:00-08:00",
+      "test_start": "2002-12-31T16:00:00-08:00",
+      "test_end": "2003-01-20T16:00:00-08:00",
+      "n_trades": 1258,
+      "metrics": {
+        "n_trades": 1258,
+        "win_rate": 0.2790143084260731,
+        "profit_factor": 0.2719503580817994,
+        "total_return_pct": -29.829070780227504,
+        "sharpe_ratio": -3.2043766992677383,
+        "max_drawdown_pct": 0.999999999999988,
+        "precision_buy": 0.14069952305246422,
+        "recall_buy": 1.0,
+        "f1_buy": 0.24668989547038328,
+        "accuracy": 0.14069952305246422
+      }
+    },
+    {
+      "fold": 70,
+      "train_start": "2002-01-28T16:00:00-08:00",
+      "train_end": "2003-03-03T16:00:00-08:00",
+      "test_start": "2003-03-04T16:00:00-08:00",
+      "test_end": "2003-03-24T16:00:00-08:00",
+      "n_trades": 854,
+      "metrics": {
+        "n_trades": 854,
+        "win_rate": 0.5140515222482436,
+        "profit_factor": 1.4430161209515355,
+        "total_return_pct": 5.384706179708521,
+        "sharpe_ratio": 0.921143599158794,
+        "max_drawdown_pct": 0.8410212937473659,
+        "precision_buy": 0.31030444964871196,
+        "recall_buy": 1.0,
+        "f1_buy": 0.4736371760500447,
+        "accuracy": 0.31030444964871196
+      }
+    },
+    {
+      "fold": 71,
+      "train_start": "2002-04-01T16:00:00-08:00",
+      "train_end": "2003-05-05T16:00:00-07:00",
+      "test_start": "2003-05-06T16:00:00-07:00",
+      "test_end": "2003-05-26T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 72,
+      "train_start": "2002-06-03T16:00:00-07:00",
+      "train_end": "2003-07-07T16:00:00-07:00",
+      "test_start": "2003-07-08T16:00:00-07:00",
+      "test_end": "2003-07-28T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 73,
+      "train_start": "2002-08-05T16:00:00-07:00",
+      "train_end": "2003-09-08T16:00:00-07:00",
+      "test_start": "2003-09-09T16:00:00-07:00",
+      "test_end": "2003-09-29T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 74,
+      "train_start": "2002-10-07T16:00:00-07:00",
+      "train_end": "2003-11-10T16:00:00-08:00",
+      "test_start": "2003-11-11T16:00:00-08:00",
+      "test_end": "2003-12-01T16:00:00-08:00",
+      "n_trades": 2311,
+      "metrics": {
+        "n_trades": 2311,
+        "win_rate": 0.584162700129814,
+        "profit_factor": 1.5803354922678468,
+        "total_return_pct": 15.932546375880904,
+        "sharpe_ratio": 1.1440847461802608,
+        "max_drawdown_pct": 0.8171526517986293,
+        "precision_buy": 0.3457377758546084,
+        "recall_buy": 1.0,
+        "f1_buy": 0.5138263665594855,
+        "accuracy": 0.3457377758546084
+      }
+    },
+    {
+      "fold": 75,
+      "train_start": "2002-12-09T16:00:00-08:00",
+      "train_end": "2004-01-12T16:00:00-08:00",
+      "test_start": "2004-01-13T16:00:00-08:00",
+      "test_end": "2004-02-02T16:00:00-08:00",
+      "n_trades": 2894,
+      "metrics": {
+        "n_trades": 2894,
+        "win_rate": 0.4754664823773324,
+        "profit_factor": 0.7794721425547229,
+        "total_return_pct": -11.264695889537364,
+        "sharpe_ratio": -0.6191437648323016,
+        "max_drawdown_pct": 0.9999997796174833,
+        "precision_buy": 0.2404975812024879,
+        "recall_buy": 1.0,
+        "f1_buy": 0.38774373259052924,
+        "accuracy": 0.2404975812024879
+      }
+    },
+    {
+      "fold": 76,
+      "train_start": "2003-02-10T16:00:00-08:00",
+      "train_end": "2004-03-15T16:00:00-08:00",
+      "test_start": "2004-03-16T16:00:00-08:00",
+      "test_end": "2004-04-05T16:00:00-07:00",
+      "n_trades": 1062,
+      "metrics": {
+        "n_trades": 1062,
+        "win_rate": 0.596045197740113,
+        "profit_factor": 1.6009031220056231,
+        "total_return_pct": 7.941919121998061,
+        "sharpe_ratio": 1.110478268723042,
+        "max_drawdown_pct": 0.7323974307944299,
+        "precision_buy": 0.3370998116760829,
+        "recall_buy": 1.0,
+        "f1_buy": 0.504225352112676,
+        "accuracy": 0.3370998116760829
+      }
+    },
+    {
+      "fold": 77,
+      "train_start": "2003-04-14T16:00:00-07:00",
+      "train_end": "2004-05-17T16:00:00-07:00",
+      "test_start": "2004-05-18T16:00:00-07:00",
+      "test_end": "2004-06-07T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 78,
+      "train_start": "2003-06-16T16:00:00-07:00",
+      "train_end": "2004-07-19T16:00:00-07:00",
+      "test_start": "2004-07-20T16:00:00-07:00",
+      "test_end": "2004-08-09T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 79,
+      "train_start": "2003-08-18T16:00:00-07:00",
+      "train_end": "2004-09-20T16:00:00-07:00",
+      "test_start": "2004-09-21T16:00:00-07:00",
+      "test_end": "2004-10-11T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 80,
+      "train_start": "2003-10-20T16:00:00-07:00",
+      "train_end": "2004-11-22T16:00:00-08:00",
+      "test_start": "2004-11-23T16:00:00-08:00",
+      "test_end": "2004-12-13T16:00:00-08:00",
+      "n_trades": 3595,
+      "metrics": {
+        "n_trades": 3595,
+        "win_rate": 0.5905424200278164,
+        "profit_factor": 1.7426081455533666,
+        "total_return_pct": 25.037333700753667,
+        "sharpe_ratio": 1.3911427330068442,
+        "max_drawdown_pct": 0.7867003479038763,
+        "precision_buy": 0.30208623087621694,
+        "recall_buy": 1.0,
+        "f1_buy": 0.4640034180730613,
+        "accuracy": 0.30208623087621694
+      }
+    },
+    {
+      "fold": 81,
+      "train_start": "2003-12-22T16:00:00-08:00",
+      "train_end": "2005-01-24T16:00:00-08:00",
+      "test_start": "2005-01-25T16:00:00-08:00",
+      "test_end": "2005-02-14T16:00:00-08:00",
+      "n_trades": 1583,
+      "metrics": {
+        "n_trades": 1583,
+        "win_rate": 0.5691724573594441,
+        "profit_factor": 1.8386908595836875,
+        "total_return_pct": 13.539527297302872,
+        "sharpe_ratio": 1.5510406872023608,
+        "max_drawdown_pct": 0.6001554606946743,
+        "precision_buy": 0.32785849652558435,
+        "recall_buy": 1.0,
+        "f1_buy": 0.4938154138915319,
+        "accuracy": 0.32785849652558435
+      }
+    },
+    {
+      "fold": 82,
+      "train_start": "2004-02-23T16:00:00-08:00",
+      "train_end": "2005-03-28T16:00:00-08:00",
+      "test_start": "2005-03-29T16:00:00-08:00",
+      "test_end": "2005-04-18T16:00:00-07:00",
+      "n_trades": 168,
+      "metrics": {
+        "n_trades": 168,
+        "win_rate": 0.5416666666666666,
+        "profit_factor": 1.5408705606150412,
+        "total_return_pct": 0.7856266417603789,
+        "sharpe_ratio": 1.071534713654155,
+        "max_drawdown_pct": 0.25031786755282254,
+        "precision_buy": 0.23809523809523808,
+        "recall_buy": 1.0,
+        "f1_buy": 0.3846153846153846,
+        "accuracy": 0.23809523809523808
+      }
+    },
+    {
+      "fold": 83,
+      "train_start": "2004-04-26T16:00:00-07:00",
+      "train_end": "2005-05-30T16:00:00-07:00",
+      "test_start": "2005-05-31T16:00:00-07:00",
+      "test_end": "2005-06-20T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 84,
+      "train_start": "2004-06-28T16:00:00-07:00",
+      "train_end": "2005-08-01T16:00:00-07:00",
+      "test_start": "2005-08-02T16:00:00-07:00",
+      "test_end": "2005-08-22T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 85,
+      "train_start": "2004-08-30T16:00:00-07:00",
+      "train_end": "2005-10-03T16:00:00-07:00",
+      "test_start": "2005-10-04T16:00:00-07:00",
+      "test_end": "2005-10-24T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 86,
+      "train_start": "2004-11-01T16:00:00-08:00",
+      "train_end": "2005-12-05T16:00:00-08:00",
+      "test_start": "2005-12-06T16:00:00-08:00",
+      "test_end": "2005-12-26T16:00:00-08:00",
+      "n_trades": 2750,
+      "metrics": {
+        "n_trades": 2750,
+        "win_rate": 0.4698181818181818,
+        "profit_factor": 0.9378270298565082,
+        "total_return_pct": -1.7788525666824269,
+        "sharpe_ratio": -0.15952458977805686,
+        "max_drawdown_pct": 0.9837471569215345,
+        "precision_buy": 0.1749090909090909,
+        "recall_buy": 1.0,
+        "f1_buy": 0.29774063757350666,
+        "accuracy": 0.1749090909090909
+      }
+    },
+    {
+      "fold": 87,
+      "train_start": "2005-01-03T16:00:00-08:00",
+      "train_end": "2006-02-06T16:00:00-08:00",
+      "test_start": "2006-02-07T16:00:00-08:00",
+      "test_end": "2006-02-27T16:00:00-08:00",
+      "n_trades": 2214,
+      "metrics": {
+        "n_trades": 2214,
+        "win_rate": 0.6043360433604336,
+        "profit_factor": 1.873784501003419,
+        "total_return_pct": 17.07778867416483,
+        "sharpe_ratio": 1.6190958024876811,
+        "max_drawdown_pct": 0.7461984581933644,
+        "precision_buy": 0.3392050587172538,
+        "recall_buy": 1.0,
+        "f1_buy": 0.5065767284991568,
+        "accuracy": 0.3392050587172538
+      }
+    },
+    {
+      "fold": 88,
+      "train_start": "2005-03-07T16:00:00-08:00",
+      "train_end": "2006-04-10T16:00:00-07:00",
+      "test_start": "2006-04-11T16:00:00-07:00",
+      "test_end": "2006-05-01T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 89,
+      "train_start": "2005-05-09T16:00:00-07:00",
+      "train_end": "2006-06-12T16:00:00-07:00",
+      "test_start": "2006-06-13T16:00:00-07:00",
+      "test_end": "2006-07-03T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 90,
+      "train_start": "2005-07-11T16:00:00-07:00",
+      "train_end": "2006-08-14T16:00:00-07:00",
+      "test_start": "2006-08-15T16:00:00-07:00",
+      "test_end": "2006-09-04T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 91,
+      "train_start": "2005-09-12T16:00:00-07:00",
+      "train_end": "2006-10-16T16:00:00-07:00",
+      "test_start": "2006-10-17T16:00:00-07:00",
+      "test_end": "2006-11-06T16:00:00-08:00",
+      "n_trades": 1448,
+      "metrics": {
+        "n_trades": 1448,
+        "win_rate": 0.6450276243093923,
+        "profit_factor": 2.611974067342049,
+        "total_return_pct": 16.186275699049627,
+        "sharpe_ratio": 2.242635607157822,
+        "max_drawdown_pct": 0.4853480990724418,
+        "precision_buy": 0.32320441988950277,
+        "recall_buy": 1.0,
+        "f1_buy": 0.48851774530271397,
+        "accuracy": 0.32320441988950277
+      }
+    },
+    {
+      "fold": 92,
+      "train_start": "2005-11-14T16:00:00-08:00",
+      "train_end": "2006-12-18T16:00:00-08:00",
+      "test_start": "2006-12-19T16:00:00-08:00",
+      "test_end": "2007-01-08T16:00:00-08:00",
+      "n_trades": 1744,
+      "metrics": {
+        "n_trades": 1744,
+        "win_rate": 0.5344036697247706,
+        "profit_factor": 1.466509048767597,
+        "total_return_pct": 7.498275948715541,
+        "sharpe_ratio": 0.8949749072349575,
+        "max_drawdown_pct": 0.739568947111076,
+        "precision_buy": 0.22247706422018348,
+        "recall_buy": 1.0,
+        "f1_buy": 0.36397748592870544,
+        "accuracy": 0.22247706422018348
+      }
+    },
+    {
+      "fold": 93,
+      "train_start": "2006-01-16T16:00:00-08:00",
+      "train_end": "2007-02-19T16:00:00-08:00",
+      "test_start": "2007-02-20T16:00:00-08:00",
+      "test_end": "2007-03-12T16:00:00-07:00",
+      "n_trades": 1634,
+      "metrics": {
+        "n_trades": 1634,
+        "win_rate": 0.2692778457772338,
+        "profit_factor": 0.22703994990382462,
+        "total_return_pct": -37.750452326158566,
+        "sharpe_ratio": -4.129533559426871,
+        "max_drawdown_pct": 1.0,
+        "precision_buy": 0.13096695226438188,
+        "recall_buy": 1.0,
+        "f1_buy": 0.2316017316017316,
+        "accuracy": 0.13096695226438188
+      }
+    },
+    {
+      "fold": 94,
+      "train_start": "2006-03-20T16:00:00-08:00",
+      "train_end": "2007-04-23T16:00:00-07:00",
+      "test_start": "2007-04-24T16:00:00-07:00",
+      "test_end": "2007-05-14T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 95,
+      "train_start": "2006-05-22T16:00:00-07:00",
+      "train_end": "2007-06-25T16:00:00-07:00",
+      "test_start": "2007-06-26T16:00:00-07:00",
+      "test_end": "2007-07-16T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 96,
+      "train_start": "2006-07-24T16:00:00-07:00",
+      "train_end": "2007-08-27T16:00:00-07:00",
+      "test_start": "2007-08-28T16:00:00-07:00",
+      "test_end": "2007-09-17T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 97,
+      "train_start": "2006-09-25T16:00:00-07:00",
+      "train_end": "2007-10-29T16:00:00-07:00",
+      "test_start": "2007-10-30T16:00:00-07:00",
+      "test_end": "2007-11-19T16:00:00-08:00",
+      "n_trades": 1097,
+      "metrics": {
+        "n_trades": 1097,
+        "win_rate": 0.37283500455788515,
+        "profit_factor": 0.29997281028167083,
+        "total_return_pct": -21.995935941770632,
+        "sharpe_ratio": -2.808788350336189,
+        "max_drawdown_pct": 0.9999999999456319,
+        "precision_buy": 0.15132178669097537,
+        "recall_buy": 1.0,
+        "f1_buy": 0.26286619160728425,
+        "accuracy": 0.15132178669097537
+      }
+    },
+    {
+      "fold": 98,
+      "train_start": "2006-11-27T16:00:00-08:00",
+      "train_end": "2007-12-31T16:00:00-08:00",
+      "test_start": "2008-01-01T16:00:00-08:00",
+      "test_end": "2008-01-21T16:00:00-08:00",
+      "n_trades": 543,
+      "metrics": {
+        "n_trades": 543,
+        "win_rate": 0.3020257826887661,
+        "profit_factor": 0.28100362885528696,
+        "total_return_pct": -17.030047425754404,
+        "sharpe_ratio": -3.451381643836943,
+        "max_drawdown_pct": 0.9999999908338345,
+        "precision_buy": 0.2007366482504604,
+        "recall_buy": 1.0,
+        "f1_buy": 0.33435582822085885,
+        "accuracy": 0.2007366482504604
+      }
+    },
+    {
+      "fold": 99,
+      "train_start": "2007-01-29T16:00:00-08:00",
+      "train_end": "2008-03-03T16:00:00-08:00",
+      "test_start": "2008-03-04T16:00:00-08:00",
+      "test_end": "2008-03-24T16:00:00-07:00",
+      "n_trades": 198,
+      "metrics": {
+        "n_trades": 198,
+        "win_rate": 0.5050505050505051,
+        "profit_factor": 1.203235449486346,
+        "total_return_pct": 0.5663843425414163,
+        "sharpe_ratio": 0.49066800151835943,
+        "max_drawdown_pct": 0.3707606629190697,
+        "precision_buy": 0.30303030303030304,
+        "recall_buy": 1.0,
+        "f1_buy": 0.4651162790697675,
+        "accuracy": 0.30303030303030304
+      }
+    },
+    {
+      "fold": 100,
+      "train_start": "2007-04-02T16:00:00-07:00",
+      "train_end": "2008-05-05T16:00:00-07:00",
+      "test_start": "2008-05-06T16:00:00-07:00",
+      "test_end": "2008-05-26T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 101,
+      "train_start": "2007-06-04T16:00:00-07:00",
+      "train_end": "2008-07-07T16:00:00-07:00",
+      "test_start": "2008-07-08T16:00:00-07:00",
+      "test_end": "2008-07-28T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 102,
+      "train_start": "2007-08-06T16:00:00-07:00",
+      "train_end": "2008-09-08T16:00:00-07:00",
+      "test_start": "2008-09-09T16:00:00-07:00",
+      "test_end": "2008-09-29T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 103,
+      "train_start": "2007-10-08T16:00:00-07:00",
+      "train_end": "2008-11-10T16:00:00-08:00",
+      "test_start": "2008-11-11T16:00:00-08:00",
+      "test_end": "2008-12-01T16:00:00-08:00",
+      "n_trades": 114,
+      "metrics": {
+        "n_trades": 114,
+        "win_rate": 0.3684210526315789,
+        "profit_factor": 0.3780155282348071,
+        "total_return_pct": -3.0203917861149403,
+        "sharpe_ratio": -2.5337900952478702,
+        "max_drawdown_pct": 0.9847533880932567,
+        "precision_buy": 0.21929824561403508,
+        "recall_buy": 1.0,
+        "f1_buy": 0.3597122302158273,
+        "accuracy": 0.21929824561403508
+      }
+    },
+    {
+      "fold": 104,
+      "train_start": "2007-12-10T16:00:00-08:00",
+      "train_end": "2009-01-12T16:00:00-08:00",
+      "test_start": "2009-01-13T16:00:00-08:00",
+      "test_end": "2009-02-02T16:00:00-08:00",
+      "n_trades": 638,
+      "metrics": {
+        "n_trades": 638,
+        "win_rate": 0.5783699059561128,
+        "profit_factor": 1.7049249984194035,
+        "total_return_pct": 7.520776279493848,
+        "sharpe_ratio": 1.3748476518124884,
+        "max_drawdown_pct": 0.7581076456934351,
+        "precision_buy": 0.40752351097178685,
+        "recall_buy": 1.0,
+        "f1_buy": 0.5790645879732739,
+        "accuracy": 0.40752351097178685
+      }
+    },
+    {
+      "fold": 105,
+      "train_start": "2008-02-11T16:00:00-08:00",
+      "train_end": "2009-03-16T16:00:00-07:00",
+      "test_start": "2009-03-17T16:00:00-07:00",
+      "test_end": "2009-04-06T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 106,
+      "train_start": "2008-04-14T16:00:00-07:00",
+      "train_end": "2009-05-18T16:00:00-07:00",
+      "test_start": "2009-05-19T16:00:00-07:00",
+      "test_end": "2009-06-08T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 107,
+      "train_start": "2008-06-16T16:00:00-07:00",
+      "train_end": "2009-07-20T16:00:00-07:00",
+      "test_start": "2009-07-21T16:00:00-07:00",
+      "test_end": "2009-08-10T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 108,
+      "train_start": "2008-08-18T16:00:00-07:00",
+      "train_end": "2009-09-21T16:00:00-07:00",
+      "test_start": "2009-09-22T16:00:00-07:00",
+      "test_end": "2009-10-12T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 109,
+      "train_start": "2008-10-20T16:00:00-07:00",
+      "train_end": "2009-11-23T16:00:00-08:00",
+      "test_start": "2009-11-24T16:00:00-08:00",
+      "test_end": "2009-12-14T16:00:00-08:00",
+      "n_trades": 2594,
+      "metrics": {
+        "n_trades": 2594,
+        "win_rate": 0.5886661526599846,
+        "profit_factor": 1.9056359803830845,
+        "total_return_pct": 20.066700652736397,
+        "sharpe_ratio": 1.6534281076234592,
+        "max_drawdown_pct": 0.6185401497061473,
+        "precision_buy": 0.29760986892829605,
+        "recall_buy": 1.0,
+        "f1_buy": 0.45870469399881164,
+        "accuracy": 0.29760986892829605
+      }
+    },
+    {
+      "fold": 110,
+      "train_start": "2008-12-22T16:00:00-08:00",
+      "train_end": "2010-01-25T16:00:00-08:00",
+      "test_start": "2010-01-26T16:00:00-08:00",
+      "test_end": "2010-02-15T16:00:00-08:00",
+      "n_trades": 660,
+      "metrics": {
+        "n_trades": 660,
+        "win_rate": 0.4696969696969697,
+        "profit_factor": 0.9534520668219375,
+        "total_return_pct": -0.5851339080340718,
+        "sharpe_ratio": -0.1343586496265519,
+        "max_drawdown_pct": 0.7828630510606366,
+        "precision_buy": 0.3242424242424242,
+        "recall_buy": 1.0,
+        "f1_buy": 0.4897025171624714,
+        "accuracy": 0.3242424242424242
+      }
+    },
+    {
+      "fold": 111,
+      "train_start": "2009-02-23T16:00:00-08:00",
+      "train_end": "2010-03-29T16:00:00-07:00",
+      "test_start": "2010-03-30T16:00:00-07:00",
+      "test_end": "2010-04-19T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 112,
+      "train_start": "2009-04-27T16:00:00-07:00",
+      "train_end": "2010-05-31T16:00:00-07:00",
+      "test_start": "2010-06-01T16:00:00-07:00",
+      "test_end": "2010-06-21T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 113,
+      "train_start": "2009-06-29T16:00:00-07:00",
+      "train_end": "2010-08-02T16:00:00-07:00",
+      "test_start": "2010-08-03T16:00:00-07:00",
+      "test_end": "2010-08-23T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 114,
+      "train_start": "2009-08-31T16:00:00-07:00",
+      "train_end": "2010-10-04T16:00:00-07:00",
+      "test_start": "2010-10-05T16:00:00-07:00",
+      "test_end": "2010-10-25T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 115,
+      "train_start": "2009-11-02T16:00:00-08:00",
+      "train_end": "2010-12-06T16:00:00-08:00",
+      "test_start": "2010-12-07T16:00:00-08:00",
+      "test_end": "2010-12-27T16:00:00-08:00",
+      "n_trades": 3642,
+      "metrics": {
+        "n_trades": 3642,
+        "win_rate": 0.6293245469522241,
+        "profit_factor": 2.52507421370896,
+        "total_return_pct": 32.11252663088973,
+        "sharpe_ratio": 2.204763080349447,
+        "max_drawdown_pct": 0.6384010838948933,
+        "precision_buy": 0.27073036792970895,
+        "recall_buy": 1.0,
+        "f1_buy": 0.42610198789974074,
+        "accuracy": 0.27073036792970895
+      }
+    },
+    {
+      "fold": 116,
+      "train_start": "2010-01-04T16:00:00-08:00",
+      "train_end": "2011-02-07T16:00:00-08:00",
+      "test_start": "2011-02-08T16:00:00-08:00",
+      "test_end": "2011-02-28T16:00:00-08:00",
+      "n_trades": 3305,
+      "metrics": {
+        "n_trades": 3305,
+        "win_rate": 0.45748865355521934,
+        "profit_factor": 0.8491742570333297,
+        "total_return_pct": -7.284693456524834,
+        "sharpe_ratio": -0.4346682475704992,
+        "max_drawdown_pct": 0.9999753847890862,
+        "precision_buy": 0.23116490166414524,
+        "recall_buy": 1.0,
+        "f1_buy": 0.37552224133693785,
+        "accuracy": 0.23116490166414524
+      }
+    },
+    {
+      "fold": 117,
+      "train_start": "2010-03-08T16:00:00-08:00",
+      "train_end": "2011-04-11T16:00:00-07:00",
+      "test_start": "2011-04-12T16:00:00-07:00",
+      "test_end": "2011-05-02T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 118,
+      "train_start": "2010-05-10T16:00:00-07:00",
+      "train_end": "2011-06-13T16:00:00-07:00",
+      "test_start": "2011-06-14T16:00:00-07:00",
+      "test_end": "2011-07-04T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 119,
+      "train_start": "2010-07-12T16:00:00-07:00",
+      "train_end": "2011-08-15T16:00:00-07:00",
+      "test_start": "2011-08-16T16:00:00-07:00",
+      "test_end": "2011-09-05T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 120,
+      "train_start": "2010-09-13T16:00:00-07:00",
+      "train_end": "2011-10-17T16:00:00-07:00",
+      "test_start": "2011-10-18T16:00:00-07:00",
+      "test_end": "2011-11-07T16:00:00-08:00",
+      "n_trades": 506,
+      "metrics": {
+        "n_trades": 506,
+        "win_rate": 0.34980237154150196,
+        "profit_factor": 0.4467666885767246,
+        "total_return_pct": -3.765631776252988,
+        "sharpe_ratio": -2.091854963863734,
+        "max_drawdown_pct": 0.9816051239650054,
+        "precision_buy": 0.11462450592885376,
+        "recall_buy": 1.0,
+        "f1_buy": 0.20567375886524825,
+        "accuracy": 0.11462450592885376
+      }
+    },
+    {
+      "fold": 121,
+      "train_start": "2010-11-15T16:00:00-08:00",
+      "train_end": "2011-12-19T16:00:00-08:00",
+      "test_start": "2011-12-20T16:00:00-08:00",
+      "test_end": "2012-01-09T16:00:00-08:00",
+      "n_trades": 2895,
+      "metrics": {
+        "n_trades": 2895,
+        "win_rate": 0.6918825561312608,
+        "profit_factor": 3.7532097930929043,
+        "total_return_pct": 41.87238055329202,
+        "sharpe_ratio": 3.2792805545640547,
+        "max_drawdown_pct": 0.5743661816297738,
+        "precision_buy": 0.3716753022452504,
+        "recall_buy": 1.0,
+        "f1_buy": 0.5419289851422815,
+        "accuracy": 0.3716753022452504
+      }
+    },
+    {
+      "fold": 122,
+      "train_start": "2011-01-17T16:00:00-08:00",
+      "train_end": "2012-02-20T16:00:00-08:00",
+      "test_start": "2012-02-21T16:00:00-08:00",
+      "test_end": "2012-03-12T16:00:00-07:00",
+      "n_trades": 3183,
+      "metrics": {
+        "n_trades": 3183,
+        "win_rate": 0.5403707194470625,
+        "profit_factor": 1.5054130348565924,
+        "total_return_pct": 16.575799607189026,
+        "sharpe_ratio": 1.0575643596870412,
+        "max_drawdown_pct": 0.7766413894511437,
+        "precision_buy": 0.2846371347785108,
+        "recall_buy": 1.0,
+        "f1_buy": 0.4431401320616287,
+        "accuracy": 0.2846371347785108
+      }
+    },
+    {
+      "fold": 123,
+      "train_start": "2011-03-21T16:00:00-07:00",
+      "train_end": "2012-04-23T16:00:00-07:00",
+      "test_start": "2012-04-24T16:00:00-07:00",
+      "test_end": "2012-05-14T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 124,
+      "train_start": "2011-05-23T16:00:00-07:00",
+      "train_end": "2012-06-25T16:00:00-07:00",
+      "test_start": "2012-06-26T16:00:00-07:00",
+      "test_end": "2012-07-16T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 125,
+      "train_start": "2011-07-25T16:00:00-07:00",
+      "train_end": "2012-08-27T16:00:00-07:00",
+      "test_start": "2012-08-28T16:00:00-07:00",
+      "test_end": "2012-09-17T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 126,
+      "train_start": "2011-09-26T16:00:00-07:00",
+      "train_end": "2012-10-29T16:00:00-07:00",
+      "test_start": "2012-10-30T16:00:00-07:00",
+      "test_end": "2012-11-19T16:00:00-08:00",
+      "n_trades": 1044,
+      "metrics": {
+        "n_trades": 1044,
+        "win_rate": 0.4731800766283525,
+        "profit_factor": 0.7855684234438677,
+        "total_return_pct": -3.364608593818598,
+        "sharpe_ratio": -0.6544732428895205,
+        "max_drawdown_pct": 0.9971560035701086,
+        "precision_buy": 0.23275862068965517,
+        "recall_buy": 1.0,
+        "f1_buy": 0.3776223776223776,
+        "accuracy": 0.23275862068965517
+      }
+    },
+    {
+      "fold": 127,
+      "train_start": "2011-11-28T16:00:00-08:00",
+      "train_end": "2012-12-31T16:00:00-08:00",
+      "test_start": "2013-01-01T16:00:00-08:00",
+      "test_end": "2013-01-21T16:00:00-08:00",
+      "n_trades": 3592,
+      "metrics": {
+        "n_trades": 3592,
+        "win_rate": 0.7605790645879733,
+        "profit_factor": 4.995204182191373,
+        "total_return_pct": 54.805486055053485,
+        "sharpe_ratio": 3.2488221366537355,
+        "max_drawdown_pct": 0.5907452013744242,
+        "precision_buy": 0.3766703786191537,
+        "recall_buy": 1.0,
+        "f1_buy": 0.5472194135490395,
+        "accuracy": 0.3766703786191537
+      }
+    },
+    {
+      "fold": 128,
+      "train_start": "2012-01-30T16:00:00-08:00",
+      "train_end": "2013-03-04T16:00:00-08:00",
+      "test_start": "2013-03-05T16:00:00-08:00",
+      "test_end": "2013-03-25T16:00:00-07:00",
+      "n_trades": 676,
+      "metrics": {
+        "n_trades": 676,
+        "win_rate": 0.6701183431952663,
+        "profit_factor": 3.674991003533808,
+        "total_return_pct": 7.800146578840147,
+        "sharpe_ratio": 3.021413456027979,
+        "max_drawdown_pct": 0.26576774439343837,
+        "precision_buy": 0.28846153846153844,
+        "recall_buy": 1.0,
+        "f1_buy": 0.44776119402985076,
+        "accuracy": 0.28846153846153844
+      }
+    },
+    {
+      "fold": 129,
+      "train_start": "2012-04-02T16:00:00-07:00",
+      "train_end": "2013-05-06T16:00:00-07:00",
+      "test_start": "2013-05-07T16:00:00-07:00",
+      "test_end": "2013-05-27T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 130,
+      "train_start": "2012-06-04T16:00:00-07:00",
+      "train_end": "2013-07-08T16:00:00-07:00",
+      "test_start": "2013-07-09T16:00:00-07:00",
+      "test_end": "2013-07-29T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 131,
+      "train_start": "2012-08-06T16:00:00-07:00",
+      "train_end": "2013-09-09T16:00:00-07:00",
+      "test_start": "2013-09-10T16:00:00-07:00",
+      "test_end": "2013-09-30T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 132,
+      "train_start": "2012-10-08T16:00:00-07:00",
+      "train_end": "2013-11-11T16:00:00-08:00",
+      "test_start": "2013-11-12T16:00:00-08:00",
+      "test_end": "2013-12-02T16:00:00-08:00",
+      "n_trades": 3494,
+      "metrics": {
+        "n_trades": 3494,
+        "win_rate": 0.49370349170005723,
+        "profit_factor": 1.0553529217307163,
+        "total_return_pct": 1.7478239643755678,
+        "sharpe_ratio": 0.13641081952391204,
+        "max_drawdown_pct": 0.9632460439880823,
+        "precision_buy": 0.17658843732112192,
+        "recall_buy": 1.0,
+        "f1_buy": 0.30017027487229386,
+        "accuracy": 0.17658843732112192
+      }
+    },
+    {
+      "fold": 133,
+      "train_start": "2012-12-10T16:00:00-08:00",
+      "train_end": "2014-01-13T16:00:00-08:00",
+      "test_start": "2014-01-14T16:00:00-08:00",
+      "test_end": "2014-02-03T16:00:00-08:00",
+      "n_trades": 2252,
+      "metrics": {
+        "n_trades": 2252,
+        "win_rate": 0.2966252220248668,
+        "profit_factor": 0.3415906864221359,
+        "total_return_pct": -36.402833370235705,
+        "sharpe_ratio": -2.9694251688842734,
+        "max_drawdown_pct": 1.0,
+        "precision_buy": 0.15097690941385436,
+        "recall_buy": 1.0,
+        "f1_buy": 0.2623456790123457,
+        "accuracy": 0.15097690941385436
+      }
+    },
+    {
+      "fold": 134,
+      "train_start": "2013-02-11T16:00:00-08:00",
+      "train_end": "2014-03-17T16:00:00-07:00",
+      "test_start": "2014-03-18T16:00:00-07:00",
+      "test_end": "2014-04-07T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 135,
+      "train_start": "2013-04-15T16:00:00-07:00",
+      "train_end": "2014-05-19T16:00:00-07:00",
+      "test_start": "2014-05-20T16:00:00-07:00",
+      "test_end": "2014-06-09T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 136,
+      "train_start": "2013-06-17T16:00:00-07:00",
+      "train_end": "2014-07-21T16:00:00-07:00",
+      "test_start": "2014-07-22T16:00:00-07:00",
+      "test_end": "2014-08-11T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 137,
+      "train_start": "2013-08-19T16:00:00-07:00",
+      "train_end": "2014-09-22T16:00:00-07:00",
+      "test_start": "2014-09-23T16:00:00-07:00",
+      "test_end": "2014-10-13T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 138,
+      "train_start": "2013-10-21T16:00:00-07:00",
+      "train_end": "2014-11-24T16:00:00-08:00",
+      "test_start": "2014-11-25T16:00:00-08:00",
+      "test_end": "2014-12-15T16:00:00-08:00",
+      "n_trades": 3928,
+      "metrics": {
+        "n_trades": 3928,
+        "win_rate": 0.4992362525458248,
+        "profit_factor": 0.9392347525248925,
+        "total_return_pct": -3.2295811206246574,
+        "sharpe_ratio": -0.1695284806929232,
+        "max_drawdown_pct": 0.9966313440309605,
+        "precision_buy": 0.24719959266802444,
+        "recall_buy": 1.0,
+        "f1_buy": 0.396407430087773,
+        "accuracy": 0.24719959266802444
+      }
+    },
+    {
+      "fold": 139,
+      "train_start": "2013-12-23T16:00:00-08:00",
+      "train_end": "2015-01-26T16:00:00-08:00",
+      "test_start": "2015-01-27T16:00:00-08:00",
+      "test_end": "2015-02-16T16:00:00-08:00",
+      "n_trades": 2268,
+      "metrics": {
+        "n_trades": 2268,
+        "win_rate": 0.6604938271604939,
+        "profit_factor": 2.4118849230496684,
+        "total_return_pct": 23.65434670555404,
+        "sharpe_ratio": 2.2924740100102783,
+        "max_drawdown_pct": 0.49332293694269747,
+        "precision_buy": 0.3403880070546737,
+        "recall_buy": 1.0,
+        "f1_buy": 0.5078947368421053,
+        "accuracy": 0.3403880070546737
+      }
+    },
+    {
+      "fold": 140,
+      "train_start": "2014-02-24T16:00:00-08:00",
+      "train_end": "2015-03-30T16:00:00-07:00",
+      "test_start": "2015-03-31T16:00:00-07:00",
+      "test_end": "2015-04-20T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 141,
+      "train_start": "2014-04-28T16:00:00-07:00",
+      "train_end": "2015-06-01T16:00:00-07:00",
+      "test_start": "2015-06-02T16:00:00-07:00",
+      "test_end": "2015-06-22T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 142,
+      "train_start": "2014-06-30T16:00:00-07:00",
+      "train_end": "2015-08-03T16:00:00-07:00",
+      "test_start": "2015-08-04T16:00:00-07:00",
+      "test_end": "2015-08-24T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 143,
+      "train_start": "2014-09-01T16:00:00-07:00",
+      "train_end": "2015-10-05T16:00:00-07:00",
+      "test_start": "2015-10-06T16:00:00-07:00",
+      "test_end": "2015-10-26T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 144,
+      "train_start": "2014-11-03T16:00:00-08:00",
+      "train_end": "2015-12-07T16:00:00-08:00",
+      "test_start": "2015-12-08T16:00:00-08:00",
+      "test_end": "2015-12-28T16:00:00-08:00",
+      "n_trades": 1414,
+      "metrics": {
+        "n_trades": 1414,
+        "win_rate": 0.5035360678925035,
+        "profit_factor": 0.8829938479167528,
+        "total_return_pct": -1.8419875124023708,
+        "sharpe_ratio": -0.3133413454838795,
+        "max_drawdown_pct": 0.9592341898021314,
+        "precision_buy": 0.18316831683168316,
+        "recall_buy": 1.0,
+        "f1_buy": 0.3096234309623431,
+        "accuracy": 0.18316831683168316
+      }
+    },
+    {
+      "fold": 145,
+      "train_start": "2015-01-05T16:00:00-08:00",
+      "train_end": "2016-02-08T16:00:00-08:00",
+      "test_start": "2016-02-09T16:00:00-08:00",
+      "test_end": "2016-02-29T16:00:00-08:00",
+      "n_trades": 1373,
+      "metrics": {
+        "n_trades": 1373,
+        "win_rate": 0.7101238164603059,
+        "profit_factor": 4.251736868816929,
+        "total_return_pct": 20.43029949629843,
+        "sharpe_ratio": 3.5816398541911023,
+        "max_drawdown_pct": 0.2339367623512029,
+        "precision_buy": 0.3780043699927167,
+        "recall_buy": 1.0,
+        "f1_buy": 0.5486257928118393,
+        "accuracy": 0.3780043699927167
+      }
+    },
+    {
+      "fold": 146,
+      "train_start": "2015-03-09T16:00:00-07:00",
+      "train_end": "2016-04-11T16:00:00-07:00",
+      "test_start": "2016-04-12T16:00:00-07:00",
+      "test_end": "2016-05-02T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 147,
+      "train_start": "2015-05-11T16:00:00-07:00",
+      "train_end": "2016-06-13T16:00:00-07:00",
+      "test_start": "2016-06-14T16:00:00-07:00",
+      "test_end": "2016-07-04T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 148,
+      "train_start": "2015-07-13T16:00:00-07:00",
+      "train_end": "2016-08-15T16:00:00-07:00",
+      "test_start": "2016-08-16T16:00:00-07:00",
+      "test_end": "2016-09-05T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 149,
+      "train_start": "2015-09-14T16:00:00-07:00",
+      "train_end": "2016-10-17T16:00:00-07:00",
+      "test_start": "2016-10-18T16:00:00-07:00",
+      "test_end": "2016-11-07T16:00:00-08:00",
+      "n_trades": 156,
+      "metrics": {
+        "n_trades": 156,
+        "win_rate": 0.7948717948717948,
+        "profit_factor": 9.46824699186218,
+        "total_return_pct": 11.072387123708058,
+        "sharpe_ratio": 5.0,
+        "max_drawdown_pct": 0.24013316347364885,
+        "precision_buy": 0.75,
+        "recall_buy": 1.0,
+        "f1_buy": 0.8571428571428571,
+        "accuracy": 0.75
+      }
+    },
+    {
+      "fold": 150,
+      "train_start": "2015-11-16T16:00:00-08:00",
+      "train_end": "2016-12-19T16:00:00-08:00",
+      "test_start": "2016-12-20T16:00:00-08:00",
+      "test_end": "2017-01-09T16:00:00-08:00",
+      "n_trades": 2719,
+      "metrics": {
+        "n_trades": 2719,
+        "win_rate": 0.47039352703199705,
+        "profit_factor": 0.9316417853442969,
+        "total_return_pct": -1.6184679654702396,
+        "sharpe_ratio": -0.17437209641006796,
+        "max_drawdown_pct": 0.9735230230520735,
+        "precision_buy": 0.14674512688488414,
+        "recall_buy": 1.0,
+        "f1_buy": 0.25593329057087877,
+        "accuracy": 0.14674512688488414
+      }
+    },
+    {
+      "fold": 151,
+      "train_start": "2016-01-18T16:00:00-08:00",
+      "train_end": "2017-02-20T16:00:00-08:00",
+      "test_start": "2017-02-21T16:00:00-08:00",
+      "test_end": "2017-03-13T16:00:00-07:00",
+      "n_trades": 3400,
+      "metrics": {
+        "n_trades": 3400,
+        "win_rate": 0.5517647058823529,
+        "profit_factor": 1.116070925116269,
+        "total_return_pct": 3.182921425908453,
+        "sharpe_ratio": 0.25172238711825556,
+        "max_drawdown_pct": 0.9326430755545312,
+        "precision_buy": 0.16117647058823528,
+        "recall_buy": 1.0,
+        "f1_buy": 0.2776089159067882,
+        "accuracy": 0.16117647058823528
+      }
+    },
+    {
+      "fold": 152,
+      "train_start": "2016-03-21T16:00:00-07:00",
+      "train_end": "2017-04-24T16:00:00-07:00",
+      "test_start": "2017-04-25T16:00:00-07:00",
+      "test_end": "2017-05-15T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 153,
+      "train_start": "2016-05-23T16:00:00-07:00",
+      "train_end": "2017-06-26T16:00:00-07:00",
+      "test_start": "2017-06-27T16:00:00-07:00",
+      "test_end": "2017-07-17T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 154,
+      "train_start": "2016-07-25T16:00:00-07:00",
+      "train_end": "2017-08-28T16:00:00-07:00",
+      "test_start": "2017-08-29T16:00:00-07:00",
+      "test_end": "2017-09-18T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 155,
+      "train_start": "2016-09-26T16:00:00-07:00",
+      "train_end": "2017-10-30T16:00:00-07:00",
+      "test_start": "2017-10-31T16:00:00-07:00",
+      "test_end": "2017-11-20T16:00:00-08:00",
+      "n_trades": 2488,
+      "metrics": {
+        "n_trades": 2488,
+        "win_rate": 0.6165594855305466,
+        "profit_factor": 2.0964781888628523,
+        "total_return_pct": 18.77777105378023,
+        "sharpe_ratio": 1.6097354441375733,
+        "max_drawdown_pct": 0.6624765875264672,
+        "precision_buy": 0.2616559485530547,
+        "recall_buy": 1.0,
+        "f1_buy": 0.4147817776361899,
+        "accuracy": 0.2616559485530547
+      }
+    },
+    {
+      "fold": 156,
+      "train_start": "2016-11-28T16:00:00-08:00",
+      "train_end": "2018-01-01T16:00:00-08:00",
+      "test_start": "2018-01-02T16:00:00-08:00",
+      "test_end": "2018-01-22T16:00:00-08:00",
+      "n_trades": 4085,
+      "metrics": {
+        "n_trades": 4085,
+        "win_rate": 0.7152998776009792,
+        "profit_factor": 3.6880382423265026,
+        "total_return_pct": 59.44046178505713,
+        "sharpe_ratio": 3.1493739753173084,
+        "max_drawdown_pct": 0.4648797364190612,
+        "precision_buy": 0.40195838433292536,
+        "recall_buy": 1.0,
+        "f1_buy": 0.5734241313078401,
+        "accuracy": 0.40195838433292536
+      }
+    },
+    {
+      "fold": 157,
+      "train_start": "2017-01-30T16:00:00-08:00",
+      "train_end": "2018-03-05T16:00:00-08:00",
+      "test_start": "2018-03-06T16:00:00-08:00",
+      "test_end": "2018-03-26T16:00:00-07:00",
+      "n_trades": 349,
+      "metrics": {
+        "n_trades": 349,
+        "win_rate": 0.4498567335243553,
+        "profit_factor": 1.0141381011809798,
+        "total_return_pct": 0.0525003737291716,
+        "sharpe_ratio": 0.034053619605970385,
+        "max_drawdown_pct": 0.519746245593722,
+        "precision_buy": 0.17478510028653296,
+        "recall_buy": 1.0,
+        "f1_buy": 0.2975609756097561,
+        "accuracy": 0.17478510028653296
+      }
+    },
+    {
+      "fold": 158,
+      "train_start": "2017-04-03T16:00:00-07:00",
+      "train_end": "2018-05-07T16:00:00-07:00",
+      "test_start": "2018-05-08T16:00:00-07:00",
+      "test_end": "2018-05-28T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 159,
+      "train_start": "2017-06-05T16:00:00-07:00",
+      "train_end": "2018-07-09T16:00:00-07:00",
+      "test_start": "2018-07-10T16:00:00-07:00",
+      "test_end": "2018-07-30T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 160,
+      "train_start": "2017-08-07T16:00:00-07:00",
+      "train_end": "2018-09-10T16:00:00-07:00",
+      "test_start": "2018-09-11T16:00:00-07:00",
+      "test_end": "2018-10-01T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 161,
+      "train_start": "2017-10-09T16:00:00-07:00",
+      "train_end": "2018-11-12T16:00:00-08:00",
+      "test_start": "2018-11-13T16:00:00-08:00",
+      "test_end": "2018-12-03T16:00:00-08:00",
+      "n_trades": 1367,
+      "metrics": {
+        "n_trades": 1367,
+        "win_rate": 0.41185076810534016,
+        "profit_factor": 0.45205313012426623,
+        "total_return_pct": -15.26926739341572,
+        "sharpe_ratio": -2.063455306477536,
+        "max_drawdown_pct": 0.999999926602585,
+        "precision_buy": 0.18873445501097294,
+        "recall_buy": 1.0,
+        "f1_buy": 0.31753846153846155,
+        "accuracy": 0.18873445501097294
+      }
+    },
+    {
+      "fold": 162,
+      "train_start": "2017-12-11T16:00:00-08:00",
+      "train_end": "2019-01-14T16:00:00-08:00",
+      "test_start": "2019-01-15T16:00:00-08:00",
+      "test_end": "2019-02-04T16:00:00-08:00",
+      "n_trades": 1949,
+      "metrics": {
+        "n_trades": 1949,
+        "win_rate": 0.6972806567470498,
+        "profit_factor": 3.1740006389039137,
+        "total_return_pct": 26.249355515168386,
+        "sharpe_ratio": 2.6364376352568515,
+        "max_drawdown_pct": 0.741401779187088,
+        "precision_buy": 0.35915854284248333,
+        "recall_buy": 1.0,
+        "f1_buy": 0.5285013212533032,
+        "accuracy": 0.35915854284248333
+      }
+    },
+    {
+      "fold": 163,
+      "train_start": "2018-02-12T16:00:00-08:00",
+      "train_end": "2019-03-18T16:00:00-07:00",
+      "test_start": "2019-03-19T16:00:00-07:00",
+      "test_end": "2019-04-08T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 164,
+      "train_start": "2018-04-16T16:00:00-07:00",
+      "train_end": "2019-05-20T16:00:00-07:00",
+      "test_start": "2019-05-21T16:00:00-07:00",
+      "test_end": "2019-06-10T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 165,
+      "train_start": "2018-06-18T16:00:00-07:00",
+      "train_end": "2019-07-22T16:00:00-07:00",
+      "test_start": "2019-07-23T16:00:00-07:00",
+      "test_end": "2019-08-12T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 166,
+      "train_start": "2018-08-20T16:00:00-07:00",
+      "train_end": "2019-09-23T16:00:00-07:00",
+      "test_start": "2019-09-24T16:00:00-07:00",
+      "test_end": "2019-10-14T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 167,
+      "train_start": "2018-10-22T16:00:00-07:00",
+      "train_end": "2019-11-25T16:00:00-08:00",
+      "test_start": "2019-11-26T16:00:00-08:00",
+      "test_end": "2019-12-16T16:00:00-08:00",
+      "n_trades": 3112,
+      "metrics": {
+        "n_trades": 3112,
+        "win_rate": 0.6699871465295629,
+        "profit_factor": 2.615616489931954,
+        "total_return_pct": 29.74530732735243,
+        "sharpe_ratio": 2.406714331409223,
+        "max_drawdown_pct": 0.604692291917706,
+        "precision_buy": 0.29048843187660667,
+        "recall_buy": 1.0,
+        "f1_buy": 0.45019920318725093,
+        "accuracy": 0.29048843187660667
+      }
+    },
+    {
+      "fold": 168,
+      "train_start": "2018-12-24T16:00:00-08:00",
+      "train_end": "2020-01-27T16:00:00-08:00",
+      "test_start": "2020-01-28T16:00:00-08:00",
+      "test_end": "2020-02-17T16:00:00-08:00",
+      "n_trades": 2943,
+      "metrics": {
+        "n_trades": 2943,
+        "win_rate": 0.5857968059802923,
+        "profit_factor": 1.252976541528345,
+        "total_return_pct": 11.183255302425177,
+        "sharpe_ratio": 0.537610800581776,
+        "max_drawdown_pct": 0.9868255844163677,
+        "precision_buy": 0.3160040774719674,
+        "recall_buy": 1.0,
+        "f1_buy": 0.48024786986831913,
+        "accuracy": 0.3160040774719674
+      }
+    },
+    {
+      "fold": 169,
+      "train_start": "2019-02-25T16:00:00-08:00",
+      "train_end": "2020-03-30T16:00:00-07:00",
+      "test_start": "2020-03-31T16:00:00-07:00",
+      "test_end": "2020-04-20T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 170,
+      "train_start": "2019-04-29T16:00:00-07:00",
+      "train_end": "2020-06-01T16:00:00-07:00",
+      "test_start": "2020-06-02T16:00:00-07:00",
+      "test_end": "2020-06-22T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 171,
+      "train_start": "2019-07-01T16:00:00-07:00",
+      "train_end": "2020-08-03T16:00:00-07:00",
+      "test_start": "2020-08-04T16:00:00-07:00",
+      "test_end": "2020-08-24T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 172,
+      "train_start": "2019-09-02T16:00:00-07:00",
+      "train_end": "2020-10-05T16:00:00-07:00",
+      "test_start": "2020-10-06T16:00:00-07:00",
+      "test_end": "2020-10-26T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 173,
+      "train_start": "2019-11-04T16:00:00-08:00",
+      "train_end": "2020-12-07T16:00:00-08:00",
+      "test_start": "2020-12-08T16:00:00-08:00",
+      "test_end": "2020-12-28T16:00:00-08:00",
+      "n_trades": 4129,
+      "metrics": {
+        "n_trades": 4129,
+        "win_rate": 0.5187696778881085,
+        "profit_factor": 1.323661701552538,
+        "total_return_pct": 16.020578824092357,
+        "sharpe_ratio": 0.6857207881769721,
+        "max_drawdown_pct": 0.8757803732488192,
+        "precision_buy": 0.26592395253087914,
+        "recall_buy": 1.0,
+        "f1_buy": 0.42012626745743253,
+        "accuracy": 0.26592395253087914
+      }
+    },
+    {
+      "fold": 174,
+      "train_start": "2020-01-06T16:00:00-08:00",
+      "train_end": "2021-02-08T16:00:00-08:00",
+      "test_start": "2021-02-09T16:00:00-08:00",
+      "test_end": "2021-03-01T16:00:00-08:00",
+      "n_trades": 3338,
+      "metrics": {
+        "n_trades": 3338,
+        "win_rate": 0.5542240862792092,
+        "profit_factor": 1.247310980205697,
+        "total_return_pct": 14.564874503099636,
+        "sharpe_ratio": 0.5685615322099741,
+        "max_drawdown_pct": 0.9917494226672604,
+        "precision_buy": 0.3568004793289395,
+        "recall_buy": 1.0,
+        "f1_buy": 0.5259439169794657,
+        "accuracy": 0.3568004793289395
+      }
+    },
+    {
+      "fold": 175,
+      "train_start": "2020-03-09T16:00:00-07:00",
+      "train_end": "2021-04-12T16:00:00-07:00",
+      "test_start": "2021-04-13T16:00:00-07:00",
+      "test_end": "2021-05-03T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 176,
+      "train_start": "2020-05-11T16:00:00-07:00",
+      "train_end": "2021-06-14T16:00:00-07:00",
+      "test_start": "2021-06-15T16:00:00-07:00",
+      "test_end": "2021-07-05T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 177,
+      "train_start": "2020-07-13T16:00:00-07:00",
+      "train_end": "2021-08-16T16:00:00-07:00",
+      "test_start": "2021-08-17T16:00:00-07:00",
+      "test_end": "2021-09-06T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 178,
+      "train_start": "2020-09-14T16:00:00-07:00",
+      "train_end": "2021-10-18T16:00:00-07:00",
+      "test_start": "2021-10-19T16:00:00-07:00",
+      "test_end": "2021-11-08T16:00:00-08:00",
+      "n_trades": 550,
+      "metrics": {
+        "n_trades": 550,
+        "win_rate": 0.5672727272727273,
+        "profit_factor": 1.1990096030547708,
+        "total_return_pct": 1.2211283425312576,
+        "sharpe_ratio": 0.45532783992633574,
+        "max_drawdown_pct": 0.6283547644714751,
+        "precision_buy": 0.24545454545454545,
+        "recall_buy": 1.0,
+        "f1_buy": 0.39416058394160586,
+        "accuracy": 0.24545454545454545
+      }
+    },
+    {
+      "fold": 179,
+      "train_start": "2020-11-16T16:00:00-08:00",
+      "train_end": "2021-12-20T16:00:00-08:00",
+      "test_start": "2021-12-21T16:00:00-08:00",
+      "test_end": "2022-01-10T16:00:00-08:00",
+      "n_trades": 2731,
+      "metrics": {
+        "n_trades": 2731,
+        "win_rate": 0.47162211644086416,
+        "profit_factor": 0.6866919787076807,
+        "total_return_pct": -14.743115542461258,
+        "sharpe_ratio": -0.9811914093861325,
+        "max_drawdown_pct": 0.9999999561310029,
+        "precision_buy": 0.22482607103625046,
+        "recall_buy": 1.0,
+        "f1_buy": 0.36711509715994023,
+        "accuracy": 0.22482607103625046
+      }
+    },
+    {
+      "fold": 180,
+      "train_start": "2021-01-18T16:00:00-08:00",
+      "train_end": "2022-02-21T16:00:00-08:00",
+      "test_start": "2022-02-22T16:00:00-08:00",
+      "test_end": "2022-03-14T16:00:00-07:00",
+      "n_trades": 1031,
+      "metrics": {
+        "n_trades": 1031,
+        "win_rate": 0.5198836081474297,
+        "profit_factor": 1.303804077337277,
+        "total_return_pct": 6.764182698133309,
+        "sharpe_ratio": 0.622184243723764,
+        "max_drawdown_pct": 0.8830906788440283,
+        "precision_buy": 0.34820562560620755,
+        "recall_buy": 1.0,
+        "f1_buy": 0.516546762589928,
+        "accuracy": 0.34820562560620755
+      }
+    },
+    {
+      "fold": 181,
+      "train_start": "2021-03-22T16:00:00-07:00",
+      "train_end": "2022-04-25T16:00:00-07:00",
+      "test_start": "2022-04-26T16:00:00-07:00",
+      "test_end": "2022-05-16T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 182,
+      "train_start": "2021-05-24T16:00:00-07:00",
+      "train_end": "2022-06-27T16:00:00-07:00",
+      "test_start": "2022-06-28T16:00:00-07:00",
+      "test_end": "2022-07-18T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 183,
+      "train_start": "2021-07-26T16:00:00-07:00",
+      "train_end": "2022-08-29T16:00:00-07:00",
+      "test_start": "2022-08-30T16:00:00-07:00",
+      "test_end": "2022-09-19T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 184,
+      "train_start": "2021-09-27T16:00:00-07:00",
+      "train_end": "2022-10-31T16:00:00-07:00",
+      "test_start": "2022-11-01T16:00:00-07:00",
+      "test_end": "2022-11-21T16:00:00-08:00",
+      "n_trades": 3010,
+      "metrics": {
+        "n_trades": 3010,
+        "win_rate": 0.5993355481727575,
+        "profit_factor": 1.6827440732142043,
+        "total_return_pct": 20.699912534081545,
+        "sharpe_ratio": 1.3044261989625905,
+        "max_drawdown_pct": 0.5510860307026839,
+        "precision_buy": 0.3275747508305648,
+        "recall_buy": 1.0,
+        "f1_buy": 0.49349349349349353,
+        "accuracy": 0.3275747508305648
+      }
+    },
+    {
+      "fold": 185,
+      "train_start": "2021-11-29T16:00:00-08:00",
+      "train_end": "2023-01-02T16:00:00-08:00",
+      "test_start": "2023-01-03T16:00:00-08:00",
+      "test_end": "2023-01-23T16:00:00-08:00",
+      "n_trades": 2261,
+      "metrics": {
+        "n_trades": 2261,
+        "win_rate": 0.5913312693498453,
+        "profit_factor": 2.008029341895641,
+        "total_return_pct": 21.58065434013873,
+        "sharpe_ratio": 1.8557194321871606,
+        "max_drawdown_pct": 0.7454720353407198,
+        "precision_buy": 0.3502874834144184,
+        "recall_buy": 1.0,
+        "f1_buy": 0.5188339338355715,
+        "accuracy": 0.3502874834144184
+      }
+    },
+    {
+      "fold": 186,
+      "train_start": "2022-01-31T16:00:00-08:00",
+      "train_end": "2023-03-06T16:00:00-08:00",
+      "test_start": "2023-03-07T16:00:00-08:00",
+      "test_end": "2023-03-27T16:00:00-07:00",
+      "n_trades": 206,
+      "metrics": {
+        "n_trades": 206,
+        "win_rate": 0.28640776699029125,
+        "profit_factor": 0.22429724820132596,
+        "total_return_pct": -7.1008835234456775,
+        "sharpe_ratio": -4.0660680290275,
+        "max_drawdown_pct": 0.9995972950875173,
+        "precision_buy": 0.18446601941747573,
+        "recall_buy": 1.0,
+        "f1_buy": 0.3114754098360656,
+        "accuracy": 0.18446601941747573
+      }
+    },
+    {
+      "fold": 187,
+      "train_start": "2022-04-04T16:00:00-07:00",
+      "train_end": "2023-05-08T16:00:00-07:00",
+      "test_start": "2023-05-09T16:00:00-07:00",
+      "test_end": "2023-05-29T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 188,
+      "train_start": "2022-06-06T16:00:00-07:00",
+      "train_end": "2023-07-10T16:00:00-07:00",
+      "test_start": "2023-07-11T16:00:00-07:00",
+      "test_end": "2023-07-31T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 189,
+      "train_start": "2022-08-08T16:00:00-07:00",
+      "train_end": "2023-09-11T16:00:00-07:00",
+      "test_start": "2023-09-12T16:00:00-07:00",
+      "test_end": "2023-10-02T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 190,
+      "train_start": "2022-10-10T16:00:00-07:00",
+      "train_end": "2023-11-13T16:00:00-08:00",
+      "test_start": "2023-11-14T16:00:00-08:00",
+      "test_end": "2023-12-04T16:00:00-08:00",
+      "n_trades": 3208,
+      "metrics": {
+        "n_trades": 3208,
+        "win_rate": 0.7150872817955112,
+        "profit_factor": 4.047898561394958,
+        "total_return_pct": 45.76599868274116,
+        "sharpe_ratio": 3.4686086465128088,
+        "max_drawdown_pct": 0.5362162996918475,
+        "precision_buy": 0.36845386533665836,
+        "recall_buy": 1.0,
+        "f1_buy": 0.5384965831435079,
+        "accuracy": 0.36845386533665836
+      }
+    },
+    {
+      "fold": 191,
+      "train_start": "2022-12-12T16:00:00-08:00",
+      "train_end": "2024-01-15T16:00:00-08:00",
+      "test_start": "2024-01-16T16:00:00-08:00",
+      "test_end": "2024-02-05T16:00:00-08:00",
+      "n_trades": 3247,
+      "metrics": {
+        "n_trades": 3247,
+        "win_rate": 0.6178010471204188,
+        "profit_factor": 2.134962137117536,
+        "total_return_pct": 33.872963986658576,
+        "sharpe_ratio": 1.5828150292563055,
+        "max_drawdown_pct": 0.7387786739164434,
+        "precision_buy": 0.3319987680936249,
+        "recall_buy": 1.0,
+        "f1_buy": 0.49849710982658957,
+        "accuracy": 0.3319987680936249
+      }
+    },
+    {
+      "fold": 192,
+      "train_start": "2023-02-13T16:00:00-08:00",
+      "train_end": "2024-03-18T16:00:00-07:00",
+      "test_start": "2024-03-19T16:00:00-07:00",
+      "test_end": "2024-04-08T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 193,
+      "train_start": "2023-04-17T16:00:00-07:00",
+      "train_end": "2024-05-20T16:00:00-07:00",
+      "test_start": "2024-05-21T16:00:00-07:00",
+      "test_end": "2024-06-10T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 194,
+      "train_start": "2023-06-19T16:00:00-07:00",
+      "train_end": "2024-07-22T16:00:00-07:00",
+      "test_start": "2024-07-23T16:00:00-07:00",
+      "test_end": "2024-08-12T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 195,
+      "train_start": "2023-08-21T16:00:00-07:00",
+      "train_end": "2024-09-23T16:00:00-07:00",
+      "test_start": "2024-09-24T16:00:00-07:00",
+      "test_end": "2024-10-14T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 196,
+      "train_start": "2023-10-23T16:00:00-07:00",
+      "train_end": "2024-11-25T16:00:00-08:00",
+      "test_start": "2024-11-26T16:00:00-08:00",
+      "test_end": "2024-12-16T16:00:00-08:00",
+      "n_trades": 3071,
+      "metrics": {
+        "n_trades": 3071,
+        "win_rate": 0.2637577336372517,
+        "profit_factor": 0.3046549736282903,
+        "total_return_pct": -53.64291473226862,
+        "sharpe_ratio": -3.088320704727665,
+        "max_drawdown_pct": 1.0,
+        "precision_buy": 0.11657440573103224,
+        "recall_buy": 1.0,
+        "f1_buy": 0.20880723242927968,
+        "accuracy": 0.11657440573103224
+      }
+    },
+    {
+      "fold": 197,
+      "train_start": "2023-12-25T16:00:00-08:00",
+      "train_end": "2025-01-27T16:00:00-08:00",
+      "test_start": "2025-01-28T16:00:00-08:00",
+      "test_end": "2025-02-17T16:00:00-08:00",
+      "n_trades": 2057,
+      "metrics": {
+        "n_trades": 2057,
+        "win_rate": 0.5148274185707341,
+        "profit_factor": 0.7785752763979057,
+        "total_return_pct": -9.027010020651161,
+        "sharpe_ratio": -0.5682601957052476,
+        "max_drawdown_pct": 0.9999955765100459,
+        "precision_buy": 0.27321341759844436,
+        "recall_buy": 1.0,
+        "f1_buy": 0.42917143948071784,
+        "accuracy": 0.27321341759844436
+      }
+    },
+    {
+      "fold": 198,
+      "train_start": "2024-02-26T16:00:00-08:00",
+      "train_end": "2025-03-31T16:00:00-07:00",
+      "test_start": "2025-04-01T16:00:00-07:00",
+      "test_end": "2025-04-21T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 199,
+      "train_start": "2024-04-29T16:00:00-07:00",
+      "train_end": "2025-06-02T16:00:00-07:00",
+      "test_start": "2025-06-03T16:00:00-07:00",
+      "test_end": "2025-06-23T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 200,
+      "train_start": "2024-07-01T16:00:00-07:00",
+      "train_end": "2025-08-04T16:00:00-07:00",
+      "test_start": "2025-08-05T16:00:00-07:00",
+      "test_end": "2025-08-25T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 201,
+      "train_start": "2024-09-02T16:00:00-07:00",
+      "train_end": "2025-10-06T16:00:00-07:00",
+      "test_start": "2025-10-07T16:00:00-07:00",
+      "test_end": "2025-10-27T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 202,
+      "train_start": "2024-11-04T16:00:00-08:00",
+      "train_end": "2025-12-08T16:00:00-08:00",
+      "test_start": "2025-12-09T16:00:00-08:00",
+      "test_end": "2025-12-29T16:00:00-08:00",
+      "n_trades": 2348,
+      "metrics": {
+        "n_trades": 2348,
+        "win_rate": 0.5344974446337308,
+        "profit_factor": 1.3587887677284864,
+        "total_return_pct": 9.014755755979971,
+        "sharpe_ratio": 0.7593224090357141,
+        "max_drawdown_pct": 0.8437110643195342,
+        "precision_buy": 0.26490630323679726,
+        "recall_buy": 1.0,
+        "f1_buy": 0.4188552188552188,
+        "accuracy": 0.26490630323679726
+      }
+    },
+    {
+      "fold": 203,
+      "train_start": "2025-01-06T16:00:00-08:00",
+      "train_end": "2026-02-09T16:00:00-08:00",
+      "test_start": "2026-02-10T16:00:00-08:00",
+      "test_end": "2026-03-02T16:00:00-08:00",
+      "n_trades": 3381,
+      "metrics": {
+        "n_trades": 3381,
+        "win_rate": 0.422360248447205,
+        "profit_factor": 0.5364926273444023,
+        "total_return_pct": -35.21930814588176,
+        "sharpe_ratio": -1.5897995191699572,
+        "max_drawdown_pct": 1.0,
+        "precision_buy": 0.21384205856255545,
+        "recall_buy": 1.0,
+        "f1_buy": 0.35233918128654973,
+        "accuracy": 0.21384205856255545
+      }
+    },
+    {
+      "fold": 204,
+      "train_start": "2025-03-10T16:00:00-07:00",
+      "train_end": "2026-04-13T16:00:00-07:00",
+      "test_start": "2026-04-14T16:00:00-07:00",
+      "test_end": "2026-05-04T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "fold": 205,
+      "train_start": "2025-05-12T16:00:00-07:00",
+      "train_end": "2026-06-15T16:00:00-07:00",
+      "test_start": "2026-06-16T16:00:00-07:00",
+      "test_end": "2026-07-06T16:00:00-07:00",
+      "n_trades": 0,
+      "metrics": {
+        "n_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_return_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "precision_buy": 0.0,
+        "recall_buy": 0.0,
+        "f1_buy": 0.0,
+        "accuracy": 0.0
+      }
+    }
+  ]
+}
