@@ -34,8 +34,16 @@ apply_cn_inbox() {
   echo "$stamp" > "$stamp_file"
 }
 
-# Next Monday 04:30 New York time, as an ISO timestamp (bench pass hard stop).
-bench_deadline() { TZ=America/New_York date -d "next monday 04:30" +%FT%T%z; }
+# Bench hard stop: the earlier of next Monday 04:30 New York time and 15 hours
+# from now (a Monday catch-up run must not get a deadline a week away).
+# Prints epoch seconds.
+bench_deadline() {
+  local mon cap
+  mon="$(TZ=America/New_York date -d "next monday 04:30" +%s)"
+  cap="$(date -d "+15 hours" +%s)"
+  echo $(( mon < cap ? mon : cap ))
+}
+iso() { date -u -d "@$1" +%FT%T+00:00; }
 
 # One heavy job at a time on this 8 GB server: a job that starts while another
 # runs (e.g. China weekly still going when the bench pass fires) waits here.
@@ -67,9 +75,13 @@ case "${1:-}" in
     step scripts/precompute_dashboard.py --market china
     ;;
   bench)
-    dl="$(bench_deadline)"
-    step scripts/bench_pass.py --market us --deadline "$dl"
-    step scripts/bench_pass.py --market china --deadline "$dl"
+    # US gets the first half of the time, China the rest; a US failure must
+    # not skip China, and the job still reports failure at the end.
+    end="$(bench_deadline)"; now="$(date +%s)"; mid=$(( now + (end - now) / 2 ))
+    rc=0
+    step scripts/bench_pass.py --market us --deadline "$(iso "$mid")" || { echo "bench us FAILED"; rc=1; }
+    step scripts/bench_pass.py --market china --deadline "$(iso "$end")" || { echo "bench china FAILED"; rc=1; }
+    [ "$rc" -eq 0 ] || exit "$rc"
     ;;
   *) echo "usage: $0 daily|weekly|signals|cn-daily|cn-weekly|bench" >&2; exit 2 ;;
 esac

@@ -4,6 +4,7 @@ Every column produced here is null-free: missing news/macro days get neutral val
 downstream null-dropping never deletes history.
 """
 import logging
+from datetime import timedelta
 
 import polars as pl
 
@@ -30,6 +31,7 @@ def overlay_cols(market: str) -> list[str]:
     return NEWS_COLS + (CN_MACRO_COLS if market == "china" else MACRO_COLS)
 
 _NO_FOMC_DAYS = 999
+CN_MACRO_CARRY_DAYS = 10  # China macro comes from Server B and can be a day late
 
 
 def _z(x: pl.Expr, window: int, min_samples: int) -> pl.Expr:
@@ -77,18 +79,40 @@ def add_news_features(df: pl.DataFrame, news_daily: pl.DataFrame | None) -> pl.D
 
 
 def add_macro_features(
-    df: pl.DataFrame, macro_daily: pl.DataFrame | None, cols: list[str] = MACRO_COLS
+    df: pl.DataFrame,
+    macro_daily: pl.DataFrame | None,
+    cols: list[str] = MACRO_COLS,
+    carry_days: int = 0,
 ) -> pl.DataFrame:
-    """Left-join macro_daily on date and add `cols`; missing values become 0.0 (days_since_fomc 999)."""
+    """Join macro_daily on date and add `cols`; missing values become 0.0 (days_since_fomc 999).
+
+    carry_days=0 (US: macro is rebuilt in the same run) joins on the exact date.
+    carry_days>0 (China: macro arrives from Server B and may be a day late) lets a
+    day with no macro row take the latest earlier row up to that many days old;
+    older gaps go neutral. NaN (series not yet published) is treated as missing.
+    """
     neutral = {c: (_NO_FOMC_DAYS if c == "days_since_fomc" else 0.0) for c in cols}
     if macro_daily is None or macro_daily.height == 0:
         return df.with_columns([
             pl.lit(v).cast(pl.Int64 if c == "days_since_fomc" else pl.Float64).alias(c)
             for c, v in neutral.items()
         ])
-    m = macro_daily.select(pl.col("date").alias("_date"), *[c for c in cols if c in macro_daily.columns])
+    m = (
+        macro_daily.select(pl.col("date").cast(pl.Date).alias("_date"), *[c for c in cols if c in macro_daily.columns])
+        .with_columns([pl.col(c).cast(pl.Float64).fill_nan(None) for c in cols if c in macro_daily.columns])
+        .unique("_date", keep="last")
+        .sort("_date")
+    )
     out = df.with_columns(pl.col("time").dt.date().alias("_date"))
-    out = out.join(m, on="_date", how="left", maintain_order="left").drop("_date")
+    if carry_days > 0:
+        out = (
+            out.with_row_index("_row").sort("_date")
+            .join_asof(m, on="_date", strategy="backward", tolerance=timedelta(days=carry_days))
+            .sort("_row").drop("_row")
+        )
+    else:
+        out = out.join(m, on="_date", how="left", maintain_order="left")
+    out = out.drop("_date")
     out = out.with_columns([pl.lit(None, dtype=pl.Float64).alias(c) for c in cols if c not in out.columns])
     return out.with_columns([
         pl.col(c).cast(pl.Int64 if c == "days_since_fomc" else pl.Float64).fill_null(v)

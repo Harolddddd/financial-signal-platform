@@ -161,7 +161,13 @@ def update_league(
     # 2. similarity groups among methods tested OK this pass
     dup_of: dict[str, str] = {}
     for group in _groups(sorted(tested_ok), preds, cfg):
-        winner = max(group, key=lambda n: _score(methods[n]))
+        # Only a method that is live or could go live may win the group; a
+        # high-scoring method with too few trades must not push a live one out.
+        can_win = [
+            n for n in group
+            if methods[n]["status"] == "live" or results[n].get("n_trades", 0) >= cfg["min_trades"]
+        ]
+        winner = max(can_win or group, key=lambda n: _score(methods[n]))
         for n in group:
             if n != winner:
                 dup_of[n] = winner
@@ -184,16 +190,13 @@ def update_league(
                          retired_because=f"similar to {m['duplicate_of']} since {m['similar_since']}",
                          beats_weakest_streak=0)
 
-    # 4. live duplicates step down; then promotion
-    for n, m in methods.items():
-        if m["status"] == "live" and m["duplicate_of"]:
-            m["status"] = "bench"
-
+    # 4. promotion (bench streaks only move for methods tested this pass)
     def eligible(n: str) -> bool:
         m = methods[n]
         h = m["history"][-1] if m["history"] else None
         return (
             m["status"] == "bench" and not m["duplicate_of"] and n in tested_ok
+            and not n.startswith(tuple(cfg.get("bench_only_prefixes", ())))
             and h is not None and h["date"] == iso and not h["error"]
             and h["n_trades"] >= cfg["min_trades"]
         )
@@ -206,11 +209,13 @@ def update_league(
         return min(lv, key=lambda n: _score(methods[n])) if lv else None
 
     w = weakest()
-    open_slot = len(live()) < cfg["live_max"]
+    ranked = sorted((n for n in methods if eligible(n)), key=lambda n: _score(methods[n]), reverse=True)
+    # A free live seat counts as a "win" only for the best-ranked methods that could fill it.
+    seat_winners = set(ranked[: max(0, cfg["live_max"] - len(live()))])
     for n, m in methods.items():
-        if m["status"] != "bench":
-            continue
-        if eligible(n) and (open_slot or w is None or _score(m) > _score(methods[w])):
+        if m["status"] != "bench" or n not in results:
+            continue  # untested this pass (e.g. deadline): keep its streak
+        if eligible(n) and (n in seat_winners or w is None or _score(m) > _score(methods[w])):
             m["beats_weakest_streak"] += 1
         else:
             m["beats_weakest_streak"] = 0
@@ -227,6 +232,11 @@ def update_league(
         if w is not None and _score(methods[n]) > _score(methods[w]):
             methods[w].update(status="bench", beats_weakest_streak=0)
             methods[n].update(status="live", beats_weakest_streak=0)
+
+    # 5. a live duplicate steps down only once its group winner holds a live seat
+    for n, m in methods.items():
+        if m["status"] == "live" and m["duplicate_of"] and methods[m["duplicate_of"]]["status"] == "live":
+            m["status"] = "bench"
 
     state["passes"].append({"date": iso, "completed": completed})
     return state

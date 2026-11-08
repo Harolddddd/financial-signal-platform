@@ -11,4 +11,4 @@ EnvironmentFile=/home/ubuntu/app/.env
 Environment=SIGNAL_TRAIN_DAYS=400 MODEL_N_JOBS=2 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 TOKENIZERS_PARALLELISM=false
 Nice=10
 ExecStart=/home/ubuntu/app/deploy/run_pipeline.sh bench
-TimeoutStartSec=16h
+TimeoutStartSec=20h

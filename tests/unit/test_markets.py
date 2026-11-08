@@ -38,9 +38,10 @@ def test_get_market_unknown_raises_keyerror():
 
 def test_default_strategies():
     assert get_market("us").default_strategies == (
+        "extra_trees", "lda_strategy", "random_forest", "conformal_lgbm", "pooled_lgbm_news")
+    # China seeds the league with the same four price models; the league owns the live set afterwards.
+    assert get_market("china").default_strategies == (
         "extra_trees", "lda_strategy", "random_forest", "conformal_lgbm")
-    # China now seeds the league with the same set; the league owns the live set afterwards.
-    assert get_market("china").default_strategies == get_market("us").default_strategies
 
 
 def test_market_config_timezone_close_cost():
@@ -50,3 +51,8 @@ def test_market_config_timezone_close_cost():
     assert (c.timezone, c.close_time, c.cost_bps) == ("Asia/Shanghai", time(15, 0), 15.0)
     u = get_market("us")
     assert (u.timezone, u.close_time, u.cost_bps) == ("America/New_York", time(16, 0), 10.0)
+
+
+def test_us_seed_includes_pooled_news_model():
+    from config.markets import get_market
+    assert "pooled_lgbm_news" in get_market("us").default_strategies

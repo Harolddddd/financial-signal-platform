@@ -8,7 +8,7 @@ from src.features.technical_indicators import add_technical_indicators
 from src.features.cross_asset_features import add_cross_asset_features, synthetic_vol_index
 from src.features.label_generator import add_labels
 from src.features.news_macro_features import (
-    MACRO_COLS, add_macro_features, add_news_features, load_news_macro, load_us_news_macro,
+    CN_MACRO_CARRY_DAYS, MACRO_COLS, add_macro_features, add_news_features, load_news_macro, load_us_news_macro,
 )
 from src.ingestion.cn_macro_ingest import CN_MACRO_COLS
 
@@ -237,7 +237,10 @@ def build_features_for_ticker(
     df = add_neutral_sentiment(df)
     if news_daily is not None or macro_daily is not None:
         df = add_news_features(df, news_daily)
-        df = add_macro_features(df, macro_daily, cols=macro_cols)
+        df = add_macro_features(
+            df, macro_daily, cols=macro_cols,
+            carry_days=CN_MACRO_CARRY_DAYS if macro_cols == CN_MACRO_COLS else 0,
+        )
     df = add_labels(df)
     if drop_label_nulls:
         # Training/backtesting need a real label — the last forward_days

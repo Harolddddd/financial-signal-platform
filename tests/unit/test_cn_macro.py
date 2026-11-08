@@ -46,3 +46,8 @@ def test_missing_series_gives_all_columns_null():
     out = build_cn_macro_daily({}, _days(date(2026, 1, 5), 5))
     assert out.columns == ["date", *CN_MACRO_COLS]
     assert out["cn_pmi"].null_count() == 5
+
+
+def test_m2_uses_20_day_lag():
+    from src.ingestion import cn_macro_ingest as m
+    assert m._M2_LAG_DAYS == 20

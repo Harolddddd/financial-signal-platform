@@ -31,7 +31,7 @@ MARKETS: dict[str, MarketConfig] = {
         benchmark_ticker="SPY",
         vol_index_ticker="^VIX",
         currency="USD",
-        default_strategies=("extra_trees", "lda_strategy", "random_forest", "conformal_lgbm"),
+        default_strategies=("extra_trees", "lda_strategy", "random_forest", "conformal_lgbm", "pooled_lgbm_news"),
     ),
     "china": MarketConfig(
         name="china",

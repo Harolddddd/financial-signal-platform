@@ -92,7 +92,7 @@ import polars as pl
 import scripts.precompute_dashboard as pc
 from src.strategies.base import PredictionResult, Strategy
 
-US_DEFAULTS = ["extra_trees", "lda_strategy", "random_forest", "conformal_lgbm"]
+US_DEFAULTS = list(pc.get_market("us").default_strategies)
 
 
 def test_us_default_strategies_used():

@@ -24,6 +24,8 @@ CN_MACRO_COLS = [
 # days after the end of the reference month (PMI comes out on the last day).
 _MONTHLY_LAG_DAYS = 15
 _PMI_LAG_DAYS = 1
+# PBoC money supply sometimes lands after the 15th (holidays).
+_M2_LAG_DAYS = 20
 _MONTH_RE = re.compile(r"(\d{4})年(\d{1,2})月")
 _CN_DATE_RE = re.compile(r"(\d{4})年(\d{1,2})月(\d{1,2})日")
 
@@ -72,7 +74,7 @@ def fetch_cn_macro_raw() -> dict[str, pl.DataFrame]:
     raw["cpi_yoy"] = _monthly(ak.macro_china_cpi(), "全国-同比增长", _MONTHLY_LAG_DAYS)
     raw["ppi_yoy"] = _monthly(ak.macro_china_ppi(), "当月同比增长", _MONTHLY_LAG_DAYS)
     raw["pmi"] = _monthly(ak.macro_china_pmi(), "制造业-指数", _PMI_LAG_DAYS)
-    raw["m2_yoy"] = _monthly(ak.macro_china_money_supply(), "货币和准货币(M2)-同比增长", _MONTHLY_LAG_DAYS)
+    raw["m2_yoy"] = _monthly(ak.macro_china_money_supply(), "货币和准货币(M2)-同比增长", _M2_LAG_DAYS)
 
     # Exchange margin balances for day D are published the next morning.
     sh, sz = ak.macro_china_market_margin_sh(), ak.macro_china_market_margin_sz()

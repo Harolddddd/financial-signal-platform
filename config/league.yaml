@@ -8,3 +8,6 @@ retire_after_passes: 3
 retire_min_days: 28
 bench_window_days: 1095
 bench_min_gap_days: 13
+# Never eligible for live: stacked_live refits every live method per fold, too
+# slow for the weekly full-history backtest, and its bases change with the live set.
+bench_only_prefixes: [stacked_live]

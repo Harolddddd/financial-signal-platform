@@ -156,3 +156,46 @@ def test_seed_from_latest_picks_top_eligible():
     st = _pass(st, {"a": 0.1, "b": 0.9, "c": _res(5.0, trades=3)}, D0)
     lg.seed_live_from_latest(st, CFG, n=1)
     assert _status(st) == {"a": "bench", "b": "live", "c": "bench"}
+
+
+def test_live_stays_when_duplicate_winner_is_ineligible():
+    p = _rand_preds()
+    st = _pass(_state(["a"], ["x"]), {"a": 0.3, "x": _res(0.9, trades=5)}, D0, preds={"a": p, "x": p})
+    assert _status(st)["a"] == "live"
+    assert st["methods"]["x"]["duplicate_of"] == "a"
+
+
+def test_live_duplicate_waits_for_bench_winner_promotion():
+    p = _rand_preds()
+    st = _pass(_state(["a"], ["x"]), {"a": 0.3, "x": 0.9}, D0, preds={"a": p, "x": p})
+    assert _status(st) == {"a": "live", "x": "bench"}            # x not promoted yet: a keeps its seat
+    st = _pass(st, {"a": 0.3, "x": 0.9}, D0 + timedelta(days=14), preds={"a": p, "x": p})
+    assert _status(st) == {"a": "bench", "x": "live"}            # x promoted -> a steps down
+
+
+def test_open_slot_win_only_for_top_ranked():
+    cfg = {**CFG, "live_max": 2}
+    st = _state(["a"], ["x", "y"])
+    st = lg.update_league(st, {"a": _res(0.5), "x": _res(0.9), "y": _res(0.1)},
+                          {n: _rand_preds() for n in "axy"}, D0, cfg)
+    st = lg.update_league(st, {"a": _res(0.5), "x": _res(0.9), "y": _res(0.8)},
+                          {n: _rand_preds() for n in "axy"}, D0 + timedelta(days=14), cfg)
+    assert _status(st) == {"a": "live", "x": "live", "y": "bench"}
+
+
+def test_untested_method_keeps_streak():
+    st = _state(["a", "b", "c", "d", "e", "f"], ["x"])
+    base = {"a": 0.1, "b": 0.2, "c": 0.3, "d": 0.4, "e": 0.5, "f": 0.6}
+    st = _pass(st, {**base, "x": 2.0}, D0)
+    st = _pass(st, base, D0 + timedelta(days=14))                 # deadline: x not reached
+    assert st["methods"]["x"]["beats_weakest_streak"] == 1
+    st = _pass(st, {**base, "x": 2.0}, D0 + timedelta(days=28))
+    assert _status(st)["x"] == "live"
+
+
+def test_bench_only_methods_never_promoted():
+    assert "stacked_live" in CFG["bench_only_prefixes"]
+    st = _state(["a"], ["stacked_live_cn"])
+    for k in range(3):
+        st = _pass(st, {"a": 0.1, "stacked_live_cn": 3.0}, D0 + timedelta(days=14 * k))
+    assert _status(st)["stacked_live_cn"] == "bench"

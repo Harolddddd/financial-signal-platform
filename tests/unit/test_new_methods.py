@@ -115,3 +115,12 @@ def test_blocked_entries_only_for_china():
 def test_live_signal_hold_on_limit_day():
     from src.backtesting.limit_filter import is_limit_move
     assert is_limit_move(10.0, 11.0) and not is_limit_move(10.0, 10.5) and not is_limit_move(None, 11.0)
+
+
+def test_limit_threshold_by_board():
+    from src.backtesting.limit_filter import limit_days
+    t = [datetime(2026, 1, 5, tzinfo=timezone.utc) + timedelta(days=i) for i in range(2)]
+    df = pl.DataFrame({"ticker": ["300001.SZ"] * 2 + ["688001.SS"] * 2 + ["600000.SS"] * 2,
+                       "time": t * 3, "close": [10.0, 11.5, 10.0, 12.0, 10.0, 11.0]})
+    # ChiNext +15% tradeable, STAR +20% at limit, main board +10% at limit
+    assert limit_days(df) == {("688001.SS", t[1]), ("600000.SS", t[1])}

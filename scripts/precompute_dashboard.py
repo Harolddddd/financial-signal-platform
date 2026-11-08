@@ -327,7 +327,7 @@ def step_signals(
             conf = float(result.confidence.iloc[pos])
             # China: a stock closing at its daily limit can't be bought at the close.
             if market == "china" and sig == "Buy" and pos >= 1 and "close" in t_pd.columns and is_limit_move(
-                float(t_pd["close"].iloc[pos - 1]), float(t_pd["close"].iloc[pos])
+                float(t_pd["close"].iloc[pos - 1]), float(t_pd["close"].iloc[pos]), ticker
             ):
                 sig = "Hold"
             if wrapped[name]:

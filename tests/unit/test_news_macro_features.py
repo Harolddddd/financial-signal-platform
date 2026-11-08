@@ -146,3 +146,14 @@ def test_china_macro_neutral_when_missing():
     macro = pl.DataFrame({"date": [datetime(2026, 1, 5).date()], **{c: [1.5] for c in CN_MACRO_COLS}})
     out = add_macro_features(df, macro, cols=CN_MACRO_COLS)
     assert out["cn_pmi"].to_list() == [1.5, 0.0]
+
+
+def test_macro_carried_forward_up_to_10_days_then_neutral():
+    from datetime import datetime
+    from src.features.news_macro_features import add_macro_features
+    from src.ingestion.cn_macro_ingest import CN_MACRO_COLS
+    times = [datetime(2026, 1, 5), datetime(2026, 1, 6), datetime(2026, 1, 20)]
+    df = pl.DataFrame({"time": times, "ticker": ["A"] * 3})
+    macro = pl.DataFrame({"date": [datetime(2026, 1, 5).date()], **{c: [50.0] for c in CN_MACRO_COLS}})
+    out = add_macro_features(df, macro, cols=CN_MACRO_COLS, carry_days=10)
+    assert out["cn_pmi"].to_list() == [50.0, 50.0, 0.0]   # 1 day late: carried; 15 days: neutral

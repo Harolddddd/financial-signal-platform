@@ -92,7 +92,7 @@ def test_deadline_stops_and_untested_go_first_next_time(tmp_path):
     out = _run(tmp_path, force=True, deadline=datetime(2000, 1, 1, tzinfo=timezone.utc))
     assert out["stopped"] and out["tested"] == []
     st = json.loads((tmp_path / "league.json").read_text())
-    assert st["passes"][-1]["completed"] is False
+    assert st["passes"] == []  # nothing tested -> no pass recorded
     # order puts never-tested methods first
     st = lg.load_state(tmp_path, "us", seed=[])
     st["methods"]["buy3"] = {**lg._blank_method("bench"), "history": [{"date": "2026-10-01"}]}
@@ -114,3 +114,23 @@ def test_precompute_uses_league_live_set(tmp_path, monkeypatch):
     monkeypatch.setattr(pd_, "step_data_summary", lambda *a, **k: None)
     pd_.main("us", signals_only=True)
     assert seen["names"] == ["random_forest"]
+
+
+def test_nothing_tested_records_no_pass(tmp_path):
+    _run(tmp_path, force=True, deadline=datetime(2000, 1, 1, tzinfo=timezone.utc))
+    st = json.loads((tmp_path / "league.json").read_text())
+    assert st["passes"] == []
+
+
+def test_skips_method_that_cannot_finish_before_deadline(tmp_path):
+    (tmp_path / "bench").mkdir()
+    (tmp_path / "bench" / "bench_buy2.json").write_text(json.dumps({"runtime_s": 10**7}))
+    out = _run(tmp_path, force=True, deadline=datetime.now(timezone.utc) + timedelta(hours=1))
+    assert "buy2" not in out["tested"] and "buy3" in out["tested"]
+    assert "buy2" in out["skipped_for_time"]
+
+
+def test_runtime_recorded(tmp_path):
+    _run(tmp_path, force=True)
+    js = json.loads((tmp_path / "bench" / "bench_buy3.json").read_text())
+    assert js["runtime_s"] >= 0
