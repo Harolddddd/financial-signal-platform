@@ -39,7 +39,8 @@ def test_get_market_unknown_raises_keyerror():
 def test_default_strategies():
     assert get_market("us").default_strategies == (
         "extra_trees", "lda_strategy", "random_forest", "conformal_lgbm")
-    assert get_market("china").default_strategies is None
+    # China now seeds the league with the same set; the league owns the live set afterwards.
+    assert get_market("china").default_strategies == get_market("us").default_strategies
 
 
 def test_market_config_timezone_close_cost():

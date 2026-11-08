@@ -41,6 +41,8 @@ MARKETS: dict[str, MarketConfig] = {
         benchmark_ticker="510300.SS",
         vol_index_ticker=None,
         currency="CNY",
+        # Seed only; the league (cache/league.json) owns the live set once a bench pass ran.
+        default_strategies=("extra_trees", "lda_strategy", "random_forest", "conformal_lgbm"),
         timezone="Asia/Shanghai",
         close_time=time(15, 0),
         cost_bps=15.0,

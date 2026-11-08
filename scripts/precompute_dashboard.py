@@ -26,6 +26,7 @@ from src.backtesting.strategy_runner import _is_stateless, _select_cols, walk_fo
 from src.features.duckdb_client import load_training_data
 from src.features.news_macro_features import OVERLAY_COLS
 from src.signals.overlay import OverlayStrategy
+from src.league.league import live_set
 from src.strategies.registry import list_strategies, load_strategy
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -368,7 +369,10 @@ def main(
     no_signals: bool = False,
 ) -> None:
     feature_dir, cache_dir = _market_paths(market)
-    default_names = get_market(market).default_strategies or list_strategies(market)
+    # Live set from the league (bench pass); the config list is only the seed.
+    default_names = (
+        live_set(cache_dir, market) or get_market(market).default_strategies or list_strategies(market)
+    )
     # --strategies restricts backtests only; live signals use the market's default set.
     backtest_names = list(strategies or default_names)
     signal_names = list(default_names)

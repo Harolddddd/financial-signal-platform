@@ -109,10 +109,18 @@ def test_us_default_strategies_passed_to_signals():
     assert list(sg.call_args.kwargs["names"]) == US_DEFAULTS
 
 
-def test_china_runs_all_strategies():
+def test_china_without_league_uses_seed_set():
     with patch.object(pc, "step_data_summary"), patch.object(pc, "step_leaderboard"), \
             patch.object(pc, "step_signals"), patch.object(pc, "step_backtests") as bt, \
-            patch.object(pc, "list_strategies", return_value=["a", "b"]):
+            patch.object(pc, "live_set", return_value=None):
+        pc.main("china", signals_only=False)
+    assert list(bt.call_args.kwargs["names"]) == list(pc.get_market("china").default_strategies)
+
+
+def test_league_live_set_wins_over_seed():
+    with patch.object(pc, "step_data_summary"), patch.object(pc, "step_leaderboard"), \
+            patch.object(pc, "step_signals"), patch.object(pc, "step_backtests") as bt, \
+            patch.object(pc, "live_set", return_value=["a", "b"]):
         pc.main("china", signals_only=False)
     assert list(bt.call_args.kwargs["names"]) == ["a", "b"]
 
