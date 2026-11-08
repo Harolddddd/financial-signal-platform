@@ -1,0 +1,9 @@
+[Unit]
+Description=Run FSP China daily pipeline after China close + B news sync
+
+[Timer]
+OnCalendar=Mon..Fri 05:30 America/New_York
+Persistent=true
+
+[Install]
+WantedBy=timers.target

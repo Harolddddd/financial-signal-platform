@@ -81,3 +81,22 @@ def test_to_et_handles_dst_and_bad_input():
     assert ss.to_et("2026-11-08T02:47:12Z") == "11-07 21:47 EST"
     assert ss.to_et("2026-07-01T16:00:00Z") == "07-01 12:00 EDT"
     assert ss.to_et("?") == "?"
+
+
+def test_china_and_bench_steps_named():
+    lines = [
+        "=== 2026-11-10T10:30:00Z applying china upload 2026-11-10T08:40:00Z ===",
+        "=== 2026-11-10T10:31:00Z scripts/refresh_data.py --market china ===",
+        "=== 2026-11-10T10:50:00Z scripts/bench_pass.py --market us --deadline x ===",
+        "=== 2026-11-10T11:00:00Z cn-daily pipeline done ===",
+    ]
+    steps = [s["step"] for s in ss.summarize_run(lines, running=False)["steps"]]
+    assert steps == ["Apply China news from Server B",
+                     "Refresh data (prices, news, macro, features)",
+                     "Bench re-test (us)"]
+
+
+def test_china_jobs_listed():
+    for unit in ("fsp-cn-daily", "fsp-cn-weekly", "fsp-bench"):
+        assert unit in ss.SERVICES
+        assert f"{unit}.timer" in ss.TIMERS

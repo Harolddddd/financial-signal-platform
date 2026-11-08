@@ -69,7 +69,7 @@ else:
 # --- Last run summary ---
 st.subheader("Last run")
 unit = st.selectbox(
-    "Job", ["fsp-daily", "fsp-weekly", "fsp-backup"], format_func=lambda u: ss.SERVICES[u]
+    "Job", [u for u in ss.SERVICES if u != "fsp-dashboard"], format_func=lambda u: ss.SERVICES[u]
 )
 info = ss.unit_info(unit)
 summary = ss.summarize_run(ss.last_run_lines(unit), running=info.get("ActiveState") == "activating")

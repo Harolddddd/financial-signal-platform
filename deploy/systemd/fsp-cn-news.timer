@@ -1,0 +1,9 @@
+[Unit]
+Description=Collect China news after the China market close (B)
+
+[Timer]
+OnCalendar=Mon..Fri 16:30 Asia/Shanghai
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,9 @@
+[Unit]
+Description=FSP bench pass check (runs only when the last pass is 13+ days old)
+
+[Timer]
+OnCalendar=Sun 13:00 America/New_York
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,17 @@
+# Compute server (B) only.
+[Unit]
+Description=FSP China news + macro collect (akshare, Chinese FinBERT) + sync to production
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=fsp
+WorkingDirectory=/home/fsp/app
+EnvironmentFile=/home/fsp/app/.env
+Environment=TOKENIZERS_PARALLELISM=false OMP_NUM_THREADS=2
+Nice=19
+IOSchedulingClass=idle
+MemoryMax=3G
+ExecStart=/home/fsp/app/deploy/cn_collect_and_sync.sh
+TimeoutStartSec=6h

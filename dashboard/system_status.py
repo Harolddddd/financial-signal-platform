@@ -16,11 +16,18 @@ from pathlib import Path
 SERVICES = {
     "fsp-daily": "Daily pipeline (refresh, incremental train, signals)",
     "fsp-weekly": "Weekly full retrain + backtests",
+    "fsp-cn-daily": "China daily pipeline (refresh, incremental train, signals)",
+    "fsp-cn-weekly": "China weekly full retrain + backtests",
+    "fsp-bench": "Bench re-test, both markets (every 2nd Sunday)",
     "fsp-backup": "Nightly backup",
     "fsp-dashboard": "Dashboard",
 }
-TIMERS = ["fsp-daily.timer", "fsp-weekly.timer", "fsp-backup.timer"]
+TIMERS = [
+    "fsp-daily.timer", "fsp-weekly.timer", "fsp-cn-daily.timer", "fsp-cn-weekly.timer",
+    "fsp-bench.timer", "fsp-backup.timer",
+]
 BACKFILL_STATUS = Path("/home/fspsync/incoming/status/backfill.txt")
+CN_NEWS_STATUS = Path("/home/fspsync/incoming/status/cn_news.txt")
 _SHOW_PROPS = [
     "ActiveState", "SubState", "Result", "ExecMainStartTimestamp",
     "ExecMainExitTimestamp", "MemoryCurrent", "MemoryPeak",
@@ -103,10 +110,14 @@ _STEP_NAMES = [
     ("train_models.py", "Full retrain"),
     ("precompute_dashboard.py", "Backtests + signals"),
     ("applying news upload", "Apply news from Server B"),
+    ("applying china upload", "Apply China news from Server B"),
 ]
 
 
 def _step_name(raw: str) -> str:
+    if "bench_pass.py" in raw:
+        m = re.search(r"--market (\S+)", raw)
+        return f"Bench re-test ({m.group(1) if m else '?'})"
     for needle, name in _STEP_NAMES:
         if needle in raw:
             return name
