@@ -114,3 +114,61 @@ def score_texts(texts: list[str], batch_size: int = 32) -> list[SentimentResult]
                 neutral=scores.get("neutral", 0.0),
             )
     return results  # type: ignore[return-value]
+
+
+CN_MODELS = (
+    "yiyanghkust/finbert-tone-chinese",
+    "IDEA-CCNL/Erlangshen-Roberta-110M-Sentiment",
+)
+_cn_pipeline = None
+_cn_scorer = "unscored"
+
+
+def _get_cn_pipeline():
+    """First Chinese sentiment model that loads; None when none can be loaded."""
+    global _cn_pipeline, _cn_scorer
+    if _cn_pipeline is None:
+        from transformers import pipeline as hf_pipeline
+
+        for model in CN_MODELS:
+            try:
+                _cn_pipeline = hf_pipeline("text-classification", model=model, top_k=None, device=-1)
+                _cn_scorer = model.split("/")[-1]
+                break
+            except Exception as e:
+                logger.warning("Chinese sentiment model %s unavailable: %s", model, e)
+    return _cn_pipeline
+
+
+def _cn_scores(out: list[dict]) -> dict[str, float]:
+    """Both CN models name their labels (Positive/Negative[/Neutral]); lowercase them."""
+    return {r["label"].lower(): r["score"] for r in out}
+
+
+def score_texts_cn(texts: list[str], batch_size: int = 16) -> list[SentimentResult]:
+    """Chinese FinBERT scoring; texts it cannot score come back as 'unscored' (null scores)."""
+    unscored = SentimentResult("unscored", None, None, None, "unscored")  # type: ignore[arg-type]
+    if not texts:
+        return []
+    pipe = _get_cn_pipeline()
+    if pipe is None:
+        return [unscored] * len(texts)
+    results: list[SentimentResult] = []
+    for start in range(0, len(texts), batch_size):
+        batch = [t[:512] for t in texts[start:start + batch_size]]
+        try:
+            outs = pipe(batch, batch_size=batch_size, truncation=True, max_length=512)
+        except Exception as e:
+            logger.warning("Chinese sentiment batch error: %s", e)
+            results.extend([unscored] * len(batch))
+            continue
+        for out in outs:
+            s = _cn_scores(out)
+            results.append(SentimentResult(
+                label=max(s, key=s.get),
+                positive=s.get("positive", 0.0),
+                negative=s.get("negative", 0.0),
+                neutral=s.get("neutral", 0.0),
+                scorer=_cn_scorer,
+            ))
+    return results

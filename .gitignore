@@ -7,3 +7,10 @@ markets/*/data/raw/
 .superpowers/
 catboost_info/
 logs/
+
+markets/*/data/news/
+markets/*/data/macro/
+markets/*/data/index_compositions/names.parquet
+markets/*/data/cache/bench/
+markets/*/data/cache/retired/
+markets/*/data/cache/league.json
