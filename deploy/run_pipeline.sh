@@ -9,8 +9,20 @@ PY="$PWD/.venv/bin/python"
 
 step() { echo "=== $(date -u +%FT%TZ) $* ==="; "$PY" "$@"; }
 
+# Apply a news upload from the compute server (B), if there is a new one.
+apply_news_inbox() {
+  local inbox=/home/fspsync/incoming stamp_file="$PWD/.news_applied"
+  [ -f "$inbox/READY" ] && [ -d "$inbox/news" ] || return 0
+  local stamp; stamp="$(cat "$inbox/READY")"
+  [ "$stamp" = "$(cat "$stamp_file" 2>/dev/null)" ] && return 0
+  echo "=== $(date -u +%FT%TZ) applying news upload $stamp ==="
+  rsync -a --delete "$inbox/news/" markets/us/data/news/
+  echo "$stamp" > "$stamp_file"
+}
+
 case "${1:-}" in
   daily)
+    apply_news_inbox
     step scripts/refresh_data.py --market us
     step scripts/incremental_train.py --market us
     step scripts/precompute_dashboard.py --market us --signals-only
