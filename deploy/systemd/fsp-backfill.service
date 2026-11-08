@@ -1,0 +1,17 @@
+# Compute server (B) only. Start by hand: systemctl start fsp-backfill
+[Unit]
+Description=FSP news backfill (FinBERT) + sync to production
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=fsp
+WorkingDirectory=/home/fsp/app
+EnvironmentFile=/home/fsp/app/.env
+Environment=TOKENIZERS_PARALLELISM=false
+Nice=19
+IOSchedulingClass=idle
+MemoryMax=3G
+ExecStart=/home/fsp/app/deploy/backfill_and_sync.sh 150
+TimeoutStartSec=24h
