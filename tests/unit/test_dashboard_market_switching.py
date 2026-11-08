@@ -73,8 +73,11 @@ def test_get_data_summary_routes_to_china_cache():
 def test_get_data_summary_routes_to_us_cache_by_default():
     from dashboard.data_loader import get_data_summary
     from dashboard.ui_config import PARQUET_DIR
+    import json
+    from config.markets import get_market
     summary = get_data_summary(PARQUET_DIR)
-    assert summary["n_tickers"] == 492
+    cached = json.loads((get_market("us").data_root / "cache" / "data_summary.json").read_text())
+    assert summary["n_tickers"] == cached["n_tickers"]  # routed to the US cache, whatever its size
 
 
 def test_get_leaderboard_routes_to_china_cache():

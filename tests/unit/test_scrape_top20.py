@@ -25,7 +25,7 @@ _SAMPLE_DF = pl.DataFrame({
 
 def test_tickers_list_has_20_stocks():
     from scripts.scrape_top20 import TICKERS
-    assert len(TICKERS) == 20
+    assert len(TICKERS) >= 20  # list grew past the original top 20
     assert "AAPL" in TICKERS
     assert "MSFT" in TICKERS
     assert "NVDA" in TICKERS

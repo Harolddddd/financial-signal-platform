@@ -57,6 +57,7 @@ def test_precision_buy_correct():
 
 
 def test_sharpe_ratio_positive_for_consistent_gains():
-    trades = [_trade(0.02)] * 20
+    # Identical returns have zero variance (Sharpe guarded to 0); vary them slightly.
+    trades = [_trade(0.02), _trade(0.03)] * 10
     m = compute_metrics(trades)
     assert m.sharpe_ratio > 0

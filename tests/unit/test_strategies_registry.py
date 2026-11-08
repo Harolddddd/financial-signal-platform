@@ -11,23 +11,23 @@ def test_list_strategies_returns_list():
 
 def test_list_strategies_contains_expected():
     names = list_strategies()
-    assert "ma_crossover" in names
+    assert "momentum" in names
     assert "meta_labeling" in names
-    assert "macd_signal" in names
+    assert "mean_reversion" in names
     assert "bollinger_bounce" in names
     assert "logistic_regression" in names
     assert "linear_regression" in names
 
 
 def test_load_strategy_returns_strategy_instance():
-    strategy = load_strategy("ma_crossover")
+    strategy = load_strategy("momentum")
     assert isinstance(strategy, Strategy)
 
 
 def test_load_strategy_injects_params():
-    strategy = load_strategy("ma_crossover")
-    assert strategy.fast_window == 20
-    assert strategy.slow_window == 50
+    strategy = load_strategy("momentum")
+    assert strategy.period == 20
+    assert strategy.threshold == 0.03
 
 
 def test_load_strategy_unknown_raises():
