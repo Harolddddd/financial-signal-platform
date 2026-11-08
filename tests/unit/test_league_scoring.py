@@ -22,6 +22,13 @@ def test_cost_reduces_return():
     assert r["precision"] == pytest.approx(2 / 3)
 
 
+def test_nan_forward_return_is_ignored():
+    p, o = _frames([1.0] * 3, [0.01, float("nan"), 0.03])
+    r = score_predictions(p, o, cost_bps=0)
+    assert r["n_trades"] == 2 and r["mean_net_return"] == pytest.approx(0.02)
+    assert r["net_sharpe"] > 0
+
+
 def test_no_trades_scores_zero():
     p, o = _frames([0.0] * 5, [0.01] * 5)
     r = score_predictions(p, o, cost_bps=10)

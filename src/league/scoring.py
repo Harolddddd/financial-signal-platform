@@ -18,6 +18,9 @@ def score_predictions(preds: pl.DataFrame, outcomes: pl.DataFrame, cost_bps: flo
         preds.filter(pl.col("buy_score") > 0)
         .join(outcomes.select("ticker", "time", "forward_return_5d"), on=["ticker", "time"], how="inner")
         .drop_nulls("forward_return_5d")
+        # Rows too recent for a 5-day outcome can carry NaN; one NaN would turn
+        # the mean into NaN and the score into 0.
+        .filter(pl.col("forward_return_5d").is_finite())
     )
     net = trades["forward_return_5d"] - 2 * cost_bps / 1e4
     n = len(net)
