@@ -5,6 +5,7 @@ page shows a notice instead.
 """
 from __future__ import annotations
 
+import json
 import re
 import shutil
 import subprocess
@@ -152,6 +153,24 @@ def last_run_lines(unit: str) -> list[str]:
     """Message lines of the unit's most recent run only."""
     inv = parse_show(_run(["systemctl", "show", f"{unit}.service", "-pInvocationID"])).get("InvocationID", "")
     if not inv:
+        # systemd forgets a finished unit's invocation after a daemon-reload; the journal keeps it.
+        inv = last_invocation_from_journal(_run([
+            "journalctl", "-u", f"{unit}.service", "-n", "200", "--no-pager", "-o", "json",
+            "--output-fields=_SYSTEMD_INVOCATION_ID,INVOCATION_ID",
+        ]))
+    if not inv:
         return []
     out = _run(["journalctl", f"_SYSTEMD_INVOCATION_ID={inv}", "--no-pager", "-o", "cat"])
     return out.splitlines()
+
+
+def last_invocation_from_journal(json_lines: str) -> str:
+    """Newest invocation id in `journalctl -o json` output (one JSON object per line)."""
+    inv = ""
+    for line in json_lines.splitlines():
+        try:
+            rec = json.loads(line)
+        except ValueError:
+            continue
+        inv = rec.get("_SYSTEMD_INVOCATION_ID") or rec.get("INVOCATION_ID") or inv
+    return inv

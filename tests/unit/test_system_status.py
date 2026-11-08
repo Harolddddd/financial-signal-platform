@@ -63,3 +63,14 @@ def test_summarize_run_marks_last_step_running_or_failed():
     run = ss.summarize_run(lines, running=True, now=now)["steps"][0]
     assert (run["step"], run["status"], run["duration"]) == ("Full retrain", "running", "1h 00m")
     assert ss.summarize_run(lines, running=False, now=now)["steps"][0]["status"] == "failed"
+
+
+def test_last_invocation_from_journal_takes_newest():
+    lines = "\n".join([
+        '{"_SYSTEMD_INVOCATION_ID": "aaa"}',
+        'not json',
+        '{"INVOCATION_ID": "bbb"}',
+        '{"MESSAGE": "x"}',
+    ])
+    assert ss.last_invocation_from_journal(lines) == "bbb"
+    assert ss.last_invocation_from_journal("") == ""
