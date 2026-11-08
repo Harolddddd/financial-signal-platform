@@ -1,0 +1,10 @@
+# Method league (see docs/superpowers/specs/2026-11-08-china-market-league-design.md)
+live_max: 6
+min_trades: 20
+promote_after_passes: 2
+similar_rank_corr: 0.85
+similar_jaccard: 0.70
+retire_after_passes: 3
+retire_min_days: 28
+bench_window_days: 1095
+bench_min_gap_days: 13
