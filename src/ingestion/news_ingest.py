@@ -144,23 +144,25 @@ def _existing_hashes(news_dir: Path, start: date, end: date) -> set[tuple[str, i
     return out
 
 
-def _score_and_write(news_dir: Path, fresh: dict, today: date) -> int:
-    # Sort by hash within each (ticker, ET day): a stable pseudo-random sample.
+def _score_and_write(
+    news_dir: Path, fresh: dict, today: date, tz: ZoneInfo = _NY, scorer=None
+) -> int:
+    # Sort by hash within each (ticker, market-local day): a stable pseudo-random sample.
     hashes = sorted(
-        fresh, key=lambda h: (fresh[h].ticker, fresh[h].published_at.astimezone(_NY).date(), h)
+        fresh, key=lambda h: (fresh[h].ticker, fresh[h].published_at.astimezone(tz).date(), h)
     )
     articles = [fresh[h] for h in hashes]
     per_day: dict[tuple, int] = {}
     pick: list[int] = []
     for i, a in enumerate(articles):
-        key = (a.ticker, a.published_at.astimezone(_NY).date())
+        key = (a.ticker, a.published_at.astimezone(tz).date())
         per_day[key] = per_day.get(key, 0) + 1
         if per_day[key] <= _MAX_SCORED_PER_DAY:
             pick.append(i)
     # Body text is used only in memory for scoring; it is never written.
     texts = [f"{articles[i].headline} {articles[i].body or ''}".strip() for i in pick]
     results: list = [_UNSCORED] * len(articles)
-    for i, r in zip(pick, score_texts(texts)):
+    for i, r in zip(pick, (scorer or score_texts)(texts)):
         results[i] = r
     base = pl.DataFrame(
         {

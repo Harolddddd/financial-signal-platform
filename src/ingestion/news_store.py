@@ -39,12 +39,17 @@ def url_hash(url: str) -> int:
     return int.from_bytes(digest, "big", signed=True)
 
 
-def assign_trading_day(published_at: pl.Series, trading_days: pl.Series) -> pl.Series:
-    """Map each timestamp to its trading day (>=16:00 ET rolls to the next day)."""
+def assign_trading_day(
+    published_at: pl.Series,
+    trading_days: pl.Series,
+    tz: str = "America/New_York",
+    cutoff: time = CUTOFF,
+) -> pl.Series:
+    """Map each timestamp to its trading day (at/after the local close rolls to the next day)."""
     if published_at.dtype.time_zone is None:  # type: ignore[union-attr]
         published_at = published_at.dt.replace_time_zone("UTC")
-    et = published_at.dt.convert_time_zone("America/New_York")
-    after_close = et.dt.time() >= CUTOFF
+    et = published_at.dt.convert_time_zone(tz)
+    after_close = et.dt.time() >= cutoff
     base = et.dt.date()
     target = (
         pl.DataFrame({"base": base, "after": after_close})
@@ -143,14 +148,20 @@ def load_daily(news_dir: Path) -> pl.DataFrame:
     return pl.read_parquet(path)
 
 
-def rebuild_daily(news_dir: Path, trading_days: pl.Series, since: date) -> None:
+def rebuild_daily(
+    news_dir: Path,
+    trading_days: pl.Series,
+    since: date,
+    tz: str = "America/New_York",
+    cutoff: time = CUTOFF,
+) -> None:
     news_dir.mkdir(parents=True, exist_ok=True)
     files = sorted(news_dir.glob("articles_scores_*.parquet"))
     old = load_daily(news_dir).with_columns(pl.col("ticker").cast(pl.Utf8))
 
     if files:
         scores = pl.concat([_read_plain(p) for p in files], how="vertical_relaxed")
-        days = assign_trading_day(scores["published_at"], trading_days)
+        days = assign_trading_day(scores["published_at"], trading_days, tz=tz, cutoff=cutoff)
         scores = scores.with_columns(days.alias("time")).filter(
             pl.col("time").is_not_null() & (pl.col("time") >= since)
         )

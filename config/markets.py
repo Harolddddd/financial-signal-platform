@@ -1,5 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
+from datetime import time
 from pathlib import Path
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -15,6 +16,10 @@ class MarketConfig:
     vol_index_ticker: str | None
     currency: str
     default_strategies: tuple[str, ...] | None = None
+    timezone: str = "America/New_York"
+    close_time: time = time(16, 0)
+    # Per-side trading cost in basis points (China includes stamp duty).
+    cost_bps: float = 10.0
 
 
 MARKETS: dict[str, MarketConfig] = {
@@ -36,6 +41,9 @@ MARKETS: dict[str, MarketConfig] = {
         benchmark_ticker="510300.SS",
         vol_index_ticker=None,
         currency="CNY",
+        timezone="Asia/Shanghai",
+        close_time=time(15, 0),
+        cost_bps=15.0,
     ),
 }
 

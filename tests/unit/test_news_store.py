@@ -165,3 +165,24 @@ def test_files_use_zstd(tmp_path):
     ns.rebuild_daily(tmp_path, _days(date(2026, 10, 30)), date(2026, 10, 1))
     for p in (tmp_path / "articles_scores_2026-10.parquet", tmp_path / "sentiment_daily.parquet"):
         assert pq.ParquetFile(p).metadata.row_group(0).column(0).compression == "ZSTD"
+
+
+def test_china_cutoff_rolls_after_1500_shanghai():
+    from datetime import time, timezone
+    days = _days(date(2026, 11, 9), date(2026, 11, 10))
+    ts = pl.Series([datetime(2026, 11, 9, 6, 59, tzinfo=timezone.utc),   # 14:59 CST
+                    datetime(2026, 11, 9, 7, 0, tzinfo=timezone.utc)])   # 15:00 CST
+    out = ns.assign_trading_day(ts, days, tz="Asia/Shanghai", cutoff=time(15, 0))
+    assert out.to_list() == [date(2026, 11, 9), date(2026, 11, 10)]
+
+
+def test_rebuild_daily_china_cutoff(tmp_path):
+    from datetime import time, timezone
+    sh = ZoneInfo("Asia/Shanghai")
+    ns.write_scores(tmp_path, _scores([
+        ("600000.SS", datetime(2026, 11, 9, 15, 30, tzinfo=sh), 1, 0.9),
+    ]))
+    ns.rebuild_daily(tmp_path, _days(date(2026, 11, 9), date(2026, 11, 10)), since=date(2026, 11, 1),
+                     tz="Asia/Shanghai", cutoff=time(15, 0))
+    d = ns.load_daily(tmp_path)
+    assert d["time"].to_list() == [date(2026, 11, 10)]

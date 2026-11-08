@@ -40,3 +40,12 @@ def test_default_strategies():
     assert get_market("us").default_strategies == (
         "extra_trees", "lda_strategy", "random_forest", "conformal_lgbm")
     assert get_market("china").default_strategies is None
+
+
+def test_market_config_timezone_close_cost():
+    from datetime import time
+    from config.markets import get_market
+    c = get_market("china")
+    assert (c.timezone, c.close_time, c.cost_bps) == ("Asia/Shanghai", time(15, 0), 15.0)
+    u = get_market("us")
+    assert (u.timezone, u.close_time, u.cost_bps) == ("America/New_York", time(16, 0), 10.0)
