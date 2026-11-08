@@ -4,12 +4,12 @@ from __future__ import annotations
 import pandas as pd
 from lightgbm import LGBMClassifier
 
-from src.features.news_macro_features import OVERLAY_COLS
+from src.features.news_macro_features import OVERLAY_COLS, overlay_cols
 from src.strategies.statistical.lightgbm_strategy import LightGBMStrategy
 from src.strategies.threads import N_JOBS
 
 _META = {"time", "ticker", "label", "forward_return_5d"}
-_OVERLAY = frozenset(OVERLAY_COLS)
+_OVERLAY = frozenset(overlay_cols("us") + overlay_cols("china"))
 
 
 class PooledLGBMStrategy(LightGBMStrategy):
@@ -24,6 +24,7 @@ class PooledLGBMStrategy(LightGBMStrategy):
     def __init__(
         self,
         use_news_macro: bool = True,
+        market: str = "us",
         n_estimators: int = 200,
         max_depth: int = 6,
         learning_rate: float = 0.05,
@@ -37,7 +38,8 @@ class PooledLGBMStrategy(LightGBMStrategy):
             class_weight="balanced", random_state=random_state, n_jobs=N_JOBS, verbose=-1,
         )
         self.use_news_macro = use_news_macro
-        self.extra_feature_cols: tuple[str, ...] = tuple(OVERLAY_COLS) if use_news_macro else ()
+        self.market = market
+        self.extra_feature_cols: tuple[str, ...] = tuple(overlay_cols(market)) if use_news_macro else ()
 
     def fit(self, df: pd.DataFrame) -> None:
         self._feature_cols = [

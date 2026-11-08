@@ -127,3 +127,22 @@ def test_load_us_news_macro_warns_when_files_missing(tmp_path, monkeypatch, capl
     out = add_macro_features(add_news_features(_frame(), news), macro)
     assert set(OVERLAY_COLS) <= set(out.columns)
     assert out.select(OVERLAY_COLS).null_count().sum_horizontal().item() == 0
+
+
+def test_overlay_cols_by_market():
+    from src.features.news_macro_features import MACRO_COLS, NEWS_COLS, OVERLAY_COLS, overlay_cols
+    from src.ingestion.cn_macro_ingest import CN_MACRO_COLS
+    assert overlay_cols("us") == OVERLAY_COLS == NEWS_COLS + MACRO_COLS
+    assert overlay_cols("china") == NEWS_COLS + CN_MACRO_COLS
+
+
+def test_china_macro_neutral_when_missing():
+    from datetime import datetime
+    from src.features.news_macro_features import add_macro_features
+    from src.ingestion.cn_macro_ingest import CN_MACRO_COLS
+    df = pl.DataFrame({"time": [datetime(2026, 1, 5), datetime(2026, 1, 6)], "ticker": ["A", "A"]})
+    out = add_macro_features(df, None, cols=CN_MACRO_COLS)
+    assert all(out[c].to_list() == [0.0, 0.0] for c in CN_MACRO_COLS)
+    macro = pl.DataFrame({"date": [datetime(2026, 1, 5).date()], **{c: [1.5] for c in CN_MACRO_COLS}})
+    out = add_macro_features(df, macro, cols=CN_MACRO_COLS)
+    assert out["cn_pmi"].to_list() == [1.5, 0.0]

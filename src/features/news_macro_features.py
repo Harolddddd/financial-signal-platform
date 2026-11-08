@@ -8,6 +8,7 @@ import logging
 import polars as pl
 
 from config.markets import get_market
+from src.ingestion.cn_macro_ingest import CN_MACRO_COLS
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,12 @@ MACRO_COLS = [
     "macro_hy_spread_z20",
     "fomc_tone", "fomc_tone_change", "days_since_fomc",
 ]
-OVERLAY_COLS = NEWS_COLS + MACRO_COLS
+OVERLAY_COLS = NEWS_COLS + MACRO_COLS  # US
+
+
+def overlay_cols(market: str) -> list[str]:
+    """News + macro columns the feature build adds for `market`."""
+    return NEWS_COLS + (CN_MACRO_COLS if market == "china" else MACRO_COLS)
 
 _NO_FOMC_DAYS = 999
 
@@ -70,17 +76,20 @@ def add_news_features(df: pl.DataFrame, news_daily: pl.DataFrame | None) -> pl.D
     return out.drop("_date", "_cnt", "_net", "_wnet3")
 
 
-def add_macro_features(df: pl.DataFrame, macro_daily: pl.DataFrame | None) -> pl.DataFrame:
-    """Left-join macro_daily on date and add MACRO_COLS; missing values become 0.0 (days_since_fomc 999)."""
-    neutral = {c: (_NO_FOMC_DAYS if c == "days_since_fomc" else 0.0) for c in MACRO_COLS}
+def add_macro_features(
+    df: pl.DataFrame, macro_daily: pl.DataFrame | None, cols: list[str] = MACRO_COLS
+) -> pl.DataFrame:
+    """Left-join macro_daily on date and add `cols`; missing values become 0.0 (days_since_fomc 999)."""
+    neutral = {c: (_NO_FOMC_DAYS if c == "days_since_fomc" else 0.0) for c in cols}
     if macro_daily is None or macro_daily.height == 0:
         return df.with_columns([
             pl.lit(v).cast(pl.Int64 if c == "days_since_fomc" else pl.Float64).alias(c)
             for c, v in neutral.items()
         ])
-    m = macro_daily.select(pl.col("date").alias("_date"), *MACRO_COLS)
+    m = macro_daily.select(pl.col("date").alias("_date"), *[c for c in cols if c in macro_daily.columns])
     out = df.with_columns(pl.col("time").dt.date().alias("_date"))
     out = out.join(m, on="_date", how="left", maintain_order="left").drop("_date")
+    out = out.with_columns([pl.lit(None, dtype=pl.Float64).alias(c) for c in cols if c not in out.columns])
     return out.with_columns([
         pl.col(c).cast(pl.Int64 if c == "days_since_fomc" else pl.Float64).fill_null(v)
         for c, v in neutral.items()
@@ -105,5 +114,22 @@ def load_us_news_macro() -> tuple[pl.DataFrame, pl.DataFrame]:
         macro = pl.read_parquet(path)
     else:
         logger.warning("US macro file missing (%s); macro columns will be neutral", path)
+        macro = pl.DataFrame()
+    return news, macro
+
+
+def load_news_macro(market: str) -> tuple[pl.DataFrame, pl.DataFrame]:
+    """News-daily and macro-daily frames for `market` (empty frames when files are missing)."""
+    if market == "us":
+        return load_us_news_macro()
+    from src.ingestion.news_store import load_daily
+
+    root = get_market(market).data_root
+    news = load_daily(root / "news")
+    path = root / "macro" / "macro_daily.parquet"
+    if path.exists():
+        macro = pl.read_parquet(path)
+    else:
+        logger.warning("%s macro file missing (%s); macro columns will be neutral", market, path)
         macro = pl.DataFrame()
     return news, macro

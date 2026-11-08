@@ -182,6 +182,13 @@ strategies:
     params:
       use_news_macro: true
 
+  - name: pooled_lgbm_news_cn
+    class: src.strategies.statistical.pooled_lgbm.PooledLGBMStrategy
+    markets: [china]  # China news + PBoC/NBS macro columns
+    params:
+      use_news_macro: true
+      market: china
+
   - name: cross_sectional_ranker
     class: src.strategies.statistical.cross_sectional_ranker.CrossSectionalRankerStrategy
     params:

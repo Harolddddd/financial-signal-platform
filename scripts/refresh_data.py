@@ -8,7 +8,8 @@ import polars as pl
 
 from config.markets import MARKETS, get_market
 from scripts.build_features import _TICKERS_BY_MARKET, build_features_for_ticker
-from src.features.news_macro_features import load_us_news_macro
+from src.features.news_macro_features import MACRO_COLS, load_news_macro, load_us_news_macro
+from src.ingestion.cn_macro_ingest import CN_MACRO_COLS
 from src.features.cross_asset_features import synthetic_vol_index
 from src.ingestion.historical_collector import fetch_ohlcv
 
@@ -131,7 +132,8 @@ def main(market: str = "us") -> None:
         _refresh_us_macro()
         news_daily, macro_daily = load_us_news_macro()
     else:
-        news_daily, macro_daily = None, None
+        # China news + macro arrive from the compute server (B) via the inbox.
+        news_daily, macro_daily = load_news_macro(market)
 
     logger.info("[2/2] Rebuilding features for %d tickers", len(tickers))
     feature_dir.mkdir(parents=True, exist_ok=True)
@@ -143,6 +145,7 @@ def main(market: str = "us") -> None:
             df = build_features_for_ticker(
                 ticker, raw_dir, benchmark_df, vix_df,
                 news_daily=news_daily, macro_daily=macro_daily,
+                macro_cols=CN_MACRO_COLS if market == "china" else MACRO_COLS,
             )
             df.write_parquet(feature_dir / f"{ticker}.parquet")
             ok += 1

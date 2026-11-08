@@ -33,7 +33,15 @@ def test_china_cache_has_leaderboard_and_signals():
     assert len(signals["signals"]) > 0
 
 
+# Added with the league (2026-11-08): first results come from the server bench pass,
+# written to cache/bench/, not from a local full backtest.
+_BENCH_ONLY = {"pooled_lgbm_news_cn", "cross_sectional_ranker_news_cn", "news_surprise_cn",
+               "regime_gated_cn", "stacked_live_cn"}
+
+
 def test_china_cache_has_backtest_file_per_strategy():
     for name in list_strategies("china"):
+        if name in _BENCH_ONLY:
+            continue
         backtest_path = _CHINA_CACHE_DIR / f"backtest_{_safe(name)}.json"
         assert backtest_path.exists(), f"missing backtest cache for {name}"

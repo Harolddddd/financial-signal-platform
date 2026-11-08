@@ -76,3 +76,15 @@ def test_pooled_model_is_us_only_in_registry():
     assert "pooled_lgbm_news" not in list_strategies("china")
     assert "pooled_lgbm_news" in list_strategies()
     assert "extra_trees" in list_strategies("china")
+
+
+def test_pooled_lgbm_china_declares_cn_cols():
+    from src.features.news_macro_features import overlay_cols
+    assert PooledLGBMStrategy(market="china").extra_feature_cols == tuple(overlay_cols("china"))
+
+
+def test_pooled_lgbm_news_cn_registered_for_china_only():
+    from src.strategies.registry import list_strategies
+    assert "pooled_lgbm_news_cn" in list_strategies("china")
+    assert "pooled_lgbm_news_cn" not in list_strategies("us")
+    assert load_strategy("pooled_lgbm_news_cn").market == "china"
