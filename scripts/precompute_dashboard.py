@@ -10,8 +10,9 @@ Usage:
 from __future__ import annotations
 import json
 import logging
+import os
 import warnings
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import polars as pl
@@ -244,7 +245,12 @@ def step_signals(
     logger.info("[4/4] live signals — computing fresh from all strategies (no cache read)")
     # Fit on the labeled/trimmed training data — unchanged, since fit() needs
     # a real label and this keeps training/backtesting behavior untouched.
-    df = load_training_data(feature_dir)
+    # SIGNAL_TRAIN_DAYS caps the fit history (e.g. 400 = the backtests' train
+    # window). Unset = full history. On a small server the full history
+    # (since 1990) needs ~7 GB; the filter runs inside DuckDB.
+    train_days = os.environ.get("SIGNAL_TRAIN_DAYS")
+    start = datetime.now(timezone.utc) - timedelta(days=int(train_days)) if train_days else None
+    df = load_training_data(feature_dir, start=start)
 
     # Fit every stateful strategy once, up front, on the full historical df —
     # fitting is a per-strategy cost, not a per-ticker one. Doing this before

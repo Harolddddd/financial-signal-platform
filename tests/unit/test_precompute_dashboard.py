@@ -214,3 +214,31 @@ def test_strategies_arg_overrides_backtest_names_not_signal_names():
         pc.main("us", strategies=["extra_trees"])
     assert list(bt.call_args.kwargs["names"]) == ["extra_trees"]
     assert list(sg.call_args.kwargs["names"]) == US_DEFAULTS
+
+
+def test_signal_train_days_limits_fit_history(tmp_path, monkeypatch):
+    seen = {}
+
+    def _load(feature_dir, start=None, **kw):
+        seen["start"] = start
+        return _frame("AAA", 150, 0.0, 0)
+
+    monkeypatch.setenv("SIGNAL_TRAIN_DAYS", "400")
+    with patch.object(pc, "load_training_data", side_effect=_load),             patch.object(pc, "list_strategies", return_value=["fake"]),             patch.object(pc, "load_strategy", side_effect=lambda n: _AlwaysBuy()),             patch.object(pc, "iter_live_features", return_value=iter([])):
+        pc.step_signals(market="china", cache_dir=tmp_path)
+    from datetime import datetime, timezone
+    age = (datetime.now(timezone.utc) - seen["start"]).days
+    assert 399 <= age <= 400
+
+
+def test_signal_fit_uses_full_history_by_default(tmp_path, monkeypatch):
+    seen = {}
+
+    def _load(feature_dir, start=None, **kw):
+        seen["start"] = start
+        return _frame("AAA", 150, 0.0, 0)
+
+    monkeypatch.delenv("SIGNAL_TRAIN_DAYS", raising=False)
+    with patch.object(pc, "load_training_data", side_effect=_load),             patch.object(pc, "list_strategies", return_value=["fake"]),             patch.object(pc, "load_strategy", side_effect=lambda n: _AlwaysBuy()),             patch.object(pc, "iter_live_features", return_value=iter([])):
+        pc.step_signals(market="china", cache_dir=tmp_path)
+    assert seen["start"] is None

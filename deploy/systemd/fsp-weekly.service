@@ -8,7 +8,7 @@ Type=oneshot
 User=ubuntu
 WorkingDirectory=/home/ubuntu/app
 EnvironmentFile=/home/ubuntu/app/.env
-Environment=MODEL_N_JOBS=2 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 TOKENIZERS_PARALLELISM=false
+Environment=SIGNAL_TRAIN_DAYS=400 MODEL_N_JOBS=2 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 TOKENIZERS_PARALLELISM=false
 Nice=10
 ExecStart=/home/ubuntu/app/deploy/run_pipeline.sh weekly
 TimeoutStartSec=20h
