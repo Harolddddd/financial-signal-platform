@@ -35,7 +35,15 @@ class CrossSectionalRankerStrategy(Strategy):
         num_leaves: int = 31,
         min_group_size: int = 5,
         random_state: int = 42,
+        use_news_macro: bool = False,
+        market: str = "us",
     ) -> None:
+        from src.features.news_macro_features import overlay_cols
+
+        # With news/macro: _select_cols passes these columns through and
+        # feature_columns() picks them up like any other feature.
+        self.market = market
+        self.extra_feature_cols: tuple[str, ...] = tuple(overlay_cols(market)) if use_news_macro else ()
         self.calib_fraction = calib_fraction
         self.buy_threshold = buy_threshold
         self.min_group_size = min_group_size

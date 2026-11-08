@@ -19,6 +19,7 @@ import polars as pl
 
 from config.markets import MARKETS, get_market
 from dashboard.ui_config import FEATURE_COLS, OHLCV_COLS
+from src.backtesting.limit_filter import blocked_entries
 from src.backtesting.strategy_runner import walk_forward_backtest_strategy
 from src.features.duckdb_client import load_training_data
 from src.league import league as lg
@@ -76,6 +77,7 @@ def main(
     test_start = t0 - timedelta(days=window)
     df = load(feature_dir, start=test_start - timedelta(days=_TRAIN_WINDOW_DAYS))
     outcomes = df.select("ticker", pl.col("time").dt.date().alias("time"), "forward_return_5d")
+    blocked = blocked_entries(market, df)
     bench_dir = cache_dir / "bench"
     bench_dir.mkdir(parents=True, exist_ok=True)
 
@@ -93,7 +95,7 @@ def main(
             wf = walk_forward_backtest_strategy(
                 df, loader(name), OHLCV_COLS, FEATURE_COLS,
                 train_window_days=_TRAIN_WINDOW_DAYS, test_window_days=21, step_days=21,
-                start=test_start, pred_log=log,
+                start=test_start, pred_log=log, blocked_entries=blocked,
             )
             p = pl.DataFrame(log, schema=_PRED_SCHEMA, orient="row")
             score = score_predictions(p, outcomes, cost_bps=mcfg.cost_bps)

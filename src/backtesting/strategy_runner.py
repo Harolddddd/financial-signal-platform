@@ -52,13 +52,15 @@ def walk_forward_backtest_strategy(
     confidence_threshold: float = 0.5,
     start: datetime | None = None,
     pred_log: list | None = None,
+    blocked_entries: set | None = None,
 ) -> WalkForwardBacktestResult:
     """Walk-forward backtest of one strategy.
 
     start: only folds whose test window starts on/after it are run (earlier rows
         still feed training). pred_log: when given, receives one
         (ticker, date, buy_score) per test row; buy_score is the confidence of a
-        Buy at/above the threshold, else 0.0.
+        Buy at/above the threshold, else 0.0. blocked_entries: (ticker, time)
+        rows where a Buy cannot be filled (China limit days); treated as Hold.
     """
     drop_cols = [c for c in _REQUIRED if c in df.columns]
     df_clean = df.drop_nulls(subset=drop_cols).sort("time")
@@ -119,13 +121,13 @@ def walk_forward_backtest_strategy(
     if _is_stateless(strategy):
         folds = _run_stateless(
             ticker_pdfs, strategy, fold_windows, time_to_fold, lookup, confidence_threshold,
-            buy_hits, pred_log,
+            buy_hits, pred_log, blocked_entries or set(),
         )
     else:
         folds = _run_stateful(
             df_clean, ticker_pdfs, strategy, ohlcv_cols, feature_cols,
             fold_windows, time_to_fold, lookup, min_train_samples, confidence_threshold,
-            buy_hits, pred_log,
+            buy_hits, pred_log, blocked_entries or set(),
         )
 
     if not folds:
@@ -190,6 +192,7 @@ def _run_stateless(
     confidence_threshold: float,
     buy_hits: list[tuple[float, bool]],
     pred_log: list | None = None,
+    blocked: set = frozenset(),
 ) -> list[FoldBacktestResult]:
     """
     Predict ONCE per ticker on its full price history, then assign each signal
@@ -217,7 +220,7 @@ def _run_stateless(
             if fi is None or (ticker, t) not in lookup:
                 continue
             conf = float(conf_arr[i])
-            is_buy = str(sig_arr[i]) == "Buy" and conf >= confidence_threshold
+            is_buy = str(sig_arr[i]) == "Buy" and conf >= confidence_threshold and (ticker, t) not in blocked
             if pred_log is not None:
                 pred_log.append((ticker, _as_date(t), conf if is_buy else 0.0))
             if not is_buy:
@@ -267,6 +270,7 @@ def _run_stateful(
     confidence_threshold: float,
     buy_hits: list[tuple[float, bool]],
     pred_log: list | None = None,
+    blocked: set = frozenset(),
 ) -> list[FoldBacktestResult]:
     """
     Fit once per fold on combined training data (good for cross-ticker generalisation).
@@ -339,7 +343,9 @@ def _run_stateful(
                 if key not in lookup:
                     continue
                 conf = float(conf_arr[i])
-                is_buy = str(sig_arr[i]) == "Buy" and conf >= confidence_threshold
+                is_buy = (
+                    str(sig_arr[i]) == "Buy" and conf >= confidence_threshold and key not in blocked
+                )
                 if pred_log is not None:
                     pred_log.append((ticker, _as_date(t), conf if is_buy else 0.0))
                 if not is_buy:

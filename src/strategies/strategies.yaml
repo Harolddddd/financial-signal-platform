@@ -201,3 +201,53 @@ strategies:
       holdout_fraction: 0.3
       buy_threshold: 0.5
       n_regimes: 3
+
+  - name: cross_sectional_ranker_news
+    class: src.strategies.statistical.cross_sectional_ranker.CrossSectionalRankerStrategy
+    markets: [us]  # league bench candidate (2026-11-08)
+    params:
+      use_news_macro: true
+      market: us
+
+  - name: cross_sectional_ranker_news_cn
+    class: src.strategies.statistical.cross_sectional_ranker.CrossSectionalRankerStrategy
+    markets: [china]  # league bench candidate (2026-11-08)
+    params:
+      use_news_macro: true
+      market: china
+
+  - name: news_surprise
+    class: src.strategies.statistical.news_surprise.NewsSurpriseStrategy
+    markets: [us]  # league bench candidate (2026-11-08)
+    params:
+      market: us
+
+  - name: news_surprise_cn
+    class: src.strategies.statistical.news_surprise.NewsSurpriseStrategy
+    markets: [china]  # league bench candidate (2026-11-08)
+    params:
+      market: china
+
+  - name: regime_gated
+    class: src.strategies.statistical.regime_gated.RegimeGatedStrategy
+    markets: [us]  # league bench candidate (2026-11-08)
+    params:
+      market: us
+
+  - name: regime_gated_cn
+    class: src.strategies.statistical.regime_gated.RegimeGatedStrategy
+    markets: [china]  # league bench candidate (2026-11-08)
+    params:
+      market: china
+
+  - name: stacked_live
+    class: src.strategies.statistical.stacked_live.StackedLiveStrategy
+    markets: [us]  # league bench candidate (2026-11-08)
+    params:
+      market: us
+
+  - name: stacked_live_cn
+    class: src.strategies.statistical.stacked_live.StackedLiveStrategy
+    markets: [china]  # league bench candidate (2026-11-08)
+    params:
+      market: china

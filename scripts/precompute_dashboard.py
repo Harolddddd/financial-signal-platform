@@ -22,6 +22,7 @@ from dashboard.ui_config import CONFIDENCE_THRESHOLD, FEATURE_COLS, OHLCV_COLS, 
 from scripts.build_features import _TICKERS_BY_MARKET, iter_live_features
 from src.backtesting.grader import grade_model
 from src.backtesting.metrics import BacktestMetrics
+from src.backtesting.limit_filter import blocked_entries, is_limit_move
 from src.backtesting.strategy_runner import _is_stateless, _select_cols, walk_forward_backtest_strategy
 from src.features.duckdb_client import load_training_data
 from src.features.news_macro_features import OVERLAY_COLS
@@ -172,10 +173,12 @@ def step_backtests(
     step_days: int = 21,
     feature_dir: Path = PARQUET_DIR,
     cache_dir: Path = CACHE_DIR,
+    market: str = "us",
 ) -> None:
     logger.info("[2/4] per-strategy backtests — running walk-forward fresh (no cache read)")
     # Load data once; reuse across all strategies.
     df = load_training_data(feature_dir)
+    blocked = blocked_entries(market, df)
     for name in (names if names is not None else list_strategies()):
         logger.info("  strategy: %s", name)
         try:
@@ -183,6 +186,7 @@ def step_backtests(
             wf = walk_forward_backtest_strategy(
                 df, strategy, OHLCV_COLS, FEATURE_COLS,
                 train_window_days=400, test_window_days=21, step_days=step_days,
+                blocked_entries=blocked,
             )
             # Aggregate across all folds for the grade.
             total_trades = sum(f.n_trades for f in wf.folds)
@@ -321,6 +325,11 @@ def step_signals(
 
             sig = str(result.signal.iloc[pos])
             conf = float(result.confidence.iloc[pos])
+            # China: a stock closing at its daily limit can't be bought at the close.
+            if market == "china" and sig == "Buy" and pos >= 1 and "close" in t_pd.columns and is_limit_move(
+                float(t_pd["close"].iloc[pos - 1]), float(t_pd["close"].iloc[pos])
+            ):
+                sig = "Hold"
             if wrapped[name]:
                 reason = str(strategy.last_reason.iloc[pos])
                 raw_conf = float(strategy.last_raw_confidence.iloc[pos])
@@ -381,7 +390,7 @@ def main(
     if "data_summary" in steps:
         step_data_summary(feature_dir, cache_dir)
     if "backtests" in steps:
-        step_backtests(names=backtest_names, feature_dir=feature_dir, cache_dir=cache_dir)
+        step_backtests(names=backtest_names, feature_dir=feature_dir, cache_dir=cache_dir, market=market)
     if "leaderboard" in steps:
         step_leaderboard(cache_dir)
     if "signals" in steps:
