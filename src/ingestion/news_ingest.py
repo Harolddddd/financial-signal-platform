@@ -7,15 +7,19 @@ import logging
 import time
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import polars as pl
 
 from config.settings import settings
 from src.ingestion import news_store
 from src.ingestion.news_collector import collect_finnhub
-from src.ingestion.sentiment_processor import score_texts
+from src.ingestion.sentiment_processor import SentimentResult, score_texts
 
 logger = logging.getLogger(__name__)
+
+_NY = ZoneInfo("America/New_York")
+_UNSCORED = SentimentResult("unscored", None, None, None, "unscored")
 
 _MAX_CALLS_PER_MIN = 55
 _PACE_SECONDS = 60 / _MAX_CALLS_PER_MIN
@@ -26,6 +30,10 @@ _REBUILD_EVERY = 25
 # Finnhub returns at most ~250 articles per request, newest first. A response
 # this large is assumed truncated and its range is re-fetched in halves.
 _TRUNCATED_AT = 240
+# FinBERT on CPU is the bottleneck. Busy tickers get 100+ articles a day; score
+# a deterministic sample of this many per (ticker, ET day). The rest are stored
+# unscored (null sentiment) so article counts stay exact.
+_MAX_SCORED_PER_DAY = 30
 
 
 def _month_chunks(start: date, end: date) -> list[tuple[date, date]]:
@@ -136,11 +144,23 @@ def _existing_hashes(news_dir: Path, start: date, end: date) -> set[tuple[str, i
 
 
 def _score_and_write(news_dir: Path, fresh: dict, today: date) -> int:
-    hashes = list(fresh)
+    # Sort by hash within each (ticker, ET day): a stable pseudo-random sample.
+    hashes = sorted(
+        fresh, key=lambda h: (fresh[h].ticker, fresh[h].published_at.astimezone(_NY).date(), h)
+    )
     articles = [fresh[h] for h in hashes]
+    per_day: dict[tuple, int] = {}
+    pick: list[int] = []
+    for i, a in enumerate(articles):
+        key = (a.ticker, a.published_at.astimezone(_NY).date())
+        per_day[key] = per_day.get(key, 0) + 1
+        if per_day[key] <= _MAX_SCORED_PER_DAY:
+            pick.append(i)
     # Body text is used only in memory for scoring; it is never written.
-    texts = [f"{a.headline} {a.body or ''}".strip() for a in articles]
-    results = score_texts(texts)
+    texts = [f"{articles[i].headline} {articles[i].body or ''}".strip() for i in pick]
+    results: list = [_UNSCORED] * len(articles)
+    for i, r in zip(pick, score_texts(texts)):
+        results[i] = r
     base = pl.DataFrame(
         {
             "ticker": [a.ticker for a in articles],

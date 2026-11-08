@@ -188,3 +188,23 @@ def test_truncated_responses_are_split_until_complete(tmp_path, monkeypatch):
     res = news_ingest.ingest_news(["AAPL"], start, end, tmp_path, days, fetch=fetch, sleep=lambda s: None)
     assert res["articles_new"] == 10 * per_day
     assert all(f == t for f, t in calls if (t - f).days == 0) and len(calls) > 1
+
+
+def test_scores_at_most_cap_per_ticker_day_but_counts_all(tmp_path, monkeypatch):
+    scored = []
+
+    def counting_score(texts, batch_size=32):
+        scored.extend(texts)
+        return _fake_score(texts)
+
+    monkeypatch.setattr(news_ingest, "score_texts", counting_score)
+    monkeypatch.setattr(news_ingest, "_MAX_SCORED_PER_DAY", 4)
+    arts = [_art("AAPL", n) for n in range(10)]  # all on one day
+    news_ingest.ingest_news(
+        ["AAPL"], date(2026, 10, 20), date(2026, 10, 22), tmp_path, _days(),
+        fetch=lambda t, f, to: arts, sleep=lambda s: None,
+    )
+    assert len(scored) == 4
+    daily = pl.read_parquet(tmp_path / "sentiment_daily.parquet")
+    assert daily["article_count"].to_list() == [10]
+    assert abs(daily["avg_pos"][0] - 0.8) < 1e-6  # mean over the scored sample only
