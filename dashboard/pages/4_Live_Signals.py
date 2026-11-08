@@ -6,7 +6,7 @@ import streamlit as st
 from config.markets import get_market
 from dashboard.market_state import get_selected_market, format_price
 from dashboard.ui_config import CONFIDENCE_THRESHOLD, get_paths, OHLCV_COLS, FEATURE_COLS
-from dashboard.data_loader import get_cache_dir, get_live_signals
+from dashboard.data_loader import format_generated, get_cache_dir, get_live_signals, get_ticker_names
 
 st.set_page_config(page_title="Live Signals", layout="wide")
 st.header("Live Buy Signals")
@@ -52,7 +52,7 @@ else:
     ]
     generated_at = "live"
 
-st.caption(f"Cache generated: {generated_at}")
+st.caption(f"Signals generated: {format_generated(generated_at, market)}")
 
 if not raw_signals:
     st.info("No Buy signals above the current confidence threshold.")
@@ -70,6 +70,9 @@ df = df.sort_values(["ticker", "confidence"], ascending=[True, False])
 df["confidence"] = df["confidence"].map(lambda x: f"{x:.1%}")
 df["entry_price"] = df["entry_price"].map(lambda x: format_price(x, market))
 df.columns = ["Ticker", "Strategy", "Confidence", "Entry Price", "Date", "Trade Opened"]
+_names = get_ticker_names(market)
+if _names:
+    df.insert(1, "Name", df["Ticker"].map(_names).fillna(""))
 
 # Summary: tickers with the most strategy agreement
 ticker_counts = df.groupby("Ticker").size().sort_values(ascending=False)

@@ -33,6 +33,7 @@ _SHOW_PROPS = [
     "ExecMainExitTimestamp", "MemoryCurrent", "MemoryPeak",
 ]
 ET = ZoneInfo("America/New_York")
+CST = ZoneInfo("Asia/Shanghai")
 _PROGRESS_RE = re.compile(r"news progress (\d+)/(\d+) (\S+) new_total=(\d+)")
 
 
@@ -196,3 +197,12 @@ def to_et(utc_iso: str) -> str:
     except (TypeError, ValueError):
         return utc_iso
     return ts.astimezone(ET).strftime("%m-%d %H:%M %Z")
+
+
+def beijing_time(utc_iso: str) -> str:
+    """'2026-11-08T02:47:12Z' -> '11-08 10:47 CST'; anything unparsable is returned unchanged."""
+    try:
+        ts = datetime.strptime(utc_iso, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+    except (TypeError, ValueError):
+        return utc_iso
+    return ts.astimezone(CST).strftime("%m-%d %H:%M CST")

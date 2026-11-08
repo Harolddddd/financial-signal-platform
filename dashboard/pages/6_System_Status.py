@@ -52,7 +52,7 @@ for timer in ss.TIMERS:
 st.dataframe(trows, hide_index=True, use_container_width=True)
 
 # --- Compute server (B) backfill ---
-st.subheader("Server B: news backfill")
+st.subheader("Server B: US news backfill (one-off)")
 bf = ss.backfill_status()
 if bf is None:
     st.caption("No status received from Server B yet.")
@@ -64,6 +64,20 @@ else:
     st.caption(
         f"{bf.get('days', '?')}-day backfill, started {ss.to_et(bf.get('started', '?'))}, "
         f"last update {ss.to_et(bf.get('updated', '?'))} (every 5 min), B memory {bf.get('mem', '?')}"
+    )
+
+st.subheader("Server B: China news + macro (daily 16:30 Beijing)")
+cn = ss.backfill_status(ss.CN_NEWS_STATUS)
+if cn is None:
+    st.caption("No status received from Server B yet.")
+else:
+    st.progress(cn.get("pct", 0.0), text=(
+        f"{cn.get('state', '?')} - {cn.get('done', '?')}/{cn.get('total', '?')} tickers, "
+        f"{cn.get('new_total', '?')} new articles"
+    ))
+    st.caption(
+        f"started {ss.to_et(cn.get('started', '?'))} ({ss.beijing_time(cn.get('started', '?'))}), "
+        f"last update {ss.to_et(cn.get('updated', '?'))}, B memory {cn.get('mem', '?')}"
     )
 
 # --- Last run summary ---

@@ -3,7 +3,7 @@ import streamlit as st
 
 from config.markets import get_market
 from dashboard.market_state import get_selected_market, format_price
-from dashboard.data_loader import get_combined_ratings
+from dashboard.data_loader import get_combined_ratings, get_ticker_names
 
 st.set_page_config(page_title="Combined Signal", layout="wide")
 st.header("Combined Signal — Overall Rating by Stock")
@@ -46,6 +46,9 @@ df["Date"] = pd.to_datetime(df["date"]).dt.strftime("%Y-%m-%d")
 df["Entry Price"] = df["entry_price"].map(lambda x: format_price(x, market))
 df = df.rename(columns={"ticker": "Ticker", "n_buy": "# Buy", "n_strategies": "# Strategies"})
 df = df[["Ticker", "Signal", "Rating", "Entry Price", "Date", "# Buy", "# Strategies"]]
+_names = get_ticker_names(market)
+if _names:
+    df.insert(1, "Name", df["Ticker"].map(_names).fillna(""))
 
 col1, col2, col3 = st.columns(3)
 col1.metric("Tickers rated", len(df))

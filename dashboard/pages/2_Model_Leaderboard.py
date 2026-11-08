@@ -4,7 +4,7 @@ import polars as pl
 from config.markets import get_market
 from dashboard.market_state import get_selected_market
 from dashboard.ui_config import get_paths, OHLCV_COLS, FEATURE_COLS, GRADE_COLORS
-from dashboard.data_loader import get_leaderboard
+from dashboard.data_loader import STALE_DAYS, get_leaderboard, get_league_table
 
 st.set_page_config(page_title="Strategy Leaderboard", layout="wide")
 st.header("Strategy Leaderboard")
@@ -12,6 +12,48 @@ st.header("Strategy Leaderboard")
 market = get_selected_market()
 st.caption(f"Market: {get_market(market).label}")
 parquet_dir, _ = get_paths(market)
+
+
+def _league_rows(rows: list[dict], retired: bool = False) -> list[dict]:
+    out = []
+    for r in rows:
+        row = {
+            "Method": r["method"],
+            "Net Sharpe": "-" if r["net_sharpe"] is None else f"{r['net_sharpe']:.2f}",
+            "Trend": r["trend"],
+            "Precision": "-" if r["precision"] is None else f"{r['precision']:.1%}",
+            "Trades": r["n_trades"] if r["n_trades"] is not None else "-",
+            "Last tested": r["tested_on"] or "never",
+        }
+        if retired:
+            row["Why retired"] = r["retired_because"] or ""
+        else:
+            row["Status"] = ("stale" if r["stale"] else "ok") + (" · error" if r.get("error") else "")
+            row["Duplicate of"] = r["duplicate_of"] or ""
+        out.append(row)
+    return out
+
+
+league = get_league_table(market)
+st.subheader("Live methods")
+st.caption(
+    "Retrained weekly; daily signals come from these. Score = Sharpe after trading costs "
+    f"on the last 3 years (bench re-test every 2 weeks). 'stale' = not re-tested for "
+    f"{STALE_DAYS['live']}+ days."
+)
+if league["live"]:
+    st.dataframe(_league_rows(league["live"]), use_container_width=True, hide_index=True)
+else:
+    st.info("No bench re-test has run yet for this market; the live set is the configured seed.")
+with st.expander(f"Bench ({len(league['bench'])} methods) - promoted after beating the weakest live method twice in a row"):
+    st.dataframe(_league_rows(league["bench"]), use_container_width=True, hide_index=True)
+if league["retired"]:
+    with st.expander(f"Retired ({len(league['retired'])}) - near-identical to a better method for over a month"):
+        st.dataframe(_league_rows(league["retired"], retired=True), use_container_width=True, hide_index=True)
+
+st.divider()
+st.subheader("Full-history backtests")
+st.caption("Walk-forward over the whole history; refreshed weekly for live methods only.")
 
 
 @st.cache_data(ttl=1800)

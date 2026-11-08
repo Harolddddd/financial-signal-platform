@@ -3,8 +3,9 @@ import plotly.graph_objects as go
 from config.markets import get_market
 from dashboard.market_state import get_selected_market
 from dashboard.ui_config import get_paths, OHLCV_COLS, FEATURE_COLS, GRADE_COLORS
-from dashboard.data_loader import get_backtest_result
-from src.strategies.registry import list_strategies
+import json
+
+from dashboard.data_loader import get_backtest_result, get_cache_dir, get_league_table
 
 st.set_page_config(page_title="Backtest Results", layout="wide")
 st.header("Backtest Results")
@@ -13,12 +14,37 @@ market = get_selected_market()
 st.caption(f"Market: {get_market(market).label}")
 parquet_dir, _ = get_paths(market)
 
-strategy_names = list_strategies()
+league = get_league_table(market)
+section_of = {r["method"]: sec for sec in ("live", "bench") for r in league[sec]}
+tested_on = {r["method"]: r["tested_on"] for sec in ("live", "bench") for r in league[sec]}
+strategy_names = [r["method"] for r in league["live"]] + [r["method"] for r in league["bench"]]
 if not strategy_names:
     st.warning("No strategies in registry. Check src/strategies/strategies.yaml.")
     st.stop()
 
-selected = st.selectbox("Select strategy", strategy_names)
+selected = st.selectbox(
+    "Select strategy", strategy_names, format_func=lambda n: f"{n}  ({section_of.get(n, '')})"
+)
+cache_dir = get_cache_dir(market)
+st.caption(f"Last tested: {tested_on.get(selected) or 'never'}")
+
+if not (cache_dir / f"backtest_{selected}.json").exists():
+    # No full-history backtest (bench-only method): show its 3-year bench result
+    # instead of computing a walk-forward inside the dashboard.
+    bench_path = cache_dir / "bench" / f"bench_{selected}.json"
+    if not bench_path.exists():
+        st.info("Not tested yet. It will be scored in the next bench re-test.")
+        st.stop()
+    b = json.loads(bench_path.read_text(encoding="utf-8"))
+    sc = b["score"]
+    st.markdown(f"### Bench result (last {b['window_days'] // 365} years, after costs)")
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Net Sharpe", f"{sc['net_sharpe']:.2f}")
+    c2.metric("Precision", f"{sc['precision']:.1%}")
+    c3.metric("Trades", sc["n_trades"])
+    c4.metric("Mean net return / trade", f"{sc['mean_net_return']:.2%}")
+    st.caption("Full fold-by-fold history is computed only for live methods (weekly).")
+    st.stop()
 
 
 @st.cache_data(ttl=1800)

@@ -307,3 +307,104 @@ def get_combined_ratings(market: str = "us") -> tuple[list[dict], dict[str, list
 
     summary_rows.sort(key=lambda r: r["overall_rating"], reverse=True)
     return summary_rows, detail_by_ticker
+
+
+# ---------------------------------------------------------------------------
+# League (live / bench / retired)
+# ---------------------------------------------------------------------------
+
+STALE_DAYS = {"live": 8, "bench": 15}
+_TREND_EPS = 0.05
+
+
+def _trend(history: list[dict]) -> str:
+    ok = [h["net_sharpe"] for h in history if not h.get("error") and h.get("net_sharpe") is not None]
+    if len(ok) < 2:
+        return ""
+    d = ok[-1] - ok[-2]
+    return "↑" if d > _TREND_EPS else ("↓" if d < -_TREND_EPS else "→")
+
+
+def _is_stale(section: str, tested_on: str, today) -> bool:
+    if section not in STALE_DAYS:
+        return False
+    if not tested_on:
+        return True
+    from datetime import date as _date
+    return (today - _date.fromisoformat(tested_on)).days > STALE_DAYS[section]
+
+
+def get_league_table(market: str, today=None) -> dict[str, list[dict]]:
+    """Rows for the Live / Bench / Retired tables, each sorted by net Sharpe."""
+    from datetime import date as _date
+    from src.league.league import STATE_FILE, latest_ok
+
+    today = today or _date.today()
+    cache_dir = get_cache_dir(market)
+    out: dict[str, list[dict]] = {"live": [], "bench": [], "retired": []}
+    state = _load_cache(cache_dir / STATE_FILE)
+    if state:
+        for name, m in state["methods"].items():
+            h = latest_ok(m) or {}
+            tested = m["history"][-1]["date"] if m["history"] else ""
+            sec = m["status"] if m["status"] in out else "bench"
+            if sec == "live":  # live methods are also re-tested by the weekly full backtest
+                bt = _load_cache(cache_dir / f"backtest_{_safe(name)}.json") or {}
+                tested = max(tested, str(bt.get("generated_at", ""))[:10])
+            out[sec].append({
+                "method": name,
+                "net_sharpe": h.get("net_sharpe"),
+                "precision": h.get("precision"),
+                "n_trades": h.get("n_trades"),
+                "tested_on": tested,
+                "trend": _trend(m["history"]),
+                "duplicate_of": m.get("duplicate_of"),
+                "stale": _is_stale(sec, tested, today),
+                "retired_because": m.get("retired_because"),
+                "error": m["history"][-1].get("error") if m["history"] else None,
+            })
+    else:
+        for name in list_strategies(market):
+            bt = _load_cache(cache_dir / f"backtest_{_safe(name)}.json") or {}
+            tested = str(bt.get("generated_at", ""))[:10]
+            out["bench"].append({
+                "method": name,
+                "net_sharpe": bt.get("mean_sharpe"),
+                "precision": bt.get("weighted_precision_buy"),
+                "n_trades": ((bt.get("grade") or {}).get("metrics") or {}).get("n_trades"),
+                "tested_on": tested,
+                "trend": "",
+                "duplicate_of": None,
+                "stale": _is_stale("bench", tested, today),
+                "retired_because": None,
+                "error": None,
+            })
+    for rows in out.values():
+        rows.sort(key=lambda r: (r["net_sharpe"] is None, -(r["net_sharpe"] or 0.0)))
+    return out
+
+
+def get_ticker_names(market: str) -> dict[str, str]:
+    """China only: ticker -> company name (synced from Server B weekly)."""
+    if market != "china":
+        return {}
+    path = get_market(market).data_root / "index_compositions" / "names.parquet"
+    if not path.exists():
+        return {}
+    df = pl.read_parquet(path)
+    return dict(zip(df["ticker"].to_list(), df["name"].to_list()))
+
+
+def format_generated(iso: str, market: str) -> str:
+    """Cache timestamp in US Eastern; China pages add Beijing time."""
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    try:
+        ts = datetime.fromisoformat(str(iso).replace("Z", "+00:00"))
+    except ValueError:
+        return str(iso)
+    et = ts.astimezone(ZoneInfo("America/New_York")).strftime("%m-%d %H:%M %Z")
+    if market != "china":
+        return et
+    return f"{et} ({ts.astimezone(ZoneInfo('Asia/Shanghai')).strftime('%m-%d %H:%M')} Beijing)"
