@@ -2,6 +2,7 @@ from __future__ import annotations
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from xgboost import XGBClassifier
+from src.strategies.threads import N_JOBS
 from src.strategies.base import Strategy, PredictionResult
 
 _META = {"time", "ticker", "label", "forward_return_5d"}
@@ -16,7 +17,7 @@ class XGBoostStrategy(Strategy):
             n_estimators=n_estimators, max_depth=max_depth,
             learning_rate=learning_rate, tree_method="hist",
             eval_metric="mlogloss", random_state=random_state,
-            n_jobs=4, verbosity=0,
+            n_jobs=N_JOBS, verbosity=0,
         )
         self._le = LabelEncoder()
         self._feature_cols: list[str] = []

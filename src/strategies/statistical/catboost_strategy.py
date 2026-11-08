@@ -1,6 +1,7 @@
 from __future__ import annotations
 import pandas as pd
 from catboost import CatBoostClassifier
+from src.strategies.threads import N_JOBS
 from src.strategies.base import Strategy, PredictionResult
 
 _META = {"time", "ticker", "label", "forward_return_5d"}
@@ -19,7 +20,7 @@ class CatBoostStrategy(Strategy):
             eval_metric="Accuracy",
             random_seed=42,
             verbose=0,
-            thread_count=4,
+            thread_count=N_JOBS,
         )
         self._classes: list[str] = []
         self._feature_cols: list[str] = []

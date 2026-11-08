@@ -8,6 +8,7 @@ from sklearn.mixture import GaussianMixture
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
+from src.strategies.threads import N_JOBS
 from src.strategies.base import Strategy, PredictionResult
 from src.strategies.statistical.calibration_utils import (
     BinnedCalibrator, feature_columns, hold_result, is_buy, signals_from, time_split,
@@ -50,7 +51,7 @@ class RegimeConsensusStrategy(Strategy):
         self._members = [
             ExtraTreesClassifier(
                 n_estimators=100, max_depth=10, class_weight="balanced",
-                n_jobs=4, random_state=random_state,
+                n_jobs=N_JOBS, random_state=random_state,
             ),
             HistGradientBoostingClassifier(
                 max_iter=200, learning_rate=0.05, max_leaf_nodes=31,

@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from lightgbm import LGBMClassifier
 
+from src.strategies.threads import N_JOBS
 from src.strategies.base import Strategy, PredictionResult
 from src.strategies.statistical.calibration_utils import (
     BinnedCalibrator, feature_columns, hold_result, is_buy, signals_from, time_split,
@@ -43,7 +44,7 @@ class ConformalLGBMStrategy(Strategy):
             n_estimators=n_estimators, learning_rate=learning_rate,
             num_leaves=num_leaves, min_child_samples=200, subsample=0.8,
             subsample_freq=1, colsample_bytree=0.8, random_state=random_state,
-            n_jobs=4, verbose=-1,
+            n_jobs=N_JOBS, verbose=-1,
         )
         self._calib = BinnedCalibrator()
         self._calib_scores: dict[str, np.ndarray] = {}

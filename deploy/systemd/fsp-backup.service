@@ -1,0 +1,8 @@
+[Unit]
+Description=FSP nightly data backup
+
+[Service]
+Type=oneshot
+User=ubuntu
+Nice=15
+ExecStart=/home/ubuntu/app/deploy/backup.sh

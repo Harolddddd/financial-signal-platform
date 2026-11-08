@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import ExtraTreesClassifier, HistGradientBoostingClassifier
 
+from src.strategies.threads import N_JOBS
 from src.strategies.base import Strategy, PredictionResult
 from src.strategies.statistical.calibration_utils import (
     BinnedCalibrator, feature_columns, hold_result, is_buy, signals_from, time_split,
@@ -35,7 +36,7 @@ class MetaLabelingStrategy(Strategy):
         self.buy_threshold = buy_threshold
         self._primary = ExtraTreesClassifier(
             n_estimators=n_estimators, max_depth=max_depth,
-            class_weight="balanced", n_jobs=4, random_state=random_state,
+            class_weight="balanced", n_jobs=N_JOBS, random_state=random_state,
         )
         self._meta = HistGradientBoostingClassifier(
             max_iter=100, learning_rate=0.05, max_leaf_nodes=15,

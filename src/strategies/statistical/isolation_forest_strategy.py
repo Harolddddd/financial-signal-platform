@@ -2,6 +2,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import IsolationForest
+from src.strategies.threads import N_JOBS
 from src.strategies.base import Strategy, PredictionResult
 
 _META = {"time", "ticker", "label", "forward_return_5d"}
@@ -18,7 +19,7 @@ class IsolationForestAnomaly(Strategy):
                  rsi_oversold: float = 40.0, random_state: int = 42) -> None:
         self._model = IsolationForest(
             n_estimators=n_estimators, contamination=contamination,
-            n_jobs=4, random_state=random_state,
+            n_jobs=N_JOBS, random_state=random_state,
         )
         self._feature_cols: list[str] = []
         self.rsi_oversold = rsi_oversold

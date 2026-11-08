@@ -6,6 +6,7 @@ from lightgbm import LGBMClassifier
 
 from src.features.news_macro_features import OVERLAY_COLS
 from src.strategies.statistical.lightgbm_strategy import LightGBMStrategy
+from src.strategies.threads import N_JOBS
 
 _META = {"time", "ticker", "label", "forward_return_5d"}
 _OVERLAY = frozenset(OVERLAY_COLS)
@@ -33,7 +34,7 @@ class PooledLGBMStrategy(LightGBMStrategy):
         self._model = LGBMClassifier(
             n_estimators=n_estimators, max_depth=max_depth,
             learning_rate=learning_rate, min_child_samples=min_child_samples,
-            class_weight="balanced", random_state=random_state, n_jobs=4, verbose=-1,
+            class_weight="balanced", random_state=random_state, n_jobs=N_JOBS, verbose=-1,
         )
         self.use_news_macro = use_news_macro
         self.extra_feature_cols: tuple[str, ...] = tuple(OVERLAY_COLS) if use_news_macro else ()

@@ -1,0 +1,9 @@
+[Unit]
+Description=Run FSP daily pipeline after US market close
+
+[Timer]
+OnCalendar=Mon..Fri 18:30 America/New_York
+Persistent=true
+
+[Install]
+WantedBy=timers.target

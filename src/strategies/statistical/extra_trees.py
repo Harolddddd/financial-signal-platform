@@ -1,6 +1,7 @@
 from __future__ import annotations
 import pandas as pd
 from sklearn.ensemble import ExtraTreesClassifier
+from src.strategies.threads import N_JOBS
 from src.strategies.base import Strategy, PredictionResult
 
 _META = {"time", "ticker", "label", "forward_return_5d"}
@@ -12,7 +13,7 @@ class ExtraTreesStrategy(Strategy):
     def __init__(self, n_estimators: int = 100, max_depth: int = 10, random_state: int = 42) -> None:
         self._model = ExtraTreesClassifier(
             n_estimators=n_estimators, max_depth=max_depth,
-            class_weight="balanced", n_jobs=4, random_state=random_state,
+            class_weight="balanced", n_jobs=N_JOBS, random_state=random_state,
         )
         self._feature_cols: list[str] = []
 

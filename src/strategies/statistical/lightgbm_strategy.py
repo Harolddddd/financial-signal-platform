@@ -1,6 +1,7 @@
 from __future__ import annotations
 import pandas as pd
 from lightgbm import LGBMClassifier
+from src.strategies.threads import N_JOBS
 from src.strategies.base import Strategy, PredictionResult
 
 _META = {"time", "ticker", "label", "forward_return_5d"}
@@ -14,7 +15,7 @@ class LightGBMStrategy(Strategy):
         self._model = LGBMClassifier(
             n_estimators=n_estimators, max_depth=max_depth,
             learning_rate=learning_rate, class_weight="balanced",
-            random_state=random_state, n_jobs=4, verbose=-1,
+            random_state=random_state, n_jobs=N_JOBS, verbose=-1,
         )
         self._feature_cols: list[str] = []
 

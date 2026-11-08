@@ -1,6 +1,7 @@
 from __future__ import annotations
 import pandas as pd
 from sklearn.neighbors import KNeighborsClassifier
+from src.strategies.threads import N_JOBS
 from src.strategies.base import Strategy, PredictionResult
 
 _META = {"time", "ticker", "label", "forward_return_5d"}
@@ -13,7 +14,7 @@ class KNNStrategy(Strategy):
         self._model = KNeighborsClassifier(
             n_neighbors=n_neighbors,
             weights="distance",
-            n_jobs=4,
+            n_jobs=N_JOBS,
         )
         self._feature_cols: list[str] = []
 

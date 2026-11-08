@@ -1,0 +1,14 @@
+[Unit]
+Description=FSP Streamlit dashboard (localhost only; use an SSH tunnel)
+After=network-online.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/app
+Environment=PYTHONPATH=/home/ubuntu/app
+ExecStart=/home/ubuntu/app/.venv/bin/streamlit run dashboard/app.py --server.address 127.0.0.1 --server.port 8501 --server.headless true
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
