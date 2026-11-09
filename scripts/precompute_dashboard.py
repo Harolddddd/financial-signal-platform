@@ -296,7 +296,7 @@ def step_signals(
 
     # Stream live features one ticker at a time (iter_live_features), instead
     # of materializing the whole universe plus a per-ticker-partitioned copy
-    # of it. At 500-ticker scale (China CSI 500) that combination was the
+    # of it. At 500-ticker scale (China) that combination was the
     # reproducible cause of a Polars allocator crash
     # (`memory allocation of 15803824 bytes failed`) — see the Deviations
     # section of docs/superpowers/plans/2026-07-31-china-full-universe-training.md.
