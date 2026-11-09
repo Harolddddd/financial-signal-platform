@@ -351,8 +351,12 @@ def get_league_table(market: str, today=None) -> dict[str, list[dict]]:
             if sec == "live":  # live methods are also re-tested by the weekly full backtest
                 bt = _load_cache(cache_dir / f"backtest_{_safe(name)}.json") or {}
                 tested = max(tested, str(bt.get("generated_at", ""))[:10])
+            bj = _load_cache(cache_dir / "bench" / f"bench_{_safe(name)}.json") or {}
+            rt = bj.get("runtime_s")
             out[sec].append({
                 "method": name,
+                "ran_on": (bj.get("ran_on") or "A") if bj else None,
+                "runtime_min": round(rt / 60, 1) if isinstance(rt, (int, float)) else None,
                 "net_sharpe": h.get("net_sharpe"),
                 "precision": h.get("precision"),
                 "n_trades": h.get("n_trades"),
@@ -369,6 +373,8 @@ def get_league_table(market: str, today=None) -> dict[str, list[dict]]:
             tested = str(bt.get("generated_at", ""))[:10]
             out["bench"].append({
                 "method": name,
+                "ran_on": None,
+                "runtime_min": None,
                 "net_sharpe": bt.get("mean_sharpe"),
                 "precision": bt.get("weighted_precision_buy"),
                 "n_trades": ((bt.get("grade") or {}).get("metrics") or {}).get("n_trades"),
@@ -382,6 +388,19 @@ def get_league_table(market: str, today=None) -> dict[str, list[dict]]:
     for rows in out.values():
         rows.sort(key=lambda r: (r["net_sharpe"] is None, -(r["net_sharpe"] or 0.0)))
     return out
+
+
+def get_league_pass(market: str) -> dict | None:
+    """Latest bench pass: date, whether it finished, and methods it did not reach."""
+    from src.league.league import STATE_FILE
+
+    state = _load_cache(get_cache_dir(market) / STATE_FILE)
+    if not state or not state.get("passes"):
+        return None
+    p = state["passes"][-1]
+    untested = sorted(n for n, m in state["methods"].items() if m["status"] != "retired"
+                      and not any(h.get("date") == p["date"] for h in m["history"]))
+    return {"date": p["date"], "completed": bool(p.get("completed")), "untested": untested}
 
 
 def get_ticker_names(market: str) -> dict[str, str]:

@@ -39,10 +39,12 @@ if not (cache_dir / f"backtest_{selected}.json").exists():
     sc = b["score"]
     st.markdown(f"### Bench result (last {b['window_days'] // 365} years, after costs)")
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Net Sharpe", f"{sc['net_sharpe']:.2f}")
-    c2.metric("Precision", f"{sc['precision']:.1%}")
-    c3.metric("Trades", sc["n_trades"])
+    c1.metric("Net Sharpe", f"{sc['net_sharpe']:.2f}", help="League score: yearly Sharpe of 5-day trades on every Buy signal, after round-trip costs. >0.5 decent, >1 strong.")
+    c2.metric("Precision", f"{sc['precision']:.1%}", help="Share of those trades that made money after costs.")
+    c3.metric("Trades", sc["n_trades"], help="Buy signals scored in the test window.")
     c4.metric("Mean net return / trade", f"{sc['mean_net_return']:.2%}")
+    if b.get("ran_on") or b.get("runtime_s"):
+        st.caption(f"Tested on server {b.get('ran_on') or 'A'} in {(b.get('runtime_s') or 0) / 60:.1f} min, {b.get('tested_on', '')}.")
     st.caption("Full fold-by-fold history is computed only for live methods (weekly).")
     st.stop()
 
@@ -57,13 +59,13 @@ with st.spinner(f"Running walk-forward backtest for {selected}..."):
 
 color = GRADE_COLORS[grade.grade.value]
 st.markdown(f"### Grade: <span style='color:{color};font-size:2em'>{grade.grade.value}</span> "
-            f"(score: {grade.composite_score:.3f})", unsafe_allow_html=True)
+            f"(score: {grade.composite_score:.3f} of 1 = 40% Buy precision + 30% Sharpe + 30% drawdown safety)", unsafe_allow_html=True)
 
 c1, c2, c3, c4 = st.columns(4)
 last = wf_result.folds[-1].metrics
-c1.metric("Precision Buy", f"{last.precision_buy:.3f}")
-c2.metric("Sharpe Ratio", f"{last.sharpe_ratio:.2f}")
-c3.metric("Max Drawdown", f"{last.max_drawdown_pct:.1%}")
+c1.metric("Precision Buy", f"{last.precision_buy:.3f}", help="Of the days the model said Buy, share where the price went up (last fold).")
+c2.metric("Sharpe Ratio", f"{last.sharpe_ratio:.2f}", help="Risk-adjusted return of following the signals, yearly scale, before costs (last fold).")
+c3.metric("Max Drawdown", f"{last.max_drawdown_pct:.1%}", help="Worst peak-to-trough loss (last fold).")
 c4.metric("Win Rate", f"{last.win_rate:.1%}")
 
 st.divider()
