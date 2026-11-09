@@ -28,6 +28,16 @@ TIMERS = [
 ]
 BACKFILL_STATUS = Path("/home/fspsync/incoming/status/backfill.txt")
 CN_NEWS_STATUS = Path("/home/fspsync/incoming/status/cn_news.txt")
+SERVER_B_STATUS = Path("/home/fspsync/incoming/status/server_b.json")
+
+# Compute server (B): pushes a snapshot of these every 5 min (scripts/server_status.py).
+SERVICES_B = {
+    "fsp-cn-news": "China news + macro collect, then sync to A (daily 16:30 Beijing)",
+    "fsp-bench-worker": "Bench worker: B's share of a bench pass from A",
+    "fsp-backfill": "US news backfill (one-off)",
+}
+TIMERS_B = ["fsp-cn-news.timer", "fsp-bench-worker.timer"]
+SNAPSHOT_STALE_MIN = 15
 _SHOW_PROPS = [
     "ActiveState", "SubState", "Result", "ExecMainStartTimestamp",
     "ExecMainExitTimestamp", "MemoryCurrent", "MemoryPeak",
@@ -74,22 +84,22 @@ def unit_info(unit: str) -> dict[str, str]:
     return parse_show(_run(args))
 
 
-def parse_extra_units(list_units: str) -> list[str]:
+def parse_extra_units(list_units: str, known: dict | None = None) -> list[str]:
     """Running fsp-* services that are not in SERVICES (one-off jobs started by hand)."""
     out = []
     for line in list_units.splitlines():
         parts = line.split()
         if len(parts) >= 4 and parts[0].endswith(".service") and parts[2] in ("active", "activating"):
             name = parts[0][: -len(".service")]
-            if name not in SERVICES:
+            if name not in (SERVICES if known is None else known):
                 out.append(name)
     return out
 
 
-def extra_units() -> list[str]:
+def extra_units(known: dict | None = None) -> list[str]:
     return parse_extra_units(_run([
         "systemctl", "list-units", "fsp-*", "--type=service", "--all", "--no-legend", "--plain",
-    ]))
+    ]), known)
 
 
 def timer_info(timer: str) -> dict[str, str]:
@@ -207,6 +217,95 @@ def last_invocation_from_journal(json_lines: str) -> str:
             continue
         inv = rec.get("_SYSTEMD_INVOCATION_ID") or rec.get("INVOCATION_ID") or inv
     return inv
+
+
+_BENCH_PROGRESS_RE = re.compile(r"bench \S+ (?:\(B\) )?(\d+)/(\d+): (\S+)")
+
+
+def parse_progress(lines: list[str]) -> dict | None:
+    """Latest 'bench <market> [(B)] i/n: method' or 'news progress i/n ticker' line -> done/total/item/pct."""
+    for line in reversed(lines):
+        m = _BENCH_PROGRESS_RE.search(line)
+        if m:  # 'i/n: x' means x is the i-th, still running
+            done, total = int(m.group(1)) - 1, int(m.group(2))
+            return {"done": done, "total": total, "item": m.group(3), "pct": done / total if total else 0.0}
+        m = _PROGRESS_RE.search(line)
+        if m:
+            done, total = int(m.group(1)), int(m.group(2))
+            return {"done": done, "total": total, "item": m.group(3), "pct": done / total if total else 0.0}
+    return None
+
+
+def _utc_iso(ts: datetime) -> str:
+    return ts.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def collect(host: str, services: dict[str, str], timers: list[str], now: datetime | None = None) -> dict:
+    """One server's status: resources, jobs (with last-run steps and progress) and timers."""
+    import psutil
+
+    now = now or datetime.now(timezone.utc)
+    mem, disk = psutil.virtual_memory(), psutil.disk_usage("/")
+    units = {}
+    for unit, label in {**services, **{u: "One-off job (started by hand)" for u in extra_units(services)}}.items():
+        info = unit_info(unit)
+        running = info.get("ActiveState") in ("activating", "active") and unit != "fsp-dashboard"
+        lines = last_run_lines(unit) if unit != "fsp-dashboard" else []
+        units[unit] = {
+            "label": label, **info, "running": running,
+            "summary": summarize_run(lines, running=running, now=now.replace(tzinfo=None)),
+            "progress": parse_progress(lines) if running else None,
+            "log": recent_log(unit, 30) if unit != "fsp-dashboard" else "",
+        }
+    return {
+        "host": host,
+        "updated": _utc_iso(now),
+        "resources": {
+            "cpu_pct": psutil.cpu_percent(interval=0.5), "cpus": psutil.cpu_count(),
+            "mem_used": mem.total - mem.available, "mem_total": mem.total,
+            "disk_used": disk.used, "disk_total": disk.total,
+        },
+        "units": units,
+        "timers": {t: timer_info(t) for t in timers},
+    }
+
+
+def read_snapshot(path: Path = SERVER_B_STATUS) -> dict | None:
+    try:
+        return json.loads(path.read_text())
+    except (OSError, ValueError):
+        return None
+
+
+def is_stale(snapshot: dict, now: datetime | None = None, minutes: int = SNAPSHOT_STALE_MIN) -> bool:
+    try:
+        ts = datetime.strptime(snapshot["updated"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+    except (KeyError, TypeError, ValueError):
+        return True
+    return ((now or datetime.now(timezone.utc)) - ts).total_seconds() > minutes * 60
+
+
+_TZ_ABBR = {"UTC": timezone.utc, "EST": ET, "EDT": ET, "CST": CST}
+
+
+def systemd_to_et(value: str) -> str:
+    """'Mon 2026-11-09 17:50:06 UTC' (any server's local zone) -> '11-09 12:50 EST'."""
+    if not value:
+        return "-"
+    parts = value.split()
+    if len(parts) != 4 or parts[3] not in _TZ_ABBR:
+        return value
+    try:
+        ts = datetime.strptime(f"{parts[1]} {parts[2]}", "%Y-%m-%d %H:%M:%S").replace(tzinfo=_TZ_ABBR[parts[3]])
+    except ValueError:
+        return value
+    return ts.astimezone(ET).strftime("%m-%d %H:%M %Z")
+
+
+def plain_state(info: dict) -> str:
+    s = info.get("ActiveState", "")
+    return {"activating": "running", "active": "running", "deactivating": "stopping",
+            "failed": "failed", "inactive": "idle"}.get(s, s or "?")
 
 
 def to_et(utc_iso: str) -> str:

@@ -1,0 +1,17 @@
+# Compute server (B) only.
+[Unit]
+Description=FSP: push Server B status snapshot to production (dashboard)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=fsp
+WorkingDirectory=/home/fsp/app
+Nice=15
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ReadWritePaths=/home/fsp/.fsp_status
+ExecStart=/home/fsp/app/deploy/push_status.sh
+TimeoutStartSec=3min

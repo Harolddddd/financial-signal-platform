@@ -110,3 +110,56 @@ def test_extra_units_lists_unscheduled_running_jobs():
         "fsp-rescore-us.service  loaded active   running /bin/bash -c \"rescore\"\n"
     )
     assert ss.parse_extra_units(out) == ["fsp-bench-first", "fsp-rescore-us"]
+
+
+def test_parse_progress_bench_on_a_and_b_and_news():
+    a = ["2026-11-09 12:28:38,286 INFO bench china 1/12: pooled_lgbm_news_cn",
+         "2026-11-09 12:37:55,695 INFO bench china 2/12: regime_consensus", "fold 3/51"]
+    assert ss.parse_progress(a) == {"done": 1, "total": 12, "item": "regime_consensus", "pct": 1 / 12}
+    b = ["INFO bench china (B) 5/23: knn_classifier"]
+    assert ss.parse_progress(b)["item"] == "knn_classifier" and ss.parse_progress(b)["done"] == 4
+    n = ["INFO news progress 120/500 600519.SS new_total=40"]
+    assert ss.parse_progress(n) == {"done": 120, "total": 500, "item": "600519.SS", "pct": 0.24}
+    assert ss.parse_progress(["nothing here"]) is None
+
+
+def test_collect_snapshot_shape(monkeypatch):
+    monkeypatch.setattr(ss, "unit_info", lambda u: {"ActiveState": "activating", "SubState": "start", "Result": "success"})
+    monkeypatch.setattr(ss, "timer_info", lambda t: {"ActiveState": "active", "NextElapseUSecRealtime": "Tue"})
+    monkeypatch.setattr(ss, "extra_units", lambda known=None: [])
+    monkeypatch.setattr(ss, "last_run_lines", lambda u: [
+        "=== 2026-11-09T17:57:52Z bench request china-x ===", "INFO bench china (B) 2/23: lda"])
+    monkeypatch.setattr(ss, "recent_log", lambda u, n=30: "log")
+    snap = ss.collect("B", {"fsp-bench-worker": "Bench worker"}, ["fsp-bench-worker.timer"],
+                      now=ss.datetime(2026, 11, 9, 18, 0, tzinfo=ss.timezone.utc))
+    assert snap["host"] == "B" and snap["updated"] == "2026-11-09T18:00:00Z"
+    assert {"cpu_pct", "mem_used", "mem_total", "disk_used", "disk_total"} <= set(snap["resources"])
+    u = snap["units"]["fsp-bench-worker"]
+    assert u["label"] == "Bench worker" and u["running"] is True
+    assert u["summary"]["steps"][0]["status"] == "running" and u["progress"]["done"] == 1
+    assert snap["timers"]["fsp-bench-worker.timer"]["NextElapseUSecRealtime"] == "Tue"
+
+
+def test_snapshot_staleness(tmp_path):
+    import json
+    p = tmp_path / "server_b.json"
+    assert ss.read_snapshot(p) is None
+    p.write_text(json.dumps({"host": "B", "updated": "2026-11-09T18:00:00Z"}))
+    snap = ss.read_snapshot(p)
+    assert not ss.is_stale(snap, ss.datetime(2026, 11, 9, 18, 10, tzinfo=ss.timezone.utc))
+    assert ss.is_stale(snap, ss.datetime(2026, 11, 9, 18, 16, tzinfo=ss.timezone.utc))
+
+
+def test_extra_units_respects_each_servers_own_list():
+    out = "fsp-bench-worker.service loaded activating start FSP bench worker\n"
+    assert ss.parse_extra_units(out) == ["fsp-bench-worker"]  # unknown to A
+    assert ss.parse_extra_units(out, known=ss.SERVICES_B) == []
+
+
+def test_systemd_time_to_et_and_plain_state():
+    assert ss.systemd_to_et("Mon 2026-11-09 17:50:06 UTC") == "11-09 12:50 EST"
+    assert ss.systemd_to_et("Mon 2026-11-09 12:50:06 EST") == "11-09 12:50 EST"
+    assert ss.systemd_to_et("") == "-" and ss.systemd_to_et("n/a") == "n/a"
+    assert ss.plain_state({"ActiveState": "activating"}) == "running"
+    assert ss.plain_state({"ActiveState": "inactive", "Result": "success"}) == "idle"
+    assert ss.plain_state({"ActiveState": "failed"}) == "failed"

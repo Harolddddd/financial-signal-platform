@@ -1,0 +1,9 @@
+[Unit]
+Description=Push Server B status to production every 5 min (B)
+
+[Timer]
+OnCalendar=*:0/5
+Persistent=false
+
+[Install]
+WantedBy=timers.target
