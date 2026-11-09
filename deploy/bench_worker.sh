@@ -2,6 +2,7 @@
 # Compute server (B): pick up a bench request the production server (A) posted,
 # run B's share of the methods, and upload the results every quarter.
 #
+# Downloads use -rt, not -a: copying A's setgid dir bits fails under the unit's RestrictSUIDSGID.
 # Two keys, both locked down by rrsync on A's side (fspsync user):
 #   ~/.ssh/id_bench_ro -> read-only  /home/fspsync/outgoing  (request, features, code)
 #   ~/.ssh/id_ed25519  -> write-only /home/fspsync/incoming  (results go to bench/<market>/<id>/)
@@ -21,7 +22,7 @@ for market in ${BENCH_MARKETS:-china}; do
   dir="$WORK/$market"
   mkdir -p "$dir"
   rm -f "$dir/request.json"
-  rsync -a -e "$RO" "fspsync@$A_HOST:$market/request.json" "$dir/request.json" 2>/dev/null || continue
+  rsync -rt -e "$RO" "fspsync@$A_HOST:$market/request.json" "$dir/request.json" 2>/dev/null || continue
   id="$("$PY" -I -c 'import json,sys; print(json.load(open(sys.argv[1]))["id"])' "$dir/request.json")"
   # The id becomes a path on both servers: allow only <market>-<yyyy-mm-dd>-<epoch>.
   [[ "$id" =~ ^${market}-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]+$ ]] || { echo "bad request id: $id" >&2; continue; }
@@ -31,8 +32,8 @@ for market in ${BENCH_MARKETS:-china}; do
   # Recorded before running: a crash must not restart the job in a loop (A takes it back).
   echo "$id" >> "$WORK/done.txt"
   t0=$(date +%s)
-  rsync -a --delete -e "$RO" "fspsync@$A_HOST:$market/features/" "$dir/features/"
-  rsync -a -e "$RO" "fspsync@$A_HOST:$market/code.tar.gz" "$dir/code.tar.gz"
+  rsync -rt --delete -e "$RO" "fspsync@$A_HOST:$market/features/" "$dir/features/"
+  rsync -rt -e "$RO" "fspsync@$A_HOST:$market/code.tar.gz" "$dir/code.tar.gz"
   echo "inputs downloaded in $(( $(date +%s) - t0 ))s ($(du -sh "$dir/features" | cut -f1) features)"
   code="$WORK/code"
   rm -rf "$code"; mkdir -p "$code"
