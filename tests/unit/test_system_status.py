@@ -100,3 +100,13 @@ def test_china_jobs_listed():
     for unit in ("fsp-cn-daily", "fsp-cn-weekly", "fsp-bench"):
         assert unit in ss.SERVICES
         assert f"{unit}.timer" in ss.TIMERS
+
+
+def test_extra_units_lists_unscheduled_running_jobs():
+    out = (
+        "fsp-backup.service      loaded inactive dead    FSP nightly data backup\n"
+        "fsp-bench-first.service loaded active   running /bin/bash -c \"bench\"\n"
+        "fsp-dashboard.service   loaded active   running FSP Streamlit dashboard\n"
+        "fsp-rescore-us.service  loaded active   running /bin/bash -c \"rescore\"\n"
+    )
+    assert ss.parse_extra_units(out) == ["fsp-bench-first", "fsp-rescore-us"]

@@ -74,6 +74,24 @@ def unit_info(unit: str) -> dict[str, str]:
     return parse_show(_run(args))
 
 
+def parse_extra_units(list_units: str) -> list[str]:
+    """Running fsp-* services that are not in SERVICES (one-off jobs started by hand)."""
+    out = []
+    for line in list_units.splitlines():
+        parts = line.split()
+        if len(parts) >= 4 and parts[0].endswith(".service") and parts[2] in ("active", "activating"):
+            name = parts[0][: -len(".service")]
+            if name not in SERVICES:
+                out.append(name)
+    return out
+
+
+def extra_units() -> list[str]:
+    return parse_extra_units(_run([
+        "systemctl", "list-units", "fsp-*", "--type=service", "--all", "--no-legend", "--plain",
+    ]))
+
+
 def timer_info(timer: str) -> dict[str, str]:
     props = ["ActiveState", "NextElapseUSecRealtime", "LastTriggerUSec"]
     return parse_show(_run(["systemctl", "show", timer] + [f"-p{p}" for p in props]))

@@ -25,7 +25,8 @@ c3.metric("Disk", f"{disk.used / 2**30:.0f} / {disk.total / 2**30:.0f} GB")
 # --- Services ---
 st.subheader("Server A jobs")
 rows = []
-for unit, label in ss.SERVICES.items():
+one_off = {u: "One-off job (started by hand)" for u in ss.extra_units()}
+for unit, label in {**ss.SERVICES, **one_off}.items():
     info = ss.unit_info(unit)
     rows.append({
         "job": label,
@@ -83,7 +84,8 @@ else:
 # --- Last run summary ---
 st.subheader("Last run")
 unit = st.selectbox(
-    "Job", [u for u in ss.SERVICES if u != "fsp-dashboard"], format_func=lambda u: ss.SERVICES[u]
+    "Job", list(one_off) + [u for u in ss.SERVICES if u != "fsp-dashboard"],
+    format_func=lambda u: ss.SERVICES.get(u) or f"{u} (one-off, running)"
 )
 info = ss.unit_info(unit)
 summary = ss.summarize_run(ss.last_run_lines(unit), running=info.get("ActiveState") == "activating")
