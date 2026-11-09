@@ -152,6 +152,32 @@ def _candidates(state: dict, strategies: list[str] | None, market: str) -> list[
     return test_order([n for n in (strategies or list_strategies(market)) if n not in retired], state)
 
 
+def _state(market: str, cache_dir: Path) -> dict:
+    return lg.load_state(cache_dir, market, seed=list(get_market(market).default_strategies or ()))
+
+
+def publish_if_due(market: str, today: date, deadline: datetime | None = None,
+                   strategies: list[str] | None = None, force: bool = False,
+                   head_start_market: str | None = None, cache_dir_for=None, publish_fn=None) -> dict | None:
+    """--publish-only: post B's share when this market's pass is due. Returns the request or None."""
+    cache_dir_for = cache_dir_for or (lambda m: get_market(m).data_root / "cache")
+    publish_fn = publish_fn or publish
+    if _remote_cfg(market) is None:
+        logger.info("bench %s: remote bench off, nothing to post", market)
+        return None
+    last = lg.last_completed_pass(_state(market, cache_dir_for(market)))
+    if not force and last is not None and (today - last).days < lg.load_config()["bench_min_gap_days"]:
+        logger.info("bench %s: not due, nothing to post", market)
+        return None
+    head = 0.0
+    if head_start_market:
+        hcache = cache_dir_for(head_start_market)
+        hst = _state(head_start_market, hcache)
+        head = sum(_last_runtime(hcache / "bench", n) for n in _candidates(hst, None, head_start_market))
+    return publish_fn(market, today, deadline or datetime.now(timezone.utc) + timedelta(hours=15),
+                      strategies, cache_dir=cache_dir_for(market), head_start_s=head)
+
+
 def publish(market: str, today: date, deadline: datetime, strategies: list[str] | None = None,
             cfg: dict | None = None, cache_dir: Path | None = None, feature_dir: Path | None = None,
             outgoing: Path | None = None, runtimes: dict | None = None, head_start_s: float = 0.0,
@@ -377,21 +403,7 @@ if __name__ == "__main__":
     a = ap.parse_args()
     signal.signal(signal.SIGTERM, _on_sigterm)
     if a.publish_only:
-        if _remote_cfg(a.market) is None:
-            logger.info("bench %s: remote bench off, nothing to post", a.market)
-            raise SystemExit(0)
-        today = datetime.now(timezone.utc).date()
-        st = lg.load_state(get_market(a.market).data_root / "cache", a.market)
-        last = lg.last_completed_pass(st)
-        if not a.force and last is not None and (today - last).days < lg.load_config()["bench_min_gap_days"]:
-            logger.info("bench %s: not due, nothing to post", a.market)
-            raise SystemExit(0)
-        head = 0.0
-        if a.head_start_market:
-            hcache = get_market(a.head_start_market).data_root / "cache"
-            hst = lg.load_state(hcache, a.head_start_market)
-            head = sum(_last_runtime(hcache / "bench", n) for n in _candidates(hst, None, a.head_start_market))
-        publish(a.market, today, a.deadline or datetime.now(timezone.utc) + timedelta(hours=15),
-                a.strategies, head_start_s=head)
+        publish_if_due(a.market, datetime.now(timezone.utc).date(), deadline=a.deadline,
+                       strategies=a.strategies, force=a.force, head_start_market=a.head_start_market)
     else:
         main(a.market, deadline=a.deadline, strategies=a.strategies, force=a.force, seed_from_pass=a.seed_from_pass)

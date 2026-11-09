@@ -232,3 +232,15 @@ def test_b_gets_start_grace_before_takeover(tmp_path):
                   outgoing=tmp_path / "out", inbox_root=tmp_path / "inbox", sleep=slept.append,
                   clock=lambda: t0 + timedelta(minutes=45 + 30 * len(slept)))
     assert len(slept) == 2 and out["taken_back"]  # waited at 45 and 75 min, took over at 105
+
+
+def test_publish_only_cli_path_loads_league_and_posts(tmp_path, monkeypatch):
+    # Regression: the --publish-only path called lg.load_state without its seed and crashed.
+    monkeypatch.setattr(bp, "_remote_cfg", lambda m: dict(RCFG))
+    monkeypatch.setattr(bp, "_last_runtime", lambda d, n: 60.0)
+    monkeypatch.setattr(bp, "list_strategies", lambda m: ["a", "b"])
+    posted = []
+    out = bp.publish_if_due("china", TODAY, head_start_market="us", cache_dir_for=lambda m: tmp_path / m,
+                            publish_fn=lambda *a, **k: posted.append((a, k)) or {"id": "x"})
+    assert out == {"id": "x"} and len(posted) == 1
+    assert posted[0][1]["head_start_s"] == 120.0  # us: 2 methods x 60 s
