@@ -17,7 +17,7 @@ bench_only_prefixes: [stacked_live]
 remote_bench:
   china:
     enabled: true
-    remote_speed: 1.0
+    remote_speed: 1.1   # B vs A, measured 2026-11-09: mlp_classifier 25.1 min on B vs 28.6 on A
     max_share: 0.8
     exclude: [stacked_live]
     stale_minutes: 30
