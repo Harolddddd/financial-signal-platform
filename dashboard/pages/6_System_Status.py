@@ -4,7 +4,7 @@ from dashboard import system_status as ss
 
 st.set_page_config(page_title="System Status", layout="wide")
 st.header("System Status")
-st.caption("All times are US Eastern (New York / North Carolina).")
+st.caption("All times are US Eastern.")
 
 if not ss.available():
     st.info("System status is only available on the Linux server.")
@@ -21,10 +21,10 @@ def _server_a() -> dict:
 
 
 SERVERS = [
-    ("A", "Server A · production", "2 cores · 8 GB. Runs the daily/weekly pipelines, bench re-tests, "
-                                   "paper accounts and this dashboard.", _server_a()),
-    ("B", "Server B · compute (Guangzhou)", "4 cores · 3.7 GB. Collects China news + macro and runs its "
-                                            "share of the bench re-test. Reports every 5 min.",
+    ("A", "Server A · production", "Runs the daily/weekly pipelines, bench re-tests, paper accounts "
+                                   "and this dashboard.", _server_a()),
+    ("B", "Server B · compute", "Collects China news + macro and runs its share of the bench re-test. "
+                                "Reports every 5 min.",
      ss.read_snapshot()),
 ]
 
@@ -40,14 +40,22 @@ def _overview(name: str, role: str, snap: dict | None, host: str) -> None:
         st.error("No status received yet.")
         return
     if host == "B" and ss.is_stale(snap):
-        st.error(f"Not reporting since {ss.to_et(snap.get('updated', '?'))}: B may be down or offline.")
+        st.markdown(f":red-badge[Not reporting] since {ss.to_et(snap.get('updated', '?'))}: B may be down")
     else:
-        st.success(f"Online · updated {ss.to_et(snap.get('updated', '?'))}")
+        st.markdown(f":green-badge[Online] updated {ss.to_et(snap.get('updated', '?'))}")
     r = snap.get("resources", {})
-    c1, c2, c3 = st.columns(3)
-    c1.metric("CPU", f"{r.get('cpu_pct', 0):.0f}%", help=f"Across {r.get('cpus', '?')} cores")
-    c2.metric("Memory", f"{_gb(r.get('mem_used'))} / {_gb(r.get('mem_total'))} GB")
-    c3.metric("Disk", f"{_gb(r.get('disk_used')).split('.')[0]} / {_gb(r.get('disk_total')).split('.')[0]} GB")
+    cells = [
+        ("CPU", f"{r.get('cpu_pct', 0):.0f}%"),
+        ("Memory", f"{_gb(r.get('mem_used'))} / {_gb(r.get('mem_total'))} GB"),
+        ("Disk", f"{_gb(r.get('disk_used')).split('.')[0]} / {_gb(r.get('disk_total')).split('.')[0]} GB"),
+    ]
+    st.markdown(
+        "<div style='display:flex;flex-wrap:wrap;gap:0.5rem 2rem;margin:0.25rem 0 0.75rem'>" + "".join(
+            f"<div><div style='font-size:0.85rem;opacity:0.7'>{k}</div>"
+            f"<div style='font-size:1.6rem;font-weight:600;white-space:nowrap'>{v}</div></div>"
+            for k, v in cells) + "</div>",
+        unsafe_allow_html=True,
+    )
     running = [(u, i) for u, i in snap.get("units", {}).items() if i.get("running")]
     st.markdown("**Running now**")
     if not running:
