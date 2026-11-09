@@ -60,7 +60,7 @@ st.caption("Click a row to see that stock's per-strategy breakdown below.")
 
 event = st.dataframe(
     df,
-    use_container_width=True,
+    width="stretch",
     hide_index=True,
     on_select="rerun",
     selection_mode="single-row",
@@ -97,6 +97,6 @@ if selected_rows:
     with chart_col:
         st.bar_chart(ddf.set_index("Strategy")["Contribution"])
     with table_col:
-        st.dataframe(ddf, use_container_width=True, hide_index=True)
+        st.dataframe(ddf, width="stretch", hide_index=True)
 else:
     st.info("Click a row in the table above to see that stock's per-strategy breakdown.")

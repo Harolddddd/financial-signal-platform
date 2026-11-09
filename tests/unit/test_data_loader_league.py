@@ -84,15 +84,16 @@ def test_ticker_names_and_generated_time(tmp_path, monkeypatch):
     assert dl.format_generated("unknown", "us") == "unknown"
 
 
-def test_rows_show_where_and_how_long_and_pass_status(cache):
+def test_rows_show_where_and_how_long_and_pass_status(cache, monkeypatch):
     _save(cache, {"a": ("live", [_h("2026-11-25", 1.0)], {}), "b": ("bench", [], {})})
     st = lg.load_state(cache, "us", seed=[])
     st["passes"].append({"date": "2026-11-25", "completed": False})
     lg.save_state(cache, st)
     (cache / "bench").mkdir()
     (cache / "bench" / "bench_a.json").write_text(json.dumps({"ran_on": "B", "runtime_s": 600}))
+    monkeypatch.setattr(dl, "list_strategies", lambda market=None: ["a", "b", "c"])  # c: never tested
     t = dl.get_league_table("us", today=TODAY)
     a, b = t["live"][0], t["bench"][0]
     assert (a["ran_on"], a["runtime_min"]) == ("B", 10.0)
     assert (b["ran_on"], b["runtime_min"]) == (None, None)
-    assert dl.get_league_pass("us") == {"date": "2026-11-25", "completed": False, "untested": ["b"]}
+    assert dl.get_league_pass("us") == {"date": "2026-11-25", "completed": False, "untested": ["b", "c"]}

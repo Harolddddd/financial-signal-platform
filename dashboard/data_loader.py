@@ -398,8 +398,10 @@ def get_league_pass(market: str) -> dict | None:
     if not state or not state.get("passes"):
         return None
     p = state["passes"][-1]
-    untested = sorted(n for n, m in state["methods"].items() if m["status"] != "retired"
-                      and not any(h.get("date") == p["date"] for h in m["history"]))
+    methods = state["methods"]
+    names = set(methods) | set(list_strategies(market))  # never-tested methods are not in the state yet
+    untested = sorted(n for n in names if (methods.get(n) or {}).get("status") != "retired"
+                      and not any(h.get("date") == p["date"] for h in (methods.get(n) or {}).get("history", [])))
     return {"date": p["date"], "completed": bool(p.get("completed")), "untested": untested}
 
 

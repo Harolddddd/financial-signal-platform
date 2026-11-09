@@ -45,7 +45,7 @@ def _league_rows(rows: list[dict], retired: bool = False) -> list[dict]:
             "Net Sharpe": "-" if r["net_sharpe"] is None else f"{r['net_sharpe']:.2f}",
             "Trend": r["trend"],
             "Precision": "-" if r["precision"] is None else f"{r['precision']:.1%}",
-            "Trades": r["n_trades"] if r["n_trades"] is not None else "-",
+            "Trades": r["n_trades"],
             "Last tested": r["tested_on"] or "never",
             "Ran on": r.get("ran_on") or "-",
             "Runtime (min)": "-" if r.get("runtime_min") is None else f"{r['runtime_min']:.1f}",
@@ -75,14 +75,14 @@ st.caption(
     f"{STALE_DAYS['live']}+ days."
 )
 if league["live"]:
-    st.dataframe(_league_rows(league["live"]), use_container_width=True, hide_index=True, column_config=_CFG)
+    st.dataframe(_league_rows(league["live"]), width="stretch", hide_index=True, column_config=_CFG)
 else:
     st.info("No bench re-test has run yet for this market; the live set is the configured seed.")
 with st.expander(f"Bench ({len(league['bench'])} methods) - promoted after beating the weakest live method twice in a row"):
-    st.dataframe(_league_rows(league["bench"]), use_container_width=True, hide_index=True, column_config=_CFG)
+    st.dataframe(_league_rows(league["bench"]), width="stretch", hide_index=True, column_config=_CFG)
 if league["retired"]:
     with st.expander(f"Retired ({len(league['retired'])}) - near-identical to a better method for over a month"):
-        st.dataframe(_league_rows(league["retired"], retired=True), use_container_width=True, hide_index=True, column_config=_CFG)
+        st.dataframe(_league_rows(league["retired"], retired=True), width="stretch", hide_index=True, column_config=_CFG)
 
 st.divider()
 st.subheader("Full-history backtests")
@@ -114,7 +114,7 @@ rows = [{
 } for i, g in enumerate(leaderboard)]
 
 df = pl.DataFrame(rows)
-st.dataframe(df.to_pandas(), use_container_width=True, hide_index=True, column_config={
+st.dataframe(df.to_pandas(), width="stretch", hide_index=True, column_config={
     "Score": st.column_config.Column(help="0-1 blend: 40% Buy precision, 30% Sharpe, 30% drawdown safety."),
     "Precision Buy": st.column_config.Column(help="Of the days the model said Buy, share where the price went up."),
     "Sharpe": st.column_config.Column(help="Risk-adjusted return of following the signals, yearly scale, before costs."),
@@ -132,7 +132,7 @@ with col1:
     ))
     fig.update_layout(title="Precision (Buy class)", xaxis_title="Strategy",
                       yaxis_title="Precision", yaxis_range=[0, 1])
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 with col2:
     fig2 = go.Figure(go.Bar(
@@ -142,4 +142,4 @@ with col2:
     ))
     fig2.update_layout(title="Sharpe Ratio", xaxis_title="Strategy",
                        yaxis_title="Sharpe")
-    st.plotly_chart(fig2, use_container_width=True)
+    st.plotly_chart(fig2, width="stretch")

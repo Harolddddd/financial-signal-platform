@@ -38,7 +38,7 @@ for unit, label in {**ss.SERVICES, **one_off}.items():
         "memory now": ss.human_bytes(info.get("MemoryCurrent", "")),
         "memory peak": ss.human_bytes(info.get("MemoryPeak", "")),
     })
-st.dataframe(rows, hide_index=True, use_container_width=True)
+st.dataframe(rows, hide_index=True, width="stretch")
 
 st.subheader("Schedule")
 trows = []
@@ -50,7 +50,7 @@ for timer in ss.TIMERS:
         "next run": t.get("NextElapseUSecRealtime") or "-",
         "last run": t.get("LastTriggerUSec") or "-",
     })
-st.dataframe(trows, hide_index=True, use_container_width=True)
+st.dataframe(trows, hide_index=True, width="stretch")
 
 # --- Compute server (B) backfill ---
 st.subheader("Server B: US news backfill (one-off)")
@@ -93,7 +93,7 @@ if not summary["steps"]:
     started = info.get("ExecMainStartTimestamp") or ""
     st.caption(f"Last run: {started}, result {info.get('Result', '-')}" if started else "No run recorded yet.")
 else:
-    st.dataframe(summary["steps"], hide_index=True, use_container_width=True)
+    st.dataframe(summary["steps"], hide_index=True, width="stretch")
     if summary["errors"]:
         st.warning(f"{summary['errors']} error lines, {summary['warnings']} warnings in this run "
                    "(delisted tickers show up here too).")

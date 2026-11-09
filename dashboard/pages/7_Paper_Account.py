@@ -62,7 +62,7 @@ if len(eq) >= 2:
         fig.add_trace(go.Scatter(x=df["date"], y=df["benchmark"] / b0 * a["start_cash"],
                                  name=f"{cfg.benchmark_ticker} (same start)", mode="lines"))
     fig.update_layout(title="Account value", yaxis_title=a["currency"], height=360)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 sm = a.get("sell_model") or {}
 if sm.get("error"):
@@ -86,7 +86,7 @@ if a["positions"]:
             "Value": money(value), "P&L": f"{value / p['cost_basis'] - 1:+.2%}",
             "Days held": p["held_days"],
         })
-    st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
+    st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
 else:
     st.caption("No holdings (all cash).")
 
@@ -95,7 +95,7 @@ if a["pending"]:
     st.dataframe(pd.DataFrame([{
         "Ticker": o["ticker"], "Name": names.get(o["ticker"], ""), "Side": o["side"],
         "Signal date": o["signal_date"], "Why": o.get("reason", ""),
-    } for o in a["pending"]]), hide_index=True, use_container_width=True)
+    } for o in a["pending"]]), hide_index=True, width="stretch")
 else:
     st.caption("No orders queued (no stock rated 8+ today, or all slots full).")
 
@@ -112,6 +112,6 @@ if done:
         "Side": t["side"], "Shares": round(t["shares"], 4), "Price": money(t["price"]),
         "Value": money(t["value"]), "P&L": money(t["pnl"]) if t["side"] == "sell" else "",
         "Why": t.get("reason", ""),
-    } for t in reversed(done)]), hide_index=True, use_container_width=True)
+    } for t in reversed(done)]), hide_index=True, width="stretch")
 else:
     st.caption("No trades yet.")

@@ -47,7 +47,7 @@ if ticker:
         currency = get_market(market).currency
         fig.update_layout(title=f"{ticker} Price + SMA 20",
                           xaxis_title="Date", yaxis_title=f"Price ({currency})")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
         if "sent_pos_avg_5d" in df.columns:
             fig2 = go.Figure()
@@ -55,4 +55,4 @@ if ticker:
                                   name="5d Avg Positive Sentiment"))
             fig2.update_layout(title=f"{ticker} News Sentiment (5d Rolling)",
                                 xaxis_title="Date", yaxis_title="Positive Sentiment Score")
-            st.plotly_chart(fig2, use_container_width=True)
+            st.plotly_chart(fig2, width="stretch")

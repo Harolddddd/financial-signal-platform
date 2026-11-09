@@ -84,9 +84,9 @@ fig.update_layout(
     yaxis=dict(title="Precision", range=[0, 1]),
     yaxis2=dict(title="Sharpe", overlaying="y", side="right"),
 )
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 
 st.subheader("Trade Count per Fold")
 fig2 = go.Figure(go.Bar(x=fold_labels, y=n_trades))
 fig2.update_layout(xaxis_title="Fold", yaxis_title="# Trades")
-st.plotly_chart(fig2, use_container_width=True)
+st.plotly_chart(fig2, width="stretch")

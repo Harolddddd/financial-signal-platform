@@ -86,7 +86,7 @@ with col1:
 
 with col2:
     st.subheader("All signals")
-    st.dataframe(df, use_container_width=True, hide_index=True)
+    st.dataframe(df, width="stretch", hide_index=True)
 
 st.divider()
 st.subheader("Recently closed trades")
@@ -101,7 +101,7 @@ if _raw:
         cdf = cdf.sort_values("trade_close_date", ascending=False).head(200)
         cdf["entry_price"] = cdf["entry_price"].map(lambda x: format_price(x, market))
         cdf.columns = ["Ticker", "Strategy", "Current Signal", "Trade Opened", "Trade Closed", "Entry Price"]
-        st.dataframe(cdf, use_container_width=True, hide_index=True)
+        st.dataframe(cdf, width="stretch", hide_index=True)
     else:
         st.info("No closed trades found in the current cache.")
 else:
