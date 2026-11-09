@@ -59,3 +59,20 @@ def test_data_source_is_features():
 
 def test_handles_nan_is_false():
     assert not getattr(MLPStrategy(), "handles_nan", False)
+
+
+def test_features_are_standardized(sample_df):
+    # Same data in different units must give the same model (inputs are scaled first).
+    scaled = sample_df.copy()
+    scaled[_FEATURE_COLS] = scaled[_FEATURE_COLS] * 1000.0
+    s1, s2 = MLPStrategy(), MLPStrategy()
+    s1.fit(sample_df)
+    s2.fit(scaled)
+    np.testing.assert_allclose(s1.predict(sample_df).confidence, s2.predict(scaled).confidence, atol=1e-6)
+
+
+def test_early_stopping_caps_training():
+    s = MLPStrategy()
+    assert s._model.early_stopping is True
+    assert s._model.max_iter == 100
+    assert s._model.n_iter_no_change == 10
