@@ -155,7 +155,7 @@ def _publish(tmp_path):
     runtimes = {n: 100.0 for n in RSTRATS}
     return bp.publish("china", TODAY, datetime(2099, 1, 1, tzinfo=timezone.utc), strategies=list(RSTRATS),
                       cfg=RCFG, cache_dir=tmp_path / "cache", feature_dir=tmp_path, outgoing=tmp_path / "out",
-                      runtimes=runtimes, code_tar=None)
+                      runtimes=runtimes, code_tar=None, load=_df)
 
 
 def _worker(tmp_path, req, uploads=None):
@@ -211,3 +211,24 @@ def test_worker_uploads_every_quarter(tmp_path):
     _worker(tmp_path, req, uploads)
     assert [len(u["methods"]) for u in uploads] == [0, 1, 2, 3, 4, 4]  # 0 = "started"
     assert [u["complete"] for u in uploads] == [False] * 5 + [True]
+
+
+def test_publish_ships_one_trimmed_feature_file(tmp_path):
+    _publish(tmp_path)
+    files = list((tmp_path / "out" / "features").iterdir())
+    assert [f.name for f in files] == ["features.parquet"]
+    t = pl.read_parquet(files[0])["time"]
+    assert t.min() >= datetime(2026, 11, 15, tzinfo=timezone.utc) - timedelta(days=1095 + 400 + 5)
+    assert not (tmp_path / ".build-china").exists()
+
+
+def test_b_gets_start_grace_before_takeover(tmp_path):
+    _publish(tmp_path)
+    # No sign of B: A waits through the 90 min start grace (clock moves 30 min per wait), then takes over.
+    t0 = datetime.now(timezone.utc)
+    slept = []
+    out = bp.main("china", feature_dir=tmp_path, cache_dir=tmp_path / "cache", today=TODAY, force=True,
+                  load=_df, loader=lambda n: RSTRATS[n](), strategies=list(RSTRATS), remote=RCFG,
+                  outgoing=tmp_path / "out", inbox_root=tmp_path / "inbox", sleep=slept.append,
+                  clock=lambda: t0 + timedelta(minutes=45 + 30 * len(slept)))
+    assert len(slept) == 2 and out["taken_back"]  # waited at 45 and 75 min, took over at 105

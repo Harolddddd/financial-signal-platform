@@ -21,3 +21,4 @@ remote_bench:
     max_share: 0.8
     exclude: [stacked_live]
     stale_minutes: 30
+    start_minutes: 90   # time for B to download its inputs (~58 MB at ~30 KB/s)

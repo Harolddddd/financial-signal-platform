@@ -155,7 +155,7 @@ def _candidates(state: dict, strategies: list[str] | None, market: str) -> list[
 def publish(market: str, today: date, deadline: datetime, strategies: list[str] | None = None,
             cfg: dict | None = None, cache_dir: Path | None = None, feature_dir: Path | None = None,
             outgoing: Path | None = None, runtimes: dict | None = None, head_start_s: float = 0.0,
-            code_tar="auto") -> dict:
+            code_tar="auto", load=load_training_data) -> dict:
     """Post B's share of this market's pass (request + feature snapshot + code)."""
     mcfg = get_market(market)
     cfg = cfg or _remote_cfg(market) or {}
@@ -173,13 +173,23 @@ def publish(market: str, today: date, deadline: datetime, strategies: list[str] 
     req = {"id": f"{market}-{today.isoformat()}-{int(now.timestamp())}", "market": market,
            "today": today.isoformat(), "deadline": deadline.isoformat(), "methods": remote,
            "local": local, "created": now.isoformat(), "commit": _commit()}
+    # Only the rows this pass reads, in one zstd file: the link to B is slow
+    # (~30 KB/s), and the full history back to 1991 is ~5x bigger.
+    build = outgoing.parent / f".build-{market}"
+    shutil.rmtree(build, ignore_errors=True)
+    build.mkdir(parents=True)
+    t0 = datetime(today.year, today.month, today.day, tzinfo=timezone.utc)
+    window = lg.load_config()["bench_window_days"]
+    (load(feature_dir, start=t0 - timedelta(days=window + _TRAIN_WINDOW_DAYS + 5))
+     .write_parquet(build / "features.parquet", compression="zstd", compression_level=19))
     tar = None
     if code_tar == "auto":
         outgoing.mkdir(parents=True, exist_ok=True)
         tar = _code_tarball(outgoing / "code.build.tar.gz")
     elif code_tar is not None:
         tar = Path(code_tar)
-    rb.publish_request(outgoing, req, feature_dir, tar)
+    rb.publish_request(outgoing, req, build, tar)
+    shutil.rmtree(build, ignore_errors=True)
     if code_tar == "auto" and tar is not None:
         tar.unlink(missing_ok=True)
     logger.info("bench %s: posted %d methods for B (%s), %d stay on A", market, len(remote), req["id"], len(local))
@@ -230,7 +240,7 @@ def main(
     names = _candidates(state, strategies, market)
     if remote and req is None:
         req = publish(market, today, deadline or clock() + timedelta(hours=15), strategies, remote,
-                      cache_dir, feature_dir, outgoing)
+                      cache_dir, feature_dir, outgoing, load=load)
     remote_names = [n for n in (req["methods"] if req else []) if n in names]
 
     data = prepare(market, today, feature_dir, load)
@@ -271,7 +281,7 @@ def main(
             got_remote, taken_back = _collect_remote(
                 market, req, remote_names, data, today, bench_dir, results, preds,
                 inbox_root or _INBOX_ROOT / market, float(remote.get("stale_minutes", 30)) * 60,
-                deadline, poll_s, sleep, clock, run_local)
+                deadline, poll_s, sleep, clock, run_local, float(remote.get("start_minutes", 90)) * 60)
         if set(remote_names) - set(got_remote) - set(taken_back):
             stopped = True  # B did not deliver everything: the pass is incomplete
     except Terminated:
@@ -307,7 +317,8 @@ def main(
 
 
 def _collect_remote(market, req, remote_names, data, today, bench_dir, results, preds, inbox_root,
-                    stale_s, deadline, poll_s, sleep, clock, run_local) -> tuple[list[str], list[str]]:
+                    stale_s, deadline, poll_s, sleep, clock, run_local,
+                    start_s: float = 5400.0) -> tuple[list[str], list[str]]:
     """Wait for B, importing each verified quarter as it lands; take the rest back if B goes quiet."""
     mcfg = get_market(market)
     inbox = inbox_root / req["id"]
@@ -345,7 +356,7 @@ def _collect_remote(market, req, remote_names, data, today, bench_dir, results, 
         if m is not None:
             silent = not rb.remote_alive(m, now, stale_s)
         else:
-            silent = (now - created).total_seconds() > stale_s
+            silent = (now - created).total_seconds() > max(stale_s, start_s)  # B still downloading?
         if silent:
             logger.warning("bench %s: B silent for %.0f min; running %s here", market, stale_s / 60, left)
             run_local(left)
