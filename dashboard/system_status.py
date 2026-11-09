@@ -35,8 +35,11 @@ SERVICES_B = {
     "fsp-cn-news": "China news + macro collect, then sync to A (daily 16:30 Beijing)",
     "fsp-bench-worker": "Bench worker: B's share of a bench pass from A",
     "fsp-backfill": "US news backfill (one-off)",
+    "fsp-status-b": "Status report to dashboard (every 5 min)",
 }
-TIMERS_B = ["fsp-cn-news.timer", "fsp-bench-worker.timer"]
+TIMERS_B = ["fsp-cn-news.timer", "fsp-bench-worker.timer", "fsp-status-b.timer"]
+# Always-on or self: never listed under "running now".
+QUIET_UNITS = {"fsp-dashboard", "fsp-status-b"}
 SNAPSHOT_STALE_MIN = 15
 _SHOW_PROPS = [
     "ActiveState", "SubState", "Result", "ExecMainStartTimestamp",
@@ -247,15 +250,15 @@ def collect(host: str, services: dict[str, str], timers: list[str], now: datetim
     now = now or datetime.now(timezone.utc)
     mem, disk = psutil.virtual_memory(), psutil.disk_usage("/")
     units = {}
-    for unit, label in {**services, **{u: "One-off job (started by hand)" for u in extra_units(services)}}.items():
+    for unit, label in {**services, **{u: f"One-off: {u.removeprefix('fsp-')}" for u in extra_units(services)}}.items():
         info = unit_info(unit)
-        running = info.get("ActiveState") in ("activating", "active") and unit != "fsp-dashboard"
-        lines = last_run_lines(unit) if unit != "fsp-dashboard" else []
+        running = info.get("ActiveState") in ("activating", "active") and unit not in QUIET_UNITS
+        lines = last_run_lines(unit) if unit not in QUIET_UNITS else []
         units[unit] = {
             "label": label, **info, "running": running,
             "summary": summarize_run(lines, running=running, now=now.replace(tzinfo=None)),
             "progress": parse_progress(lines) if running else None,
-            "log": recent_log(unit, 30) if unit != "fsp-dashboard" else "",
+            "log": recent_log(unit, 30) if unit not in QUIET_UNITS else "",
         }
     return {
         "host": host,

@@ -163,3 +163,14 @@ def test_systemd_time_to_et_and_plain_state():
     assert ss.plain_state({"ActiveState": "activating"}) == "running"
     assert ss.plain_state({"ActiveState": "inactive", "Result": "success"}) == "idle"
     assert ss.plain_state({"ActiveState": "failed"}) == "failed"
+
+
+def test_collect_names_one_offs_and_skips_self(monkeypatch):
+    monkeypatch.setattr(ss, "unit_info", lambda u: {"ActiveState": "activating"})
+    monkeypatch.setattr(ss, "timer_info", lambda t: {})
+    monkeypatch.setattr(ss, "extra_units", lambda known=None: ["fsp-split-trial"])
+    monkeypatch.setattr(ss, "last_run_lines", lambda u: [])
+    monkeypatch.setattr(ss, "recent_log", lambda u, n=30: "")
+    snap = ss.collect("B", {"fsp-status-b": "Status"}, [])
+    assert snap["units"]["fsp-split-trial"]["label"] == "One-off: split-trial"
+    assert snap["units"]["fsp-status-b"]["running"] is False

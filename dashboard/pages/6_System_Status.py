@@ -87,7 +87,7 @@ def _details(snap: dict | None, host: str) -> None:
     } for t, i in snap.get("timers", {}).items()], hide_index=True, width="stretch")
 
     st.markdown("**Last run**")
-    choices = [u for u in units if u != "fsp-dashboard"]
+    choices = [u for u in units if u not in ss.QUIET_UNITS]
     if not choices:
         return
     unit = st.selectbox("Job", choices, key=f"job_{host}", format_func=lambda u: units[u]["label"])
