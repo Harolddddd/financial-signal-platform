@@ -1,0 +1,26 @@
+# Compute server (B) only.
+[Unit]
+Description=FSP bench worker: run B's share of a bench pass posted by production
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=fsp
+WorkingDirectory=/home/fsp
+Environment=MODEL_N_JOBS=3 OMP_NUM_THREADS=3 MKL_NUM_THREADS=3 OPENBLAS_NUM_THREADS=3 SIGNAL_TRAIN_DAYS=400
+# Leave room for the website and the daily China news job.
+Nice=10
+CPUQuota=300%
+MemoryHigh=2200M
+MemoryMax=2500M
+# Sandbox: the job can only write its own work dir.
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ReadWritePaths=/home/fsp/bench
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+ExecStart=/home/fsp/app/deploy/bench_worker.sh
+TimeoutStartSec=16h

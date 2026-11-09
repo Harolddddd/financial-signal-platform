@@ -81,6 +81,9 @@ case "${1:-}" in
     # not skip China, and the job still reports failure at the end.
     end="$(bench_deadline)"; now="$(date +%s)"; mid=$(( now + (end - now) / 2 ))
     rc=0
+    # Post China's share for the compute server first, so B works on it while
+    # A runs the US (no-op unless remote_bench.china.enabled; failure = A does all).
+    step scripts/bench_pass.py --market china --publish-only --head-start-market us --deadline "$(iso "$end")" || echo "bench china: posting B's share failed, A runs it all"
     step scripts/bench_pass.py --market us --deadline "$(iso "$mid")" || { echo "bench us FAILED"; rc=1; }
     step scripts/bench_pass.py --market china --deadline "$(iso "$end")" || { echo "bench china FAILED"; rc=1; }
     [ "$rc" -eq 0 ] || exit "$rc"

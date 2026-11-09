@@ -134,3 +134,80 @@ def test_runtime_recorded(tmp_path):
     _run(tmp_path, force=True)
     js = json.loads((tmp_path / "bench" / "bench_buy3.json").read_text())
     assert js["runtime_s"] >= 0
+
+
+# --- split with the compute server (B) -------------------------------------------------
+from scripts import bench_worker as bw  # noqa: E402
+from src.league import remote_bench as rb  # noqa: E402
+
+RSTRATS = {"buy2": lambda: _Buy(0.9, 2), "buy3": lambda: _Buy(0.8, 3),
+           "buy4": lambda: _Buy(0.7, 4), "buy5": lambda: _Buy(0.6, 5)}
+RCFG = {"enabled": True, "remote_speed": 1.0, "max_share": 0.8, "exclude": [], "stale_minutes": 30}
+
+
+def _remote_run(tmp_path, **kw):
+    return bp.main("china", feature_dir=tmp_path, cache_dir=tmp_path / "cache", today=TODAY, force=True,
+                   load=_df, loader=lambda n: RSTRATS[n](), strategies=list(RSTRATS), remote=RCFG,
+                   outgoing=tmp_path / "out", inbox_root=tmp_path / "inbox", sleep=lambda s: None, **kw)
+
+
+def _publish(tmp_path):
+    runtimes = {n: 100.0 for n in RSTRATS}
+    return bp.publish("china", TODAY, datetime(2099, 1, 1, tzinfo=timezone.utc), strategies=list(RSTRATS),
+                      cfg=RCFG, cache_dir=tmp_path / "cache", feature_dir=tmp_path, outgoing=tmp_path / "out",
+                      runtimes=runtimes, code_tar=None)
+
+
+def _worker(tmp_path, req, uploads=None):
+    out = tmp_path / "inbox" / req["id"]
+    return bw.main(tmp_path / "out" / rb.REQUEST_FILE, feature_dir=tmp_path, out_dir=out,
+                   upload=lambda d: (uploads.append(json.loads((d / rb.MANIFEST_FILE).read_text()))
+                                     if uploads is not None else None),
+                   load=_df, loader=lambda n: RSTRATS[n](), heartbeat_s=None)
+
+
+def test_split_runs_part_on_b_and_rescores_it_on_a(tmp_path):
+    req = _publish(tmp_path)
+    assert req["methods"] and set(req["methods"]) < set(RSTRATS)  # B got part, not all
+    _worker(tmp_path, req)
+    out = _remote_run(tmp_path)
+    assert set(out["tested"]) == set(RSTRATS) and not out["stopped"]
+    assert set(out["remote"]) == set(req["methods"])
+    name = req["methods"][0]
+    js = json.loads((tmp_path / "cache" / "bench" / f"bench_{name}.json").read_text())
+    assert js["ran_on"] == "B" and js["score"]["n_trades"] > 20
+    st = json.loads((tmp_path / "cache" / "league.json").read_text())
+    assert st["passes"][-1]["completed"] is True
+    assert not (tmp_path / "out" / rb.REQUEST_FILE).exists()  # retracted
+
+
+def test_b_results_scored_by_a_not_by_b(tmp_path):
+    req = _publish(tmp_path)
+    _worker(tmp_path, req)
+    name = req["methods"][0]
+    inbox = tmp_path / "inbox" / req["id"]
+    jf = inbox / f"bench_{name}.json"
+    raw = json.loads(jf.read_text()); raw["score"]["net_sharpe"] = 99.0
+    jf.write_text(json.dumps(raw))
+    rb.write_manifest(inbox, req, list(json.loads((inbox / rb.MANIFEST_FILE).read_text())["methods"]), complete=True)
+    _remote_run(tmp_path)
+    js = json.loads((tmp_path / "cache" / "bench" / f"bench_{name}.json").read_text())
+    assert js["score"]["net_sharpe"] != 99.0
+
+
+def test_silent_b_methods_are_taken_back(tmp_path):
+    req = _publish(tmp_path)
+    late = iter([datetime.now(timezone.utc) + timedelta(hours=h) for h in range(1, 100)])
+    out = _remote_run(tmp_path, clock=lambda: next(late))
+    assert set(out["tested"]) == set(RSTRATS) and out["remote"] == []
+    assert set(out["taken_back"]) == set(req["methods"])
+
+
+def test_worker_uploads_every_quarter(tmp_path):
+    req = _publish(tmp_path)
+    req = {**req, "methods": list(RSTRATS)}
+    (tmp_path / "out" / rb.REQUEST_FILE).write_text(json.dumps(req))
+    uploads = []
+    _worker(tmp_path, req, uploads)
+    assert [len(u["methods"]) for u in uploads] == [0, 1, 2, 3, 4, 4]  # 0 = "started"
+    assert [u["complete"] for u in uploads] == [False] * 5 + [True]
