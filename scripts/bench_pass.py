@@ -321,8 +321,7 @@ def main(
             need = _last_runtime(bench_dir, name) * 1.2
             if deadline is not None and now + timedelta(seconds=need) > deadline:
                 logger.warning("bench %s: %s needs ~%.0f min, not enough time left; next pass", market, name, need / 60)
-                skipped_for_time.append(name)
-                stopped = True
+                skipped_for_time.append(name)  # the pass goes on: B's share must still be collected
                 continue
             logger.info("bench %s %d/%d: %s", market, i, len(todo), name)
             try:
@@ -335,13 +334,15 @@ def main(
     taken_back: list[str] = []
     try:
         run_local([n for n in names if n not in remote_names])
-        if remote_names and not stopped:
+        if remote_names:
+            # Even past the deadline, import whatever B has already delivered (no waiting then).
             got_remote, taken_back = _collect_remote(
                 market, req, remote_names, data, today, bench_dir, results, preds,
                 inbox_root or _INBOX_ROOT / market, float(remote.get("stale_minutes", 30)) * 60,
-                deadline, poll_s, sleep, clock, run_local, float(remote.get("start_minutes", 90)) * 60)
-        if set(remote_names) - set(got_remote) - set(taken_back):
-            stopped = True  # B did not deliver everything: the pass is incomplete
+                clock() if stopped else deadline, poll_s, sleep, clock, run_local,
+                float(remote.get("start_minutes", 90)) * 60)
+        if set(remote_names) - set(got_remote) - set(taken_back) or skipped_for_time:
+            stopped = True  # something went untested: the pass is incomplete
     except Terminated:
         logger.warning("bench %s: stopped by SIGTERM, saving %d finished results", market, len(results))
         stopped = True

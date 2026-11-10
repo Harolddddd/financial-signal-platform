@@ -372,3 +372,25 @@ def test_rsync_upload_gives_up_after_retries(tmp_path, monkeypatch):
     monkeypatch.setattr(bw.time, "sleep", lambda s: None)
     with pytest.raises(subprocess.CalledProcessError):
         bw.rsync_upload("dest/")(tmp_path)
+
+
+def test_b_results_collected_even_when_a_local_method_is_skipped_for_time(tmp_path):
+    """2026-11-10 China pass: one local method had a stale 6 h runtime and was skipped,
+    and A then closed the pass without importing the 36 results B had delivered."""
+    req = _publish(tmp_path)
+    _worker(tmp_path, req)
+    local = [n for n in RSTRATS if n not in req["methods"]]
+    (tmp_path / "cache" / "bench").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "cache" / "bench" / f"bench_{local[0]}.json").write_text(json.dumps({"runtime_s": 10**7}))
+    out = _remote_run(tmp_path, deadline=datetime.now(timezone.utc) + timedelta(hours=1))
+    assert local[0] in out["skipped_for_time"]
+    assert set(out["remote"]) == set(req["methods"])          # B's work is not thrown away
+    st = json.loads((tmp_path / "cache" / "league.json").read_text())
+    assert st["passes"][-1]["completed"] is False             # but the pass is incomplete
+
+
+def test_b_results_already_delivered_are_imported_after_the_deadline(tmp_path):
+    req = _publish(tmp_path)
+    _worker(tmp_path, req)
+    out = _remote_run(tmp_path, deadline=datetime.now(timezone.utc) - timedelta(minutes=1))
+    assert set(out["remote"]) == set(req["methods"])
