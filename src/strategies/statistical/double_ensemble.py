@@ -24,7 +24,7 @@ class DoubleEnsembleStrategy(Strategy):
     data_source = "features"
     handles_nan = True
 
-    def __init__(self, n_models: int = 4, n_estimators: int = 80, max_depth: int = 5,
+    def __init__(self, n_models: int = 4, n_estimators: int = 60, max_depth: int = 5,
                  learning_rate: float = 0.08, drop_frac: float = 0.2, max_weight: float = 3.0,
                  random_state: int = 42) -> None:
         self.n_models = n_models
@@ -65,14 +65,16 @@ class DoubleEnsembleStrategy(Strategy):
             weights = np.clip(err / (err.mean() + 1e-12), 1.0 / self.max_weight, self.max_weight)
             # Feature selection: drop the features whose shuffling changes the loss least.
             if len(cols) > 4:
-                sample = rng.choice(len(y), size=min(len(y), 20000), replace=False)
-                Xs = X[sample][:, cols]
-                base = float(np.mean((self._buy_proba(m, Xs) - is_buy[sample]) ** 2))
-                gain = []
+                sample = rng.choice(len(y), size=min(len(y), 5000), replace=False)
+                Xs, ys = X[sample][:, cols], is_buy[sample]
+                # One predict call for all shuffled copies (one per feature): far less overhead.
+                stack = np.tile(Xs, (len(cols) + 1, 1))
                 for j in range(len(cols)):
-                    Xp = Xs.copy()
-                    Xp[:, j] = rng.permutation(Xp[:, j])
-                    gain.append(float(np.mean((self._buy_proba(m, Xp) - is_buy[sample]) ** 2)) - base)
+                    rows = slice((j + 1) * len(Xs), (j + 2) * len(Xs))
+                    stack[rows, j] = rng.permutation(Xs[:, j])
+                err2 = ((self._buy_proba(m, stack) - np.tile(ys, len(cols) + 1)) ** 2).reshape(len(cols) + 1, -1)
+                loss = err2.mean(axis=1)
+                gain = list(loss[1:] - loss[0])
                 n_drop = int(len(cols) * self.drop_frac)
                 keep = sorted(np.argsort(gain)[n_drop:])
                 cols = [cols[j] for j in keep]

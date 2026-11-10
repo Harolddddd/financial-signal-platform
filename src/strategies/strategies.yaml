@@ -271,4 +271,4 @@ strategies:
     class: src.strategies.statistical.double_ensemble.DoubleEnsembleStrategy
     params:
       n_models: 4
-      n_estimators: 80
+      n_estimators: 60

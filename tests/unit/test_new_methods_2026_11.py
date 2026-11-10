@@ -31,9 +31,14 @@ def test_reversal_buys_sharp_drop_in_uptrend_only():
 
 def test_high52_buys_near_high_not_far_below():
     rng = np.random.default_rng(1)
-    path = 100 * np.cumprod(1 + 0.002 + rng.normal(0, 0.005, 400))
+    rise = 100 * np.cumprod(1 + 0.002 + rng.normal(0, 0.005, 300))
+    dip = rise[-1] * np.linspace(0.99, 0.9, 30)          # pull back ~10% for a month
+    back = dip[-1] * np.cumprod(np.full(40, 1.006))     # then climb back to the high
+    path = np.concatenate([rise, dip, back])
     r = load_strategy("high52_momentum").predict(_prices(path))
-    assert (r.signal.iloc[-60:] == "Buy").any()
+    buys = np.where(r.signal == "Buy")[0]
+    assert len(buys) and buys.max() >= 330                # the return to the high is a Buy
+    assert (r.signal.iloc[330:] == "Buy").sum() == 1      # once, not every day near the high
     crash = np.concatenate([path, path[-1] * np.linspace(0.99, 0.7, 60)])
     r = load_strategy("high52_momentum").predict(_prices(crash))
     assert r.signal.iloc[-1] == "Hold"
