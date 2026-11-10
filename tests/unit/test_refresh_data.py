@@ -66,3 +66,12 @@ def test_refresh_raw_fetches_when_data_ends_yesterday(tmp_path, monkeypatch):
     _refresh_raw("AAPL", datetime(2026, 11, 10, 23, 30, tzinfo=timezone.utc), tmp_path)
     assert calls == ["2026-11-11"]
     assert len(pl.read_parquet(tmp_path / "AAPL.parquet")) == 2
+
+
+def test_last_complete_day_skips_a_session_still_trading():
+    from scripts.refresh_data import _last_complete_day
+    # China closes 15:00 Beijing = 07:00 UTC; US 16:00 New York = 21:00 UTC (winter).
+    assert _last_complete_day("china", datetime(2026, 11, 10, 5, 0, tzinfo=timezone.utc)).date().isoformat() == "2026-11-09"
+    assert _last_complete_day("china", datetime(2026, 11, 10, 10, 30, tzinfo=timezone.utc)).date().isoformat() == "2026-11-10"
+    assert _last_complete_day("us", datetime(2026, 11, 10, 18, 0, tzinfo=timezone.utc)).date().isoformat() == "2026-11-09"
+    assert _last_complete_day("us", datetime(2026, 11, 10, 23, 30, tzinfo=timezone.utc)).date().isoformat() == "2026-11-10"

@@ -25,6 +25,15 @@ _AUX_TICKERS_BY_MARKET: dict[str, list[str]] = {
 
 
 _HISTORY_START = datetime(1990, 1, 1, tzinfo=timezone.utc)
+# Hour (UTC) after which the day's bar is final: China closes 15:00 Beijing (07:00 UTC),
+# US 16:00 New York (21:00 UTC in winter, 20:00 in summer; 21 is safe all year).
+_CLOSE_UTC_HOUR = {"us": 21, "china": 7}
+
+
+def _last_complete_day(market: str, now: datetime) -> datetime:
+    """Today if the market has closed, else yesterday: never store a half-finished bar."""
+    day = datetime(now.year, now.month, now.day, tzinfo=timezone.utc)
+    return day if now.hour >= _CLOSE_UTC_HOUR.get(market, 0) else day - timedelta(days=1)
 
 
 def _refresh_raw(ticker: str, today: datetime, raw_dir: Path) -> None:
@@ -111,8 +120,8 @@ def main(market: str = "us") -> None:
         raise KeyError(f"No aux ticker list configured for market {market!r} in _AUX_TICKERS_BY_MARKET")
     aux_tickers = _AUX_TICKERS_BY_MARKET[market]
 
-    today = datetime.now(timezone.utc)
-    logger.info("=== Data refresh (%s) → %s ===", market, today.date())
+    today = _last_complete_day(market, datetime.now(timezone.utc))
+    logger.info("=== Data refresh (%s) → %s (last finished session) ===", market, today.date())
 
     raw_dir.mkdir(parents=True, exist_ok=True)
     logger.info("[1/2] Refreshing raw OHLCV (%d stock tickers + aux)", len(tickers))
