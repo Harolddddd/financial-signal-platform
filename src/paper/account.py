@@ -35,6 +35,9 @@ class PaperConfig:
     min_size_mult: float = 0.5
     max_size_mult: float = 1.5
     max_position_frac: float = 0.30
+    # China trades in lots of 100: one lot may exceed its slot (else small accounts
+    # could buy almost nothing), but never this share of equity.
+    max_lot_frac: float = 0.40
     stop_atr: float = 2.0
     fallback_stop: float = 0.08
     trail_after_atr: float = 1.0
@@ -91,15 +94,18 @@ def _fill_buys(a: dict, day: str, bars: dict, cfg: PaperConfig) -> None:
                        cfg.min_size_mult), cfg.max_size_mult)
         target = min(equity / cfg.max_positions * mult, equity * cfg.max_position_frac)
         unit = b["open"] * (1 + _fee(cfg))
+        why = "not enough cash"
         if cfg.lot_size:
             lot_cost = cfg.lot_size * unit
             budget = min(max(target, lot_cost), a["cash"])
             shares = math.floor(budget / lot_cost + 1e-9) * cfg.lot_size
+            if shares == cfg.lot_size and lot_cost > target and lot_cost > equity * cfg.max_lot_frac:
+                shares, why = 0, f"one lot over {cfg.max_lot_frac:.0%} of equity"
         else:
             budget = min(target, a["cash"])
             shares = budget / unit if budget >= 1.0 else 0.0
         if shares <= 0:
-            _trade(a, day, o["ticker"], "skip", 0, b["open"], 0.0, 0.0, "not enough cash")
+            _trade(a, day, o["ticker"], "skip", 0, b["open"], 0.0, 0.0, why)
             continue
         cost = shares * unit
         a["cash"] -= cost
@@ -158,6 +164,7 @@ def _queue(a: dict, day: str, bars: dict, ratings: list[dict], high_risk: set, c
         a["positions"][t]["shares"] * a["positions"][t]["last_price"] * (1 - _fee(cfg)) for t in pending_sell
     )
     n_days = len(a["equity"])
+    equity = a["cash"] + sum(p["shares"] * p["last_price"] for p in a["positions"].values())
     cands = sorted((r for r in ratings if r["overall_rating"] >= cfg.buy_rating),
                    key=lambda r: r["overall_rating"], reverse=True)
     for r in cands:
@@ -173,7 +180,7 @@ def _queue(a: dict, day: str, bars: dict, ratings: list[dict], high_risk: set, c
             if not price:
                 continue
             lot_cost = cfg.lot_size * price * (1 + _fee(cfg))
-            if lot_cost > est_cash:
+            if lot_cost > est_cash or lot_cost > equity * cfg.max_lot_frac:
                 continue
             est_cash -= lot_cost
         a["pending"].append({"ticker": t, "side": "buy", "signal_date": day, "rating": r["overall_rating"],

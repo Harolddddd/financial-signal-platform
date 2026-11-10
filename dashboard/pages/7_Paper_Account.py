@@ -26,7 +26,9 @@ with st.expander("Trading rules"):
         "- **Signal gone**: held 5+ days and no longer rated Buy;\n"
         "- **Max hold**: 20 trading days.\n\n"
         f"Costs: {cfg.cost_bps:.0f} bps per side"
-        + (" (incl. stamp duty); China trades in lots of 100 shares." if market == "china"
+        + (" (incl. stamp duty); China trades in lots of 100 shares. One lot may be bigger than "
+           "its slot, but never more than 40% of the account (with ¥10,000: stocks up to about ¥40)."
+           if market == "china"
            else "; fractional shares allowed.")
     )
 

@@ -124,13 +124,32 @@ def test_sell_fill_records_pnl_and_cooldown_after_stop():
 
 
 def test_china_lots_of_100_and_unaffordable_skipped():
-    a = pa.new_account("china", "CNY", 1000.0)
+    a = pa.new_account("china", "CNY", 2500.0)
     a = pa.run_day(a, D[0], {"CHEAP": bar(8), "PRICEY": bar(30)},
                    rate(("PRICEY", 15.0), ("CHEAP", 12.0)), CN)
     assert [p["ticker"] for p in a["pending"]] == ["CHEAP"]   # one lot of PRICEY = 3000 > cash
     a = pa.run_day(a, D[1], {"CHEAP": bar(8.5)}, rate(("CHEAP", 12.0)), CN)
-    assert a["positions"]["CHEAP"]["shares"] == 100           # a full lot, above the 200 slot
-    assert a["cash"] == pytest.approx(1000 - 850 * 1.0015)
+    assert a["positions"]["CHEAP"]["shares"] == 100           # a full lot (34%), above the 500 slot
+    assert a["cash"] == pytest.approx(2500 - 850 * 1.0015)
+
+
+def test_china_one_lot_never_exceeds_lot_cap():
+    """One lot may exceed the slot, but never 40% of equity: a ¥86 stock is not one
+    position of 86% of a ¥10000 account; the slot goes to the next candidate."""
+    a = pa.new_account("china", "CNY", 10000.0)
+    a = pa.run_day(a, D[0], {"BIG": bar(86), "OK": bar(35)}, rate(("BIG", 24.0), ("OK", 12.0)), CN)
+    assert [p["ticker"] for p in a["pending"]] == ["OK"]      # 35*100 = 35% <= 40%
+    a = pa.run_day(a, D[1], {"OK": bar(35)}, rate(("OK", 12.0)), CN)
+    assert a["positions"]["OK"]["shares"] == 100
+
+
+def test_china_fill_skips_lot_over_cap_after_gap_up():
+    a = pa.new_account("china", "CNY", 10000.0)
+    a = pa.run_day(a, D[0], {"X": bar(38)}, rate(("X", 12.0)), CN)
+    assert [p["ticker"] for p in a["pending"]] == ["X"]
+    a = pa.run_day(a, D[1], {"X": bar(45)}, rate(("X", 12.0)), CN)   # opens at 45: lot = 45%
+    assert "X" not in a["positions"]
+    assert a["trades"][-1]["side"] == "skip" and "40%" in a["trades"][-1]["reason"]
 
 
 def test_china_lot_rounding_on_bigger_account():
