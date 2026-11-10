@@ -251,3 +251,24 @@ strategies:
     markets: [china]  # league bench candidate (2026-11-08)
     params:
       market: china
+
+  # Added 2026-11-10 from published out-of-sample evidence (league bench candidates).
+  - name: short_term_reversal
+    class: src.strategies.rule_based.short_term_reversal.ShortTermReversal
+    params:
+      lookback: 5
+      vol_window: 60
+      z_threshold: -2.0
+      trend_window: 200
+
+  - name: high52_momentum
+    class: src.strategies.rule_based.high52_momentum.High52Momentum
+    params:
+      window: 252
+      near: 0.95
+
+  - name: double_ensemble
+    class: src.strategies.statistical.double_ensemble.DoubleEnsembleStrategy
+    params:
+      n_models: 4
+      n_estimators: 80
