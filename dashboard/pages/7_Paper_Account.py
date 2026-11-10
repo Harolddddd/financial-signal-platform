@@ -4,14 +4,21 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-from config.markets import get_market
+from config.markets import MARKETS, get_market
 from dashboard.data_loader import get_cache_dir, get_ticker_names
 from dashboard.market_state import format_price, get_selected_market
 
 st.set_page_config(page_title="Paper Account", layout="wide")
 st.header("Paper Account")
 
-market = get_selected_market()
+# Switch between the two accounts right here; starts on the market chosen on the home page.
+_choices = list(MARKETS)
+if "paper_market" not in st.session_state:
+    st.session_state["paper_market"] = get_selected_market()
+market = st.segmented_control(
+    "Account", _choices, format_func=lambda k: {"us": "US holdings", "china": "China holdings"}.get(k, MARKETS[k].label),
+    key="paper_market", label_visibility="collapsed",
+) or st.session_state.get("paper_market") or get_selected_market()
 cfg = get_market(market)
 st.caption(f"Market: {cfg.label}. Simulated money, no real orders; orders fill at the next open.")
 with st.expander("Trading rules"):
