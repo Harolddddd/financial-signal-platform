@@ -92,3 +92,18 @@ def test_publish_writes_request_last_and_retract_clears(tmp_path):
     assert not (out / rb.REQUEST_FILE).exists() and not (out / "features").exists()
     with pytest.raises(ValueError):
         rb.publish_request(out, {"id": "x"}, feats)
+
+
+def test_remote_head_start_shifts_work_to_a():
+    rt = {"a": 100, "b": 100, "c": 100, "d": 100}
+    _, r0 = rb.split_methods(list(rt), rt)
+    _, r1 = rb.split_methods(list(rt), rt, remote_head_start_s=300)
+    assert len(r1) < len(r0)
+
+
+def test_split_with_times_reports_finish_estimates():
+    rt = {"a": 300, "b": 200, "c": 100}
+    local, remote, t_local, t_remote = rb.split_with_times(list(rt), rt, local_head_start_s=50,
+                                                           remote_head_start_s=20, remote_speed=2.0)
+    assert t_local == 50 + sum(rt[n] for n in local)
+    assert t_remote == 20 + sum(rt[n] for n in remote) / 2.0

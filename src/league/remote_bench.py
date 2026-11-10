@@ -34,7 +34,7 @@ def result_files(name: str) -> tuple[str, str]:
     return f"bench_{_safe(name)}.json", f"preds_{_safe(name)}.parquet"
 
 
-def split_methods(
+def split_with_times(
     names: list[str],
     runtimes: dict[str, float],
     local_head_start_s: float = 0.0,
@@ -42,12 +42,15 @@ def split_methods(
     exclude: tuple[str, ...] | list[str] = (),
     max_share: float = 0.8,
     default_s: float = 300.0,
-) -> tuple[list[str], list[str]]:
+    remote_head_start_s: float = 0.0,
+) -> tuple[list[str], list[str], float, float]:
     """Longest-first greedy split into (local, remote) that balances finish times.
 
-    A starts `local_head_start_s` behind (it runs the other market first); B runs
-    at `remote_speed` x A's pace. Methods in `exclude` always stay local, and B
-    never gets more than `max_share` of the total estimated work.
+    A is busy for `local_head_start_s` first (the other market), B for
+    `remote_head_start_s` (downloads + its share of the other market); B runs at
+    `remote_speed` x A's pace. Methods in `exclude` always stay local, and B never
+    gets more than `max_share` of this market's estimated work. Also returns the
+    estimated finish times (seconds from the start) of A and B.
     """
     known = [runtimes[n] for n in names if runtimes.get(n, 0) > 0]
     guess = sorted(known)[len(known) // 2] if known else default_s
@@ -56,7 +59,7 @@ def split_methods(
     local = [n for n in names if any(n.startswith(p) for p in exclude)]
     remote: list[str] = []
     t_local = local_head_start_s + sum(cost[n] for n in local)
-    t_remote, remote_work = 0.0, 0.0
+    t_remote, remote_work = remote_head_start_s, 0.0
     for n in sorted((n for n in names if n not in local), key=lambda n: -cost[n]):
         c = cost[n]
         if t_remote + c / remote_speed <= t_local + c and remote_work + c <= max_share * total:
@@ -64,7 +67,13 @@ def split_methods(
         else:
             local.append(n); t_local += c
     order = {n: i for i, n in enumerate(names)}
-    return sorted(local, key=order.get), sorted(remote, key=order.get)
+    return sorted(local, key=order.get), sorted(remote, key=order.get), t_local, t_remote
+
+
+def split_methods(names: list[str], runtimes: dict[str, float], **kw) -> tuple[list[str], list[str]]:
+    """(local, remote) from split_with_times."""
+    local, remote, _, _ = split_with_times(names, runtimes, **kw)
+    return local, remote
 
 
 def sha256_file(path: Path) -> str:

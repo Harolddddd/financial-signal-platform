@@ -12,7 +12,8 @@ bench_min_gap_days: 13
 # slow for the weekly full-history backtest, and its bases change with the live set.
 bench_only_prefixes: [stacked_live]
 # Compute server (B) runs part of a market's bench pass in parallel (see
-# scripts/bench_worker.py). remote_speed: B's pace vs A (1.0 = same); max_share:
+# scripts/bench_worker.py); A posts every due market's share at once (publish_plan)
+# and B runs them in the same order. remote_speed: B's pace vs A (1.0 = same); max_share:
 # most of the work B may get; stale_minutes: B silent this long -> A takes it back.
 remote_bench:
   china:
@@ -22,3 +23,12 @@ remote_bench:
     exclude: [stacked_live]
     stale_minutes: 30
     start_minutes: 90   # time for B to download its inputs (~58 MB at ~30 KB/s)
+    download_minutes: 20  # measured 14 min for the 58 MB trimmed feature file (2026-11-09)
+  us:
+    enabled: true
+    remote_speed: 1.1
+    max_share: 0.8
+    exclude: [stacked_live]   # reads extra data B does not get
+    stale_minutes: 30
+    start_minutes: 90
+    download_minutes: 20

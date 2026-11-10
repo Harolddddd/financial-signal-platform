@@ -156,32 +156,48 @@ def _state(market: str, cache_dir: Path) -> dict:
     return lg.load_state(cache_dir, market, seed=list(get_market(market).default_strategies or ()))
 
 
-def publish_if_due(market: str, today: date, deadline: datetime | None = None,
-                   strategies: list[str] | None = None, force: bool = False,
-                   head_start_market: str | None = None, cache_dir_for=None, publish_fn=None) -> dict | None:
-    """--publish-only: post B's share when this market's pass is due. Returns the request or None."""
+def _due(market: str, today: date, cache_dir: Path, force: bool) -> bool:
+    last = lg.last_completed_pass(_state(market, cache_dir))
+    return force or last is None or (today - last).days >= lg.load_config()["bench_min_gap_days"]
+
+
+def publish_plan(markets: list[str], today: date, deadline: datetime | None = None, force: bool = False,
+                 cache_dir_for=None, publish_fn=None) -> list[dict]:
+    """--publish-plan: post B's share of every due market, planned as one schedule.
+
+    A runs the markets in order (its local share of each); B first downloads every
+    market's inputs, then runs its share in the same order. Each market's split
+    starts from where both servers are expected to be after the previous ones; A
+    waits for B's results before moving on, so A's next market starts at the later
+    of the two finish times.
+    """
     cache_dir_for = cache_dir_for or (lambda m: get_market(m).data_root / "cache")
     publish_fn = publish_fn or publish
-    if _remote_cfg(market) is None:
-        logger.info("bench %s: remote bench off, nothing to post", market)
-        return None
-    last = lg.last_completed_pass(_state(market, cache_dir_for(market)))
-    if not force and last is not None and (today - last).days < lg.load_config()["bench_min_gap_days"]:
-        logger.info("bench %s: not due, nothing to post", market)
-        return None
-    head = 0.0
-    if head_start_market:
-        hcache = cache_dir_for(head_start_market)
-        hst = _state(head_start_market, hcache)
-        head = sum(_last_runtime(hcache / "bench", n) for n in _candidates(hst, None, head_start_market))
-    return publish_fn(market, today, deadline or datetime.now(timezone.utc) + timedelta(hours=15),
-                      strategies, cache_dir=cache_dir_for(market), head_start_s=head)
+    deadline = deadline or datetime.now(timezone.utc) + timedelta(hours=15)
+    due = [m for m in markets if _due(m, today, cache_dir_for(m), force)]
+    t_a = 0.0
+    t_b = sum(float((_remote_cfg(m) or {}).get("download_minutes", 0)) * 60 for m in due)
+    out = []
+    for m in due:
+        if _remote_cfg(m) is None:  # A runs this market alone
+            st = _state(m, cache_dir_for(m))
+            t_a += sum(_last_runtime(cache_dir_for(m) / "bench", n) for n in _candidates(st, None, m))
+            continue
+        req = publish_fn(m, today, deadline, None, cache_dir=cache_dir_for(m),
+                         head_start_s=t_a, remote_head_start_s=t_b)
+        est = req.get("est") or {}
+        t_b = float(est.get("remote_s", t_b))
+        t_a = max(float(est.get("local_s", t_a)), t_b)
+        out.append(req)
+    if not out:
+        logger.info("bench: no market is due for a remote share")
+    return out
 
 
 def publish(market: str, today: date, deadline: datetime, strategies: list[str] | None = None,
             cfg: dict | None = None, cache_dir: Path | None = None, feature_dir: Path | None = None,
             outgoing: Path | None = None, runtimes: dict | None = None, head_start_s: float = 0.0,
-            code_tar="auto", load=load_training_data) -> dict:
+            code_tar="auto", load=load_training_data, remote_head_start_s: float = 0.0) -> dict:
     """Post B's share of this market's pass (request + feature snapshot + code)."""
     mcfg = get_market(market)
     cfg = cfg or _remote_cfg(market) or {}
@@ -192,13 +208,17 @@ def publish(market: str, today: date, deadline: datetime, strategies: list[str] 
     names = _candidates(state, strategies, market)
     if runtimes is None:
         runtimes = {n: _last_runtime(cache_dir / "bench", n) for n in names}
-    local, remote = rb.split_methods(
-        names, runtimes, local_head_start_s=head_start_s, remote_speed=float(cfg.get("remote_speed", 1.0)),
+    local, remote, t_local, t_remote = rb.split_with_times(
+        names, runtimes, local_head_start_s=head_start_s, remote_head_start_s=remote_head_start_s,
+        remote_speed=float(cfg.get("remote_speed", 1.0)),
         exclude=cfg.get("exclude", []), max_share=float(cfg.get("max_share", 0.8)))
     now = datetime.now(timezone.utc)
     req = {"id": f"{market}-{today.isoformat()}-{int(now.timestamp())}", "market": market,
            "today": today.isoformat(), "deadline": deadline.isoformat(), "methods": remote,
-           "local": local, "created": now.isoformat(), "commit": _commit()}
+           "local": local, "created": now.isoformat(), "commit": _commit(),
+           # B starts this market only after its earlier work; A's start grace covers that.
+           "remote_start_s": round(remote_head_start_s),
+           "est": {"local_s": round(t_local), "remote_s": round(t_remote)}}
     # Only the rows this pass reads, in one zstd file: the link to B is slow
     # (~30 KB/s), and the full history back to 1991 is ~5x bigger.
     build = outgoing.parent / f".build-{market}"
@@ -382,7 +402,9 @@ def _collect_remote(market, req, remote_names, data, today, bench_dir, results, 
         if m is not None:
             silent = not rb.remote_alive(m, now, stale_s)
         else:
-            silent = (now - created).total_seconds() > max(stale_s, start_s)  # B still downloading?
+            # B still downloading, or busy with its share of an earlier market?
+            grace = start_s + 1.5 * float(req.get("remote_start_s") or 0)
+            silent = (now - created).total_seconds() > max(stale_s, grace)
         if silent:
             logger.warning("bench %s: B silent for %.0f min; running %s here", market, stale_s / 60, left)
             run_local(left)
@@ -398,12 +420,11 @@ if __name__ == "__main__":
     ap.add_argument("--strategies", type=lambda s: [x.strip() for x in s.split(",") if x.strip()])
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--seed-from-pass", action="store_true")
-    ap.add_argument("--publish-only", action="store_true", help="post B's share and exit")
-    ap.add_argument("--head-start-market", help="A runs this market first; B's share grows to match")
+    ap.add_argument("--publish-plan", type=lambda s: [x.strip() for x in s.split(",") if x.strip()],
+                    help="post B's share of these markets (in run order) and exit, e.g. us,china")
     a = ap.parse_args()
     signal.signal(signal.SIGTERM, _on_sigterm)
-    if a.publish_only:
-        publish_if_due(a.market, datetime.now(timezone.utc).date(), deadline=a.deadline,
-                       strategies=a.strategies, force=a.force, head_start_market=a.head_start_market)
+    if a.publish_plan:
+        publish_plan(a.publish_plan, datetime.now(timezone.utc).date(), deadline=a.deadline, force=a.force)
     else:
         main(a.market, deadline=a.deadline, strategies=a.strategies, force=a.force, seed_from_pass=a.seed_from_pass)

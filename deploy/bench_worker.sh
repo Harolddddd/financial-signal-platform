@@ -18,7 +18,11 @@ mkdir -p "$WORK"
 exec 9>"$WORK/.lock"
 flock -n 9 || exit 0   # a run is already going
 
-for market in ${BENCH_MARKETS:-china}; do
+# Phase 1: fetch every new request and its inputs first (the link is slow; A's
+# plan counts these downloads before B's first method). Phase 2: run them in
+# the order A runs the markets, so B's share of each lands when A expects it.
+queue=()
+for market in ${BENCH_MARKETS:-us china}; do
   dir="$WORK/$market"
   mkdir -p "$dir"
   rm -f "$dir/request.json"
@@ -32,16 +36,26 @@ for market in ${BENCH_MARKETS:-china}; do
   # Recorded before running: a crash must not restart the job in a loop (A takes it back).
   echo "$id" >> "$WORK/done.txt"
   t0=$(date +%s)
-  rsync -rt --delete -e "$RO" "fspsync@$A_HOST:$market/features/" "$dir/features/"
-  rsync -rt -e "$RO" "fspsync@$A_HOST:$market/code.tar.gz" "$dir/code.tar.gz"
-  echo "inputs downloaded in $(( $(date +%s) - t0 ))s ($(du -sh "$dir/features" | cut -f1) features)"
-  code="$WORK/code"
+  if rsync -rt --delete -e "$RO" "fspsync@$A_HOST:$market/features/" "$dir/features/" \
+     && rsync -rt -e "$RO" "fspsync@$A_HOST:$market/code.tar.gz" "$dir/code.tar.gz"; then
+    echo "$market inputs downloaded in $(( $(date +%s) - t0 ))s ($(du -sh "$dir/features" | cut -f1) features)"
+    queue+=("$market:$id")
+  else
+    echo "$market: download failed; A takes this share back" >&2
+  fi
+done
+
+for item in "${queue[@]}"; do
+  market="${item%%:*}"; id="${item#*:}"
+  dir="$WORK/$market"
+  code="$dir/code"
   rm -rf "$code"; mkdir -p "$code"
   tar xzf "$dir/code.tar.gz" -C "$code"
   out="$dir/out/$id"
+  echo "=== $(date -u +%FT%TZ) bench run $id ==="
   (cd "$code" && PYTHONPATH="$code" PYTHONUNBUFFERED=1 "$PY" scripts/bench_worker.py \
       --request "$dir/request.json" --features "$dir/features" --out "$out" \
-      --upload-to "fspsync@$A_HOST:bench/$market/$id/")
+      --upload-to "fspsync@$A_HOST:bench/$market/$id/") || echo "$market: worker failed; A takes the rest back" >&2
   # Keep the last 3 result sets on B for reference.
   ls -1dt "$dir"/out/*/ 2>/dev/null | tail -n +4 | xargs -r rm -rf
   echo "=== $(date -u +%FT%TZ) bench request $id done ==="

@@ -234,13 +234,51 @@ def test_b_gets_start_grace_before_takeover(tmp_path):
     assert len(slept) == 2 and out["taken_back"]  # waited at 45 and 75 min, took over at 105
 
 
-def test_publish_only_cli_path_loads_league_and_posts(tmp_path, monkeypatch):
-    # Regression: the --publish-only path called lg.load_state without its seed and crashed.
-    monkeypatch.setattr(bp, "_remote_cfg", lambda m: dict(RCFG))
+def _plan(tmp_path, monkeypatch, cfgs, due=("us", "china")):
+    monkeypatch.setattr(bp, "_remote_cfg", lambda m: cfgs.get(m))
     monkeypatch.setattr(bp, "_last_runtime", lambda d, n: 60.0)
     monkeypatch.setattr(bp, "list_strategies", lambda m: ["a", "b"])
+    monkeypatch.setattr(bp, "_due", lambda m, today, cache_dir, force: m in due)
     posted = []
-    out = bp.publish_if_due("china", TODAY, head_start_market="us", cache_dir_for=lambda m: tmp_path / m,
-                            publish_fn=lambda *a, **k: posted.append((a, k)) or {"id": "x"})
-    assert out == {"id": "x"} and len(posted) == 1
-    assert posted[0][1]["head_start_s"] == 120.0  # us: 2 methods x 60 s
+
+    def fake(market, today, deadline, strategies, cache_dir=None, head_start_s=0.0, remote_head_start_s=0.0, **k):
+        # Regression: this path once called lg.load_state without its seed.
+        bp._state(market, cache_dir)
+        posted.append((market, head_start_s, remote_head_start_s))
+        return {"id": market, "est": {"local_s": head_start_s + 60, "remote_s": remote_head_start_s + 60}}
+
+    out = bp.publish_plan(["us", "china"], TODAY, cache_dir_for=lambda m: tmp_path / m, publish_fn=fake)
+    return out, posted
+
+
+def test_publish_plan_chains_both_markets(tmp_path, monkeypatch):
+    cfg = dict(RCFG, download_minutes=10)
+    out, posted = _plan(tmp_path, monkeypatch, {"us": cfg, "china": cfg})
+    assert [r["id"] for r in out] == ["us", "china"]
+    assert posted[0] == ("us", 0.0, 1200.0)          # B first downloads both markets (2 x 10 min)
+    assert posted[1] == ("china", 1260.0, 1260.0)   # A waits for B's US results, then both do China
+
+
+def test_publish_plan_a_runs_us_alone_when_us_not_split(tmp_path, monkeypatch):
+    out, posted = _plan(tmp_path, monkeypatch, {"china": dict(RCFG, download_minutes=10)})
+    assert posted == [("china", 120.0, 600.0)]      # A: US 2 x 60 s first; B: download
+
+
+def test_publish_plan_skips_markets_not_due(tmp_path, monkeypatch):
+    cfg = dict(RCFG, download_minutes=10)
+    out, posted = _plan(tmp_path, monkeypatch, {"us": cfg, "china": cfg}, due=("china",))
+    assert posted == [("china", 0.0, 600.0)]
+
+
+def test_start_grace_covers_b_working_on_the_other_market(tmp_path):
+    bp.publish("china", TODAY, datetime(2099, 1, 1, tzinfo=timezone.utc), strategies=list(RSTRATS),
+               cfg=RCFG, cache_dir=tmp_path / "cache", feature_dir=tmp_path, outgoing=tmp_path / "out",
+               runtimes={n: 10_000.0 for n in RSTRATS}, code_tar=None, load=_df, remote_head_start_s=3600)
+    t0 = datetime.now(timezone.utc)
+    slept = []
+    out = bp.main("china", feature_dir=tmp_path, cache_dir=tmp_path / "cache", today=TODAY, force=True,
+                  load=_df, loader=lambda n: RSTRATS[n](), strategies=list(RSTRATS), remote=RCFG,
+                  outgoing=tmp_path / "out", inbox_root=tmp_path / "inbox", sleep=slept.append,
+                  clock=lambda: t0 + timedelta(minutes=45 + 30 * len(slept)))
+    # grace = 90 min + 1.5 x B's 60 min on US = 180 min: waits at 45..165, takes over at 195
+    assert len(slept) == 5 and out["taken_back"]
