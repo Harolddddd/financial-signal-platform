@@ -16,6 +16,7 @@ import math
 import os
 import subprocess
 import threading
+import time
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -147,11 +148,22 @@ def main(request_path: Path, feature_dir: Path, out_dir: Path, upload, load=load
 
 def rsync_upload(dest: str):
     """Data files first, manifest last, so A never sees a manifest for files still in flight."""
+    def run(cmd: list[str], timeout: int, tries: int = 3) -> None:
+        # A network blip (or A busy) must not cost B its whole share: retry with a pause.
+        for attempt in range(1, tries + 1):
+            try:
+                subprocess.run(cmd, check=True, timeout=timeout)
+                return
+            except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
+                if attempt == tries:
+                    raise
+                logger.warning("upload attempt %d failed (%s); retrying", attempt, exc)
+                time.sleep(20 * attempt)
+
     def up(d: Path) -> None:
         base = ["rsync", "-a", "--timeout=120"]
-        subprocess.run(base + ["--exclude", rb.MANIFEST_FILE, "--exclude", "*.tmp", f"{d}/", dest],
-                       check=True, timeout=1800)
-        subprocess.run(base + [str(d / rb.MANIFEST_FILE), dest], check=True, timeout=300)
+        run(base + ["--exclude", rb.MANIFEST_FILE, "--exclude", "*.tmp", f"{d}/", dest], 1800)
+        run(base + [str(d / rb.MANIFEST_FILE), dest], 300)
     return up
 
 

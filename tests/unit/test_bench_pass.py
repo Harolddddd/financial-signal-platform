@@ -323,3 +323,36 @@ def test_worker_runs_two_methods_at_once_when_memory_allows(tmp_path):
 def test_worker_waits_for_memory_before_a_second_method(tmp_path):
     out, peak, _ = _parallel_worker(tmp_path, mem_ok=lambda: False)
     assert sorted(out["done"]) == sorted(RSTRATS) and peak == 1
+
+
+def test_rsync_upload_retries_a_failed_transfer(tmp_path, monkeypatch):
+    import subprocess
+    from scripts import bench_worker as bw
+
+    calls = []
+
+    def fake_run(cmd, **kw):
+        calls.append(cmd)
+        if len(calls) == 1:
+            raise subprocess.CalledProcessError(12, cmd)
+        return subprocess.CompletedProcess(cmd, 0)
+
+    monkeypatch.setattr(bw.subprocess, "run", fake_run)
+    monkeypatch.setattr(bw.time, "sleep", lambda s: None)
+    bw.rsync_upload("dest/")(tmp_path)
+    assert len(calls) == 3  # data (failed), data (retried), manifest
+
+
+def test_rsync_upload_gives_up_after_retries(tmp_path, monkeypatch):
+    import subprocess
+
+    import pytest
+    from scripts import bench_worker as bw
+
+    def always_fail(cmd, **kw):
+        raise subprocess.CalledProcessError(12, cmd)
+
+    monkeypatch.setattr(bw.subprocess, "run", always_fail)
+    monkeypatch.setattr(bw.time, "sleep", lambda s: None)
+    with pytest.raises(subprocess.CalledProcessError):
+        bw.rsync_upload("dest/")(tmp_path)
