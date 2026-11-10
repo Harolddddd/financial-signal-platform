@@ -4,6 +4,7 @@ from datetime import date, datetime, timedelta
 import logging
 from typing import Any
 
+import numpy as np
 import pandas as pd
 import polars as pl
 
@@ -15,6 +16,10 @@ logger = logging.getLogger(__name__)
 
 _REQUIRED = {"time", "close", "label", "forward_return_5d"}
 _REQUIRED_PASS_COLS = {"time", "ticker", "close", "label", "forward_return_5d"}
+# Feature models: predict a fold's whole test window in one call instead of one
+# call per ticker (~500), after checking on the first fold that both give the
+# same output. Per-call overhead (joblib thread pools) was ~85% of a fold.
+_BATCH_PREDICT = True
 
 
 def _select_cols(
@@ -253,6 +258,45 @@ def _run_stateless(
     return folds
 
 
+def _predict_per_ticker(strategy: Strategy, parts: list[tuple[str, pd.DataFrame]], fold_idx: int) -> list[tuple]:
+    out = []
+    for ticker, tp in parts:
+        try:
+            r = strategy.predict(tp)
+        except Exception as exc:
+            logger.debug("Fold %d ticker %s predict failed: %s", fold_idx, ticker, exc)
+            continue
+        out.append((ticker, tp, r.confidence.to_numpy(), r.signal.to_numpy()))
+    return out
+
+
+def _predict_batched(strategy: Strategy, parts: list[tuple[str, pd.DataFrame]]) -> list[tuple]:
+    big = pd.concat([tp for _, tp in parts], ignore_index=True)
+    r = strategy.predict(big)
+    conf, sig = r.confidence.to_numpy(), r.signal.to_numpy()
+    if len(conf) != len(big) or len(sig) != len(big):
+        raise ValueError(f"batched predict returned {len(conf)} rows for {len(big)}")
+    out, i = [], 0
+    for ticker, tp in parts:
+        n = len(tp)
+        out.append((ticker, tp, conf[i:i + n], sig[i:i + n]))
+        i += n
+    return out
+
+
+def _same_predictions(a: list[tuple], b: list[tuple]) -> bool:
+    if len(a) != len(b):
+        return False
+    for (t1, _, c1, s1), (t2, _, c2, s2) in zip(a, b):
+        if t1 != t2 or len(c1) != len(c2):
+            return False
+        if not np.allclose(np.asarray(c1, dtype=float), np.asarray(c2, dtype=float), rtol=0, atol=1e-9, equal_nan=True):
+            return False
+        if [str(x) for x in s1] != [str(x) for x in s2]:
+            return False
+    return True
+
+
 # ---------------------------------------------------------------------------
 # Stateful path: statistical strategies (must fit per fold)
 # ---------------------------------------------------------------------------
@@ -286,6 +330,8 @@ def _run_stateful(
 
     folds: list[FoldBacktestResult] = []
     fold_idx = 0
+    # "check" on the first fold, then "batch" or "per_ticker" for the rest.
+    mode = "check" if (_BATCH_PREDICT and not needs_warmup) else "per_ticker"
 
     for wi, (train_start, train_end, test_start, test_end) in enumerate(fold_windows):
         if wi % 25 == 0:
@@ -307,7 +353,7 @@ def _run_stateful(
             logger.warning("Fold %d fit failed: %s", fold_idx, exc)
             continue
 
-        fold_trades: list[Trade] = []
+        parts: list[tuple[str, pd.DataFrame]] = []
         for ticker, tpdf in ticker_pdfs.items():
             if "time" in tpdf.columns:
                 if needs_warmup:
@@ -320,18 +366,29 @@ def _run_stateful(
                     ].copy()
             else:
                 tpdf_pred = tpdf
+            if len(tpdf_pred):
+                parts.append((ticker, tpdf_pred))
 
-            if len(tpdf_pred) == 0:
-                continue
-
+        if mode == "batch":
             try:
-                result = strategy.predict(tpdf_pred)
+                predicted = _predict_batched(strategy, parts)
             except Exception as exc:
-                logger.debug("Fold %d ticker %s predict failed: %s", fold_idx, ticker, exc)
-                continue
+                logger.info("    batched predict failed (%s); per ticker from here", exc)
+                mode = "per_ticker"
+                predicted = _predict_per_ticker(strategy, parts, fold_idx)
+        elif mode == "check":
+            predicted = _predict_per_ticker(strategy, parts, fold_idx)
+            try:
+                ok = _same_predictions(predicted, _predict_batched(strategy, parts))
+            except Exception:
+                ok = False
+            mode = "batch" if ok else "per_ticker"
+            logger.info("    predict mode: %s", "one call per fold" if ok else "per ticker (batched output differs)")
+        else:
+            predicted = _predict_per_ticker(strategy, parts, fold_idx)
 
-            conf_arr = result.confidence.to_numpy()
-            sig_arr  = result.signal.to_numpy()
+        fold_trades: list[Trade] = []
+        for ticker, tpdf_pred, conf_arr, sig_arr in predicted:
             times_list = tpdf_pred["time"].tolist() if "time" in tpdf_pred.columns else []
 
             for i, t in enumerate(times_list):

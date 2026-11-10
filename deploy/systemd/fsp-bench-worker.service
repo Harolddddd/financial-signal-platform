@@ -8,12 +8,16 @@ Wants=network-online.target
 Type=oneshot
 User=fsp
 WorkingDirectory=/home/fsp
-Environment=MODEL_N_JOBS=3 OMP_NUM_THREADS=3 MKL_NUM_THREADS=3 OPENBLAS_NUM_THREADS=3 SIGNAL_TRAIN_DAYS=400
-# Leave room for the website and the daily China news job.
+# Two methods at once (threads sharing the data), 2 model threads each; a second
+# method starts only with >= 800 MB headroom under MemoryMax (scripts/bench_worker.py).
+Environment=BENCH_PARALLEL=2 BENCH_MEM_RESERVE_MB=800
+Environment=MODEL_N_JOBS=2 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 SIGNAL_TRAIN_DAYS=400
+# Leave room for the website (Nice keeps it ahead) and the system. The bench runs
+# Sunday afternoon ET = night in Beijing, so it never overlaps the China news job.
 Nice=10
-CPUQuota=300%
-MemoryHigh=2200M
-MemoryMax=2500M
+CPUQuota=360%
+MemoryHigh=2800M
+MemoryMax=3000M
 # Sandbox: the job can only write its own work dir.
 NoNewPrivileges=yes
 PrivateTmp=yes

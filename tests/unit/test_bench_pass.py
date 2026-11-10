@@ -282,3 +282,44 @@ def test_start_grace_covers_b_working_on_the_other_market(tmp_path):
                   clock=lambda: t0 + timedelta(minutes=45 + 30 * len(slept)))
     # grace = 90 min + 1.5 x B's 60 min on US = 180 min: waits at 45..165, takes over at 195
     assert len(slept) == 5 and out["taken_back"]
+
+
+def _parallel_worker(tmp_path, mem_ok):
+    import threading
+    req = {**_publish(tmp_path), "methods": list(RSTRATS)}
+    (tmp_path / "out" / rb.REQUEST_FILE).write_text(json.dumps(req))
+    live, peak, lock = [0], [0], threading.Lock()
+    real = bp.run_method
+
+    def tracked(*a, **k):
+        with lock:
+            live[0] += 1
+            peak[0] = max(peak[0], live[0])
+        try:
+            import time as _t
+            _t.sleep(0.2)
+            return real(*a, **k)
+        finally:
+            with lock:
+                live[0] -= 1
+
+    uploads = []
+    import unittest.mock as um
+    with um.patch.object(bp, "run_method", tracked):
+        out = bw.main(tmp_path / "out" / rb.REQUEST_FILE, feature_dir=tmp_path,
+                      out_dir=tmp_path / "inbox" / req["id"],
+                      upload=lambda d: uploads.append(json.loads((d / rb.MANIFEST_FILE).read_text())),
+                      load=_df, loader=lambda n: RSTRATS[n](), heartbeat_s=None, parallel=2, mem_ok=mem_ok)
+    return out, peak[0], uploads
+
+
+def test_worker_runs_two_methods_at_once_when_memory_allows(tmp_path):
+    out, peak, uploads = _parallel_worker(tmp_path, mem_ok=lambda: True)
+    assert sorted(out["done"]) == sorted(RSTRATS) and peak == 2
+    assert [len(u["methods"]) for u in uploads] == [0, 1, 2, 3, 4, 4]
+    assert uploads[-1]["complete"] is True
+
+
+def test_worker_waits_for_memory_before_a_second_method(tmp_path):
+    out, peak, _ = _parallel_worker(tmp_path, mem_ok=lambda: False)
+    assert sorted(out["done"]) == sorted(RSTRATS) and peak == 1

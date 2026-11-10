@@ -13,8 +13,10 @@ from __future__ import annotations
 import argparse
 import logging
 import math
+import os
 import subprocess
 import threading
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from datetime import date, datetime, timezone
 from pathlib import Path
 
@@ -31,8 +33,38 @@ def checkpoints(n: int) -> set[int]:
     return {math.ceil(k * n / 4) for k in range(1, 5)} - {0}
 
 
+def _cgroup_headroom_mb() -> float | None:
+    """MB left under this process's cgroup memory cap (systemd MemoryMax), or None."""
+    try:
+        rel = Path("/proc/self/cgroup").read_text().strip().split("::", 1)[1]
+        cg = Path("/sys/fs/cgroup") / rel.lstrip("/")
+        cap = (cg / "memory.max").read_text().strip()
+        if cap == "max":
+            return None
+        return (int(cap) - int((cg / "memory.current").read_text())) / 2**20
+    except (OSError, IndexError, ValueError):
+        return None
+
+
+def memory_ok(reserve_mb: float | None = None) -> bool:
+    """Room to start one more method: >= reserve MB under the cgroup cap (else under system RAM)."""
+    reserve_mb = reserve_mb if reserve_mb is not None else float(os.environ.get("BENCH_MEM_RESERVE_MB", "800"))
+    free = _cgroup_headroom_mb()
+    if free is None:
+        import psutil
+        free = psutil.virtual_memory().available / 2**20
+    return free >= reserve_mb
+
+
 def main(request_path: Path, feature_dir: Path, out_dir: Path, upload, load=load_training_data,
-         loader=load_strategy, heartbeat_s: float | None = 600.0, clock=None) -> dict:
+         loader=load_strategy, heartbeat_s: float | None = 600.0, clock=None,
+         parallel: int | None = None, mem_ok=memory_ok) -> dict:
+    """Run the assigned methods, up to `parallel` at once (threads sharing the data).
+
+    A further method starts only while `mem_ok()` says there is room; otherwise
+    it waits for a running one to finish.
+    """
+    parallel = max(1, parallel if parallel is not None else int(os.environ.get("BENCH_PARALLEL", "1")))
     clock = clock or (lambda: datetime.now(timezone.utc))
     req = rb.load_request(request_path)
     if req is None:
@@ -65,21 +97,46 @@ def main(request_path: Path, feature_dir: Path, out_dir: Path, upload, load=load
         hb.start()
     try:
         data = bp.prepare(market, today, feature_dir, load)
-        marks = checkpoints(len(names))
-        for i, name in enumerate(names, start=1):
-            if clock() >= deadline:
-                skipped.extend(names[i - 1:])
-                logger.warning("deadline reached, %d methods left", len(names) - i + 1)
-                break
-            logger.info("bench %s (B) %d/%d: %s", market, i, len(names), name)
-            try:
-                bp.run_method(name, data, market, today, out_dir, loader, ran_on="B")
-                done.append(name)
-            except Exception as exc:  # noqa: BLE001
-                logger.error("%s failed: %s", name, exc)
-                skipped.append(name)
-            if i in marks:
-                report()
+        marks, fired = checkpoints(len(names)), set()
+        pending = list(names)
+        running: dict = {}
+        started = 0
+
+        def run_one(name: str) -> None:
+            bp.run_method(name, data, market, today, out_dir, loader, ran_on="B")
+
+        with ThreadPoolExecutor(max_workers=parallel) as ex:
+            while pending or running:
+                while pending and len(running) < parallel and (not running or mem_ok()):
+                    if clock() >= deadline:
+                        logger.warning("deadline reached, %d methods left", len(pending))
+                        with lock:
+                            skipped.extend(pending)
+                        pending.clear()
+                        break
+                    name = pending.pop(0)
+                    started += 1
+                    logger.info("bench %s (B) %d/%d: %s", market, started, len(names), name)
+                    running[ex.submit(run_one, name)] = name
+                if not running:
+                    break
+                finished, _ = wait(running, return_when=FIRST_COMPLETED)
+                for f in finished:
+                    name = running.pop(f)
+                    try:
+                        f.result()
+                        with lock:
+                            done.append(name)
+                    except Exception as exc:  # noqa: BLE001
+                        logger.error("%s failed: %s", name, exc)
+                        with lock:
+                            skipped.append(name)
+                    n = len(done) + len(skipped)
+                    for m in sorted(marks - fired):
+                        if n >= m:
+                            fired.add(m)
+                            report()
+                            break
     finally:
         stop.set()
         if hb is not None:
