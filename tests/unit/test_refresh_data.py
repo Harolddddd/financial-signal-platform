@@ -26,3 +26,43 @@ def test_refresh_raw_new_ticker_writes_to_given_raw_dir(tmp_path, monkeypatch):
     assert (tmp_path / "600519.SS.parquet").exists()
     written = pl.read_parquet(tmp_path / "600519.SS.parquet")
     assert len(written) == 1
+
+
+def _bar(day, close):
+    return pl.DataFrame({
+        "time": [datetime(2026, 11, day, tzinfo=timezone.utc)], "ticker": ["AAPL"],
+        "open": [close], "high": [close], "low": [close], "close": [close], "volume": [1],
+        "adj_close": [close], "dividends": [0.0], "stock_splits": [0.0],
+    })
+
+
+def test_refresh_raw_fetches_todays_bar_and_refreshes_last_stored_day(tmp_path, monkeypatch):
+    """Yahoo's end date is exclusive: asking for end=today never returns today's bar.
+    The last stored day is fetched again so a bar saved mid-session gets its final close."""
+    from scripts.refresh_data import _refresh_raw
+
+    _bar(6, 100.0).write_parquet(tmp_path / "AAPL.parquet")  # Friday, possibly partial
+    calls = []
+
+    def fake(ticker, start, end, *a, **k):
+        calls.append((start.date().isoformat(), end.date().isoformat()))
+        return pl.concat([_bar(6, 101.0), _bar(9, 102.0)])
+
+    monkeypatch.setattr("scripts.refresh_data.fetch_ohlcv", fake)
+    _refresh_raw("AAPL", datetime(2026, 11, 9, 23, 30, tzinfo=timezone.utc), tmp_path)
+
+    assert calls == [("2026-11-06", "2026-11-10")]
+    out = pl.read_parquet(tmp_path / "AAPL.parquet")
+    assert out["close"].to_list() == [101.0, 102.0]
+
+
+def test_refresh_raw_fetches_when_data_ends_yesterday(tmp_path, monkeypatch):
+    from scripts.refresh_data import _refresh_raw
+
+    _bar(9, 100.0).write_parquet(tmp_path / "AAPL.parquet")
+    calls = []
+    monkeypatch.setattr("scripts.refresh_data.fetch_ohlcv",
+                        lambda t, s, e, *a, **k: calls.append(e.date().isoformat()) or _bar(10, 1.0))
+    _refresh_raw("AAPL", datetime(2026, 11, 10, 23, 30, tzinfo=timezone.utc), tmp_path)
+    assert calls == ["2026-11-11"]
+    assert len(pl.read_parquet(tmp_path / "AAPL.parquet")) == 2

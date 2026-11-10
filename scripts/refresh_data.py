@@ -33,7 +33,7 @@ def _refresh_raw(ticker: str, today: datetime, raw_dir: Path) -> None:
         # New ticker — fetch full history
         logger.info("  %s — new ticker, fetching full history from %s", ticker, _HISTORY_START.date())
         try:
-            rows = fetch_ohlcv(ticker, _HISTORY_START, today)
+            rows = fetch_ohlcv(ticker, _HISTORY_START, today + timedelta(days=1))
             if len(rows) == 0:
                 logger.warning("  %s — no data returned (delisted / invalid?)", ticker)
                 return
@@ -46,12 +46,16 @@ def _refresh_raw(ticker: str, today: datetime, raw_dir: Path) -> None:
     max_ts = existing["time"].max()
     # NOTE: polars Datetime from .max() does not support .replace(tzinfo=...).
     # Reconstruct a timezone-aware datetime using the constructor instead.
-    fetch_start = datetime(max_ts.year, max_ts.month, max_ts.day, tzinfo=timezone.utc) + timedelta(days=1)
-    if fetch_start.date() >= today.date():
+    # Re-fetch the last stored day too: a bar saved during the session is replaced by
+    # its final close (rows are de-duplicated on time, newest kept below).
+    fetch_start = datetime(max_ts.year, max_ts.month, max_ts.day, tzinfo=timezone.utc)
+    if fetch_start.date() > today.date():
         logger.info("  %s already current (%s)", ticker, max_ts.date())
         return
+    # Yahoo's end date is exclusive: end=today would never return today's bar.
+    fetch_end = datetime(today.year, today.month, today.day, tzinfo=timezone.utc) + timedelta(days=1)
     try:
-        new_rows = fetch_ohlcv(ticker, fetch_start, today)
+        new_rows = fetch_ohlcv(ticker, fetch_start, fetch_end)
         if len(new_rows) == 0:
             logger.info("  %s — no new rows (market closed?)", ticker)
             return
