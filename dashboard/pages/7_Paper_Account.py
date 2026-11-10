@@ -58,10 +58,15 @@ if len(bvals) >= 1:
     bench_ret = bvals[-1] / bvals[0] - 1
 
 c1, c2, c3, c4 = st.columns(4)
-c1.metric("Account value", money(total), f"{ret:+.2%}")
-c2.metric("Cash", money(a["cash"]))
-c3.metric("Positions", len(a["positions"]))
-c4.metric(f"Benchmark ({cfg.benchmark_ticker})", f"{bench_ret:+.2%}" if bench_ret is not None else "-")
+c1.metric("Account value", money(total), f"{ret:+.2%}",
+          help="Cash plus what the held stocks are worth at the last close. The arrow is the gain or loss since the start.")
+c2.metric("Cash", money(a["cash"]),
+          help="Money not invested in any stock right now; it pays for the next buys.")
+c3.metric("Positions", len(a["positions"]),
+          help="How many different stocks the account holds now (at most 5).")
+c4.metric(f"Benchmark ({cfg.benchmark_ticker})", f"{bench_ret:+.2%}" if bench_ret is not None else "-",
+          help="What the same money would have made in the market index fund over the same days. "
+               "Beating it means the picks did better than simply buying the whole market.")
 st.caption(f"Started with {money(a['start_cash'])}; last updated for {a.get('last_day') or '-'}.")
 
 if len(eq) >= 2:
