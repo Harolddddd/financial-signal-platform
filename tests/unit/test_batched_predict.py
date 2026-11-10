@@ -79,3 +79,31 @@ def test_frame_dependent_model_keeps_per_ticker_predict(monkeypatch):
     wf, log = _run(s, df)
     assert log == base_log  # identical to the old behaviour
     assert s.calls == 6 + 1 + 6 * (len(wf.folds) - 1)  # check failed: per ticker from then on
+
+
+def test_selected_columns_do_not_depend_on_hash_seed():
+    """Column order must be the same in every process: tree models with a fixed seed
+    still build different trees when the features come in a different order."""
+    import os
+    import subprocess
+    import sys
+    code = (
+        "import polars as pl\n"
+        "from src.backtesting.strategy_runner import _select_cols\n"
+        "from src.strategies.base import Strategy\n"
+        "class S(Strategy):\n"
+        "    data_source = 'features'\n"
+        "    def predict(self, df): pass\n"
+        "cols = ['time','ticker','close','label','forward_return_5d'] + [f'f{i}' for i in range(30)]\n"
+        "df = pl.DataFrame({c: [1] for c in cols})\n"
+        "print(','.join(_select_cols(df, S(), ['close'], [f'f{i}' for i in range(30)]).columns))\n"
+    )
+    from pathlib import Path
+    root = str(Path(__file__).resolve().parents[2])
+    outs = set()
+    for seed in ("1", "2", "3"):
+        env = {**os.environ, "PYTHONHASHSEED": seed, "PYTHONPATH": root}
+        r = subprocess.run([sys.executable, "-c", code], env=env, cwd=root, capture_output=True, text=True)
+        assert r.returncode == 0, r.stderr[-800:]
+        outs.add(r.stdout.strip())
+    assert len(outs) == 1

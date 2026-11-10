@@ -35,7 +35,9 @@ def _select_cols(
         keep = list(
             _REQUIRED_PASS_COLS | set(feature_cols) | set(getattr(strategy, "extra_feature_cols", ()))
         )
-    available = [c for c in keep if c in df.columns]
+    # Keep the frame's own column order: set order changes with each process's hash seed,
+    # and tree models with a fixed seed build different trees from reordered features.
+    available = [c for c in df.columns if c in keep]
     return df.select(available)
 
 
