@@ -1,0 +1,11 @@
+[Unit]
+Description=Check held paper positions every 5 min (the script acts only while a market is open)
+
+[Timer]
+# US 9:30-16:00 New York and China 9:30-15:00 Beijing (21:30-02:00 New York) both fall
+# in these runs; outside a session the script exits at once without network calls.
+OnCalendar=*:0/5
+AccuracySec=30s
+
+[Install]
+WantedBy=timers.target

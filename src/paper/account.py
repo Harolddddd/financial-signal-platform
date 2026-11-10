@@ -9,6 +9,8 @@ Sell (first rule that fires):
 - sell model: the stock is in today's highest-risk group (`high_risk`);
 - stop-loss: close <= entry - stop_atr * ATR at entry (no ATR: -fallback_stop);
 - trailing stop: once up >= trail_after_atr * ATR, close <= peak - trail_atr * ATR;
+  (both stops are also checked every 5 min during the session: `intraday_stop`
+  sells at once at the live price; scripts/intraday_guard.py)
 - max hold: held >= max_hold_days;
 - signal gone: held >= min_hold_days and no longer rated Buy.
 Buy: rated >= buy_rating, not high risk, not in a post-stop cooldown, best first,
@@ -129,17 +131,58 @@ def _mark(a: dict, day: str, bars: dict) -> None:
     a["equity"].append({"date": day, "cash": a["cash"], "holdings": holdings, "total": a["cash"] + holdings})
 
 
+def stop_hit(p: dict, price: float, cfg: PaperConfig) -> str | None:
+    """Stop-loss or trailing stop at `price`; shared by the daily rules and the intraday check."""
+    entry = p["entry_price"]
+    atr0 = p.get("entry_atr")
+    stop = entry - cfg.stop_atr * atr0 if atr0 else entry * (1 - cfg.fallback_stop)
+    if price <= stop:
+        return f"stop-loss ({price / entry - 1:+.1%})"
+    atr = p.get("atr") or atr0
+    if atr and p["peak"] >= entry + cfg.trail_after_atr * atr and price <= p["peak"] - cfg.trail_atr * atr:
+        return f"trailing stop ({price / p['peak'] - 1:+.1%} from peak)"
+    return None
+
+
+# China main-board stocks cannot fall more than 10% a day; at that limit there are
+# practically no buyers, so a stop there cannot be filled until the price lifts.
+_CHINA_LIMIT_DOWN = 0.10
+
+
+def intraday_stop(a: dict, day: str, prices: dict, cfg: PaperConfig) -> list[dict]:
+    """Sell, at the live price, every position whose stop is hit during the session.
+
+    `prices`: ticker -> latest trade price. The trailing peak stays the daily-close
+    peak (as in the daily rules). Returns the trades made.
+    """
+    sold = []
+    for t in list(a["positions"]):
+        price = prices.get(t)
+        if price is None or not price > 0:
+            continue
+        p = a["positions"][t]
+        reason = stop_hit(p, price, cfg)
+        if reason is None:
+            continue
+        if cfg.lot_size and price <= p["last_price"] * (1 - _CHINA_LIMIT_DOWN) * 1.001:
+            continue  # limit-down: no fill possible now; the next check tries again
+        a["positions"].pop(t)
+        proceeds = p["shares"] * price * (1 - _fee(cfg))
+        a["cash"] += proceeds
+        _trade(a, day, t, "sell", p["shares"], price, proceeds, proceeds - p["cost_basis"], f"intraday {reason}")
+        if reason.startswith("stop-loss"):
+            a.setdefault("cooldown", {})[t] = len(a["equity"]) + cfg.cooldown_days
+        a["pending"] = [o for o in a["pending"] if o["ticker"] != t]
+        sold.append(a["trades"][-1])
+    return sold
+
+
 def _exit_reason(t: str, p: dict, rating: float | None, high_risk: set, cfg: PaperConfig) -> str | None:
     if t in high_risk:
         return "sell model: high downside risk"
-    entry, close = p["entry_price"], p["last_price"]
-    atr0 = p.get("entry_atr")
-    stop = entry - cfg.stop_atr * atr0 if atr0 else entry * (1 - cfg.fallback_stop)
-    if close <= stop:
-        return f"stop-loss ({close / entry - 1:+.1%})"
-    atr = p.get("atr") or atr0
-    if atr and p["peak"] >= entry + cfg.trail_after_atr * atr and close <= p["peak"] - cfg.trail_atr * atr:
-        return f"trailing stop ({close / p['peak'] - 1:+.1%} from peak)"
+    reason = stop_hit(p, p["last_price"], cfg)
+    if reason:
+        return reason
     if p["held_days"] >= cfg.max_hold_days:
         return f"max hold {cfg.max_hold_days} days"
     if p["held_days"] >= cfg.min_hold_days and (rating is None or rating < cfg.buy_rating):

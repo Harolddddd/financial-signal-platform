@@ -85,9 +85,18 @@ def main(
     today_override: date | None = None,
     risk_fn=sell_model_risk,
 ) -> dict:
+    from scripts.intraday_guard import account_lock  # the intraday stop check writes the same file
+
+    cache_dir = cache_dir or get_market(market).data_root / "cache"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    with account_lock(cache_dir):
+        return _run(market, raw_dir, cache_dir, benchmark, today_override, risk_fn)
+
+
+def _run(market: str, raw_dir: Path | None, cache_dir: Path, benchmark: str | None,
+         today_override: date | None, risk_fn) -> dict:
     mcfg = get_market(market)
     raw_dir = raw_dir or mcfg.data_root / "raw" / "ohlcv"
-    cache_dir = cache_dir or mcfg.data_root / "cache"
     benchmark = benchmark or mcfg.benchmark_ticker
     path = cache_dir / STATE_FILE
     acct = (json.loads(path.read_text(encoding="utf-8")) if path.exists()

@@ -23,6 +23,8 @@ with st.expander("Trading rules"):
         "- **Sell model**: the stock is among the riskiest ~10% (chance of a Sell-class 5-day drop);\n"
         "- **Stop-loss**: 2x ATR below the entry price (-8% if ATR is unknown);\n"
         "- **Trailing stop**: once up 1x ATR, a 2x ATR drop from the peak;\n"
+        "  both stops are also checked **every 5 minutes while the market is open**: a hit sells at once "
+        "at that price, not at the next open (a China stock at its -10% limit waits until it can be sold);\n"
         "- **Signal gone**: held 5+ days and no longer rated Buy;\n"
         "- **Max hold**: 20 trading days.\n\n"
         f"Costs: {cfg.cost_bps:.0f} bps per side"

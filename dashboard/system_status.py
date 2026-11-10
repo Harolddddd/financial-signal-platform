@@ -20,11 +20,12 @@ SERVICES = {
     "fsp-cn-weekly": "China weekly full retrain + backtests",
     "fsp-bench": "Bench re-test, both markets (every 2nd Sunday)",
     "fsp-backup": "Nightly backup",
+    "fsp-intraday": "Intraday stop check on held paper stocks (every 5 min, market hours)",
     "fsp-dashboard": "Dashboard",
 }
 TIMERS = [
     "fsp-daily.timer", "fsp-weekly.timer", "fsp-cn-daily.timer", "fsp-cn-weekly.timer",
-    "fsp-bench.timer", "fsp-backup.timer",
+    "fsp-bench.timer", "fsp-backup.timer", "fsp-intraday.timer",
 ]
 BACKFILL_STATUS = Path("/home/fspsync/incoming/status/backfill.txt")
 CN_NEWS_STATUS = Path("/home/fspsync/incoming/status/cn_news.txt")

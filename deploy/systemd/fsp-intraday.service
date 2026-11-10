@@ -1,0 +1,15 @@
+[Unit]
+Description=FSP intraday stop check on paper positions (sells at once on a stop hit)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=ubuntu
+WorkingDirectory=/home/ubuntu/app
+Environment=PYTHONPATH=/home/ubuntu/app
+# Light job: no heavy-job lock, so it keeps running during training and bench passes.
+Nice=5
+MemoryMax=600M
+ExecStart=/home/ubuntu/app/.venv/bin/python scripts/intraday_guard.py --market all
+TimeoutStartSec=4min
