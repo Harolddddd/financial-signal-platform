@@ -40,4 +40,8 @@ def load_training_data(
     # GB of headroom is more than sufficient.
     conn.execute("SET memory_limit='4GB'")
     conn.execute("SET threads TO 4")
+    # TIMESTAMPTZ comes back in the session zone, which defaults to the machine's:
+    # on a US Eastern server a bar stamped 00:00 UTC became 19:00 the day before.
+    # Every date in the pipeline is the UTC date, so pin it.
+    conn.execute("SET TimeZone='UTC'")
     return conn.execute(sql).pl()
