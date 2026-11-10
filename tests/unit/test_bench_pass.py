@@ -213,12 +213,28 @@ def test_worker_uploads_every_quarter(tmp_path):
     assert [u["complete"] for u in uploads] == [False] * 5 + [True]
 
 
-def test_publish_ships_one_trimmed_feature_file(tmp_path):
-    _publish(tmp_path)
-    files = list((tmp_path / "out" / "features").iterdir())
-    assert [f.name for f in files] == ["features.parquet"]
-    t = pl.read_parquet(files[0])["time"]
-    assert t.min() >= datetime(2026, 11, 15, tzinfo=timezone.utc) - timedelta(days=1095 + 400 + 5)
+def _publish_on(tmp_path, day, sub):
+    return bp.publish("china", day, datetime(2099, 1, 1, tzinfo=timezone.utc), strategies=list(RSTRATS),
+                      cfg=RCFG, cache_dir=tmp_path / "cache", feature_dir=tmp_path, outgoing=tmp_path / sub,
+                      runtimes={n: 100.0 for n in RSTRATS}, code_tar=None, load=_df)
+
+
+def test_publish_ships_quarterly_parts_that_stay_identical_day_to_day(tmp_path):
+    """The link to B is ~25 KB/s per connection: ship one file per calendar quarter from
+    a quarter boundary, so on the next day every older part is byte-identical and rsync
+    only sends the newest quarter."""
+    _publish_on(tmp_path, TODAY, "out1")
+    _publish_on(tmp_path, TODAY + timedelta(days=1), "out2")
+    d1, d2 = tmp_path / "out1" / "features", tmp_path / "out2" / "features"
+    names = sorted(f.name for f in d1.iterdir())
+    assert names and all(n.startswith("part_") for n in names)
+    assert names == sorted(f.name for f in d2.iterdir())
+    for n in names[:-1]:
+        assert (d1 / n).read_bytes() == (d2 / n).read_bytes(), n
+    t = pl.concat([pl.read_parquet(d1 / n) for n in names])["time"]
+    need = datetime(2026, 11, 15, tzinfo=timezone.utc) - timedelta(days=1095 + 400 + 5)
+    assert t.min() <= need and (need - t.min()).days < 92   # from the quarter start, no more
+    assert t.max() == _df()["time"].max()
     assert not (tmp_path / ".build-china").exists()
 
 

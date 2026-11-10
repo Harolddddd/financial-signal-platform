@@ -194,6 +194,23 @@ def publish_plan(markets: list[str], today: date, deadline: datetime | None = No
     return out
 
 
+def _write_feature_parts(load, feature_dir: Path, today: date, build: Path) -> None:
+    """Only the rows this pass reads, as one zstd file per calendar quarter.
+
+    The link to B is slow (~25 KB/s per connection). Starting at a quarter boundary
+    and sorting rows the same way every time keeps every finished quarter's file
+    byte-identical from one day to the next, so rsync only sends the newest one.
+    """
+    t0 = datetime(today.year, today.month, today.day, tzinfo=timezone.utc)
+    need = t0 - timedelta(days=lg.load_config()["bench_window_days"] + _TRAIN_WINDOW_DAYS + 5)
+    start = datetime(need.year, 3 * ((need.month - 1) // 3) + 1, 1, tzinfo=timezone.utc)
+    df = load(feature_dir, start=start).sort(["time", "ticker"])
+    q = df["time"].dt.year().cast(pl.Utf8) + "q" + ((df["time"].dt.month() - 1) // 3 + 1).cast(pl.Utf8)
+    for (key,), part in df.with_columns(q.alias("_q")).group_by(["_q"], maintain_order=True):
+        part.drop("_q").write_parquet(build / f"part_{key}.parquet", compression="zstd",
+                                      compression_level=19, statistics=False)
+
+
 def publish(market: str, today: date, deadline: datetime, strategies: list[str] | None = None,
             cfg: dict | None = None, cache_dir: Path | None = None, feature_dir: Path | None = None,
             outgoing: Path | None = None, runtimes: dict | None = None, head_start_s: float = 0.0,
@@ -219,15 +236,10 @@ def publish(market: str, today: date, deadline: datetime, strategies: list[str] 
            # B starts this market only after its earlier work; A's start grace covers that.
            "remote_start_s": round(remote_head_start_s),
            "est": {"local_s": round(t_local), "remote_s": round(t_remote)}}
-    # Only the rows this pass reads, in one zstd file: the link to B is slow
-    # (~30 KB/s), and the full history back to 1991 is ~5x bigger.
     build = outgoing.parent / f".build-{market}"
     shutil.rmtree(build, ignore_errors=True)
     build.mkdir(parents=True)
-    t0 = datetime(today.year, today.month, today.day, tzinfo=timezone.utc)
-    window = lg.load_config()["bench_window_days"]
-    (load(feature_dir, start=t0 - timedelta(days=window + _TRAIN_WINDOW_DAYS + 5))
-     .write_parquet(build / "features.parquet", compression="zstd", compression_level=19))
+    _write_feature_parts(load, feature_dir, today, build)
     tar = None
     if code_tar == "auto":
         outgoing.mkdir(parents=True, exist_ok=True)

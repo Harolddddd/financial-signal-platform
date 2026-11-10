@@ -21,7 +21,24 @@ flock -n 9 || exit 0   # a run is already going
 # Phase 1: fetch every new request and its inputs first (the link is slow; A's
 # plan counts these downloads before B's first method). Phase 2: run them in
 # the order A runs the markets, so B's share of each lands when A expects it.
-queue=()
+# The link is ~25 KB/s per connection, not in total: every market, and each
+# feature part file (one per quarter), downloads over its own connection at once.
+fetch() {  # fetch <market>: features + code for one market; exit status = success
+  local market="$1" dir="$WORK/$1" t0
+  t0=$(date +%s)
+  mkdir -p "$dir/features"
+  rsync -rt --list-only -e "$RO" "fspsync@$A_HOST:$market/features/" 2>/dev/null     | awk '$NF ~ /\.parquet$/ {print $NF}' > "$dir/parts.txt" || return 1
+  [ -s "$dir/parts.txt" ] || return 1
+  # Drop local parts A no longer ships (the window moved on a quarter).
+  for f in "$dir"/features/*.parquet; do
+    [ -e "$f" ] && ! grep -qxF "$(basename "$f")" "$dir/parts.txt" && rm -f "$f"
+  done
+  xargs -P 4 -I{} rsync -rt -e "$RO" "fspsync@$A_HOST:$market/features/{}" "$dir/features/{}"     < "$dir/parts.txt" || return 1
+  rsync -rt -e "$RO" "fspsync@$A_HOST:$market/code.tar.gz" "$dir/code.tar.gz" || return 1
+  echo "$market inputs downloaded in $(( $(date +%s) - t0 ))s ($(du -sh "$dir/features" | cut -f1) features)"
+}
+
+new_reqs=()
 for market in ${BENCH_MARKETS:-us china}; do
   dir="$WORK/$market"
   mkdir -p "$dir"
@@ -31,20 +48,24 @@ for market in ${BENCH_MARKETS:-us china}; do
   # The id becomes a path on both servers: allow only <market>-<yyyy-mm-dd>-<epoch>.
   [[ "$id" =~ ^${market}-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]+$ ]] || { echo "bad request id: $id" >&2; continue; }
   grep -qxF "$id" "$WORK/done.txt" 2>/dev/null && continue
-
   echo "=== $(date -u +%FT%TZ) bench request $id ==="
   # Recorded before running: a crash must not restart the job in a loop (A takes it back).
   echo "$id" >> "$WORK/done.txt"
-  t0=$(date +%s)
-  if rsync -rt --delete -e "$RO" "fspsync@$A_HOST:$market/features/" "$dir/features/" \
-     && rsync -rt -e "$RO" "fspsync@$A_HOST:$market/code.tar.gz" "$dir/code.tar.gz"; then
-    echo "$market inputs downloaded in $(( $(date +%s) - t0 ))s ($(du -sh "$dir/features" | cut -f1) features)"
-    queue+=("$market:$id")
-  else
-    echo "$market: download failed; A takes this share back" >&2
-  fi
+  new_reqs+=("$market:$id")
 done
 
+pids=()
+for item in "${new_reqs[@]}"; do
+  fetch "${item%%:*}" & pids+=($!)
+done
+queue=()
+for i in "${!new_reqs[@]}"; do
+  if wait "${pids[$i]}"; then
+    queue+=("${new_reqs[$i]}")
+  else
+    echo "${new_reqs[$i]%%:*}: download failed; A takes this share back" >&2
+  fi
+done
 for item in "${queue[@]}"; do
   market="${item%%:*}"; id="${item#*:}"
   dir="$WORK/$market"
